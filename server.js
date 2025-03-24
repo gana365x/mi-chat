@@ -75,8 +75,11 @@ io.on('connection', (socket) => {
     io.emit('image', imageData);
     io.to('admins').emit('admin image', imageData);
 
-    // Enviar mensaje automático del CBU después de recibir una imagen
-    const botMessage = { sender: 'Bot', message: 'TITULAR CTA BANCARIA PAGOSWON CBU 0000156303087805254500 ALIAS PAGOSWON.2' };
+    // Enviar mensaje automático después de recibir una imagen
+    const botMessage = { 
+      sender: 'Bot', 
+      message: '✅️¡excelente! Recibido✅️\n\n¡En menos de\n\n5 minutos sus fichas\n\nserán acreditadas!\n\nen breve serán acreditadas.' 
+    };
     chatHistory[data.sender].push(botMessage);
     io.emit('chat message', botMessage);
     io.to('admins').emit('admin message', { username: data.sender, ...botMessage });
