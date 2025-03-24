@@ -6,13 +6,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Permite conexiones desde cualquier origen (para pruebas)
+    origin: '*',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
     credentials: true
   },
-  transports: ['websocket', 'polling'], // Usa WebSocket primero, pero permite polling como respaldo
-  allowEIO3: true // Soporte para clientes que usan Socket.IO 3.x
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
 });
 
 const PORT = process.env.PORT || 3000;
@@ -72,8 +72,14 @@ io.on('connection', (socket) => {
       chatHistory[data.sender] = [];
     }
     chatHistory[data.sender].push(imageData);
-    io.emit('image', data);
-    io.to('admins').emit('admin image', data);
+    io.emit('image', imageData);
+    io.to('admins').emit('admin image', imageData);
+
+    // Enviar mensaje automático del CBU después de recibir una imagen
+    const botMessage = { sender: 'Bot', message: 'TITULAR CTA BANCARIA PAGOSWON CBU 0000156303087805254500 ALIAS PAGOSWON.2' };
+    chatHistory[data.sender].push(botMessage);
+    io.emit('chat message', botMessage);
+    io.to('admins').emit('admin message', { username: data.sender, ...botMessage });
   });
 
   socket.on('agent message', (data) => {
