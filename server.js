@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 
 const users = new Set();
 const chatHistory = {};
+const userSockets = new Map(); // Mapa para almacenar los sockets de los usuarios
 
 app.use(express.static(__dirname));
 
@@ -28,7 +29,6 @@ io.on('connection', (socket) => {
   socket.on('admin connected', () => {
     console.log('Administrador conectado:', socket.id);
     socket.join('admins');
-    // Enviar la lista de usuarios conectados al administrador al conectarse
     socket.emit('user list', Array.from(users));
   });
 
@@ -38,6 +38,8 @@ io.on('connection', (socket) => {
     if (!chatHistory[username]) {
       chatHistory[username] = [];
     }
+    // Almacenar el socket del usuario
+    userSockets.set(username, socket);
     io.emit('user list', Array.from(users));
   });
 
@@ -113,11 +115,28 @@ io.on('connection', (socket) => {
 
   socket.on('close chat', (data) => {
     console.log('Chat cerrado para:', data.username);
-    io.emit('chat closed', { username: data.username });
+    // Enviar el evento solo al cliente específico
+    const userSocket = userSockets.get(data.username);
+    if (userSocket) {
+      userSocket.emit('chat closed', { username: data.username });
+    }
+    // Opcional: Eliminar al usuario de la lista de usuarios conectados
+    users.delete(data.username);
+    userSockets.delete(data.username);
+    io.emit('user list', Array.from(users));
   });
 
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
+    // Opcional: Eliminar al usuario de la lista si se desconecta
+    for (let [username, userSocket] of userSockets.entries()) {
+      if (userSocket.id === socket.id) {
+        users.delete(username);
+        userSockets.delete(username);
+        io.emit('user list', Array.from(users));
+        break;
+      }
+    }
   });
 });
 
