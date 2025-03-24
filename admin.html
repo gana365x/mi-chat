@@ -280,6 +280,8 @@
           li.classList.add('active');
         }
         userList.appendChild(li);
+        // Solicitar el historial de cada usuario al recibir la lista
+        socket.emit('request chat history', { username: user });
       });
     });
 
@@ -298,7 +300,7 @@
       document.getElementById('currentUser').textContent = user;
       document.getElementById('chatMessages').innerHTML = '';
       displayLocalMessages(user);
-      console.log('Solicitando historial para:', user);
+      // Solicitar el historial al seleccionar un usuario
       socket.emit('request chat history', { username: user });
     }
 
@@ -371,7 +373,7 @@
         } else {
           messageDiv.classList.add('user');
         }
-        messageDiv.textContent = `${data.sender}: ${data.message}`;
+        messageDiv.textContent = `${data.sender}: ${msg.message}`;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
