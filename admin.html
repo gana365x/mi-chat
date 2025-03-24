@@ -251,7 +251,20 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io('http://localhost:3000');
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de Socket.IO');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Error de conexión a Socket.IO:', error);
+    });
+
+    socket.on('error', (error) => {
+      console.error('Error en Socket.IO:', error);
+    });
+
     let selectedUser = null;
     const localChatHistory = {};
 
