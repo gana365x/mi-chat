@@ -300,7 +300,6 @@
       document.getElementById('currentUser').textContent = user;
       document.getElementById('chatMessages').innerHTML = '';
       displayLocalMessages(user);
-      // Solicitar el historial al seleccionar un usuario
       socket.emit('request chat history', { username: user });
     }
 
@@ -357,11 +356,13 @@
         console.error('Mensaje recibido inválido, falta username, sender o message:', data);
         return;
       }
+      // Solo agregar el mensaje al historial del usuario correspondiente
       if (!localChatHistory[data.username]) {
         localChatHistory[data.username] = [];
       }
       localChatHistory[data.username].push({ sender: data.sender, message: data.message });
       console.log('Historial local actualizado para', data.username, ':', localChatHistory[data.username]);
+      // Solo mostrar el mensaje si el usuario está seleccionado
       if (data.username === selectedUser) {
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
@@ -373,7 +374,7 @@
         } else {
           messageDiv.classList.add('user');
         }
-        messageDiv.textContent = `${data.sender}: ${msg.message}`;
+        messageDiv.textContent = `${data.sender}: ${data.message}`;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
@@ -385,11 +386,13 @@
         console.error('Imagen recibida inválida, falta sender o image:', data);
         return;
       }
+      // Solo agregar la imagen al historial del usuario correspondiente
       if (!localChatHistory[data.sender]) {
         localChatHistory[data.sender] = [];
       }
       localChatHistory[data.sender].push({ sender: data.sender, image: data.image });
       console.log('Historial local actualizado para', data.sender, ':', localChatHistory[data.sender]);
+      // Solo mostrar la imagen si el usuario está seleccionado
       if (data.sender === selectedUser) {
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
