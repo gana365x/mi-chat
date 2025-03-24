@@ -4,9 +4,18 @@ const socketIo = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: '*', // Permite conexiones desde cualquier origen (para pruebas)
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'], // Usa WebSocket primero, pero permite polling como respaldo
+  allowEIO3: true // Soporte para clientes que usan Socket.IO 3.x
+});
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const users = new Set();
 const chatHistory = {};
@@ -41,11 +50,9 @@ io.on('connection', (socket) => {
       chatHistory[data.sender] = [];
     }
     chatHistory[data.sender].push(messageData);
-    console.log('Historial actualizado para', data.sender, ':', chatHistory[data.sender]);
-    io.emit('chat message', data);
+    io.emit('chat message', messageData);
     io.to('admins').emit('admin message', { username: data.sender, ...messageData });
 
-    // Respuesta automática del bot para "Cargar Fichas"
     if (data.message === 'Cargar Fichas') {
       const botMessage = { sender: 'Bot', message: 'TITULAR CTA BANCARIA PAGOSWON CBU 0000156303087805254500 ALIAS PAGOSWON.2' };
       chatHistory[data.sender].push(botMessage);
@@ -105,5 +112,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
