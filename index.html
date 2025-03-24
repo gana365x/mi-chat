@@ -540,7 +540,20 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io('http://localhost:3000');
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de Socket.IO');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Error de conexión a Socket.IO:', error);
+    });
+
+    socket.on('error', (error) => {
+      console.error('Error en Socket.IO:', error);
+    });
+
     let currentUser = '';
     let isChatClosed = false;
     let isChatOpen = false;
@@ -609,7 +622,6 @@
       const button = document.getElementById("chatButton");
 
       if (isChatOpen) {
-        // Cerrar el chat directamente sin confirmación
         console.log('Cerrando chat');
         isChatOpen = false;
         chat.classList.remove("open");
@@ -618,7 +630,6 @@
           button.textContent = "💬";
         }, 300);
       } else {
-        // Abrir el chat
         console.log('Abriendo chat');
         isChatOpen = true;
         button.textContent = "✖";
