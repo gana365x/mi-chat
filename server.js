@@ -28,6 +28,8 @@ io.on('connection', (socket) => {
   socket.on('admin connected', () => {
     console.log('Administrador conectado:', socket.id);
     socket.join('admins');
+    // Enviar la lista de usuarios conectados al administrador al conectarse
+    socket.emit('user list', Array.from(users));
   });
 
   socket.on('user joined', (username) => {
@@ -75,7 +77,6 @@ io.on('connection', (socket) => {
     io.emit('image', imageData);
     io.to('admins').emit('admin image', imageData);
 
-    // Enviar mensaje automático después de recibir una imagen
     const botMessage = { 
       sender: 'Bot', 
       message: '✅️¡excelente! Recibido✅️\n\n¡En menos de\n\n5 minutos sus fichas\n\nserán acreditadas!\n\nen breve serán acreditadas.' 
