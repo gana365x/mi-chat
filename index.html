@@ -844,21 +844,16 @@
   }
 
   const messagesDiv = document.getElementById("messages");
+  const buttonsWrapper = document.querySelector('.buttons-wrapper');
+  if (buttonsWrapper) buttonsWrapper.style.display = 'none';
 
-  // Primero, mostramos el mensaje del usuario (el botón que apretó)
+  // Primero mostramos el mensaje del usuario
   const userMessage = document.createElement('div');
   userMessage.classList.add('message', 'user');
   userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
   messagesDiv.appendChild(userMessage);
 
-  // Luego, emitimos el mensaje al servidor
-  socket.emit('chat message', { userId, sender: currentUser, message: action });
-
-  // Ocultamos los botones
-  const buttonsWrapper = document.querySelector('.buttons-wrapper');
-  if (buttonsWrapper) buttonsWrapper.style.display = 'none';
-
-  // Ahora mostramos la respuesta del bot según la acción
+  // Después mostramos el mensaje automático del bot
   if (action === 'Cargar Fichas') {
     const botMessage = document.createElement('div');
     botMessage.classList.add('message', 'bot');
@@ -895,6 +890,9 @@
     `;
     messagesDiv.appendChild(retiroMessage);
   }
+
+  // Finalmente lo enviamos al servidor (para que llegue al admin y quede registrado)
+  socket.emit('chat message', { userId, sender: currentUser, message: action });
 
   setTimeout(scrollToBottom, 0);
 }
