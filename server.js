@@ -22,6 +22,8 @@ const PORT = process.env.PORT || 3000;
 const userSessions = new Map();
 // Mapa para almacenar el historial de chats: { userId: [mensajes] }
 const chatHistory = {};
+// Mapa para almacenar qué administradores están viendo qué chats: { adminSocketId: userId }
+const adminSubscriptions = new Map();
 
 app.use(express.static(__dirname));
 
@@ -31,9 +33,8 @@ io.on('connection', (socket) => {
   socket.on('admin connected', () => {
     console.log('Administrador conectado:', socket.id);
     socket.join('admins');
-    // Enviar la lista de usuarios conectados al administrador
     const users = Array.from(userSessions.entries())
-      .filter(([userId, session]) => userId && session.username) // Filtrar usuarios con userId y username válidos
+      .filter(([userId, session]) => userId && session.username)
       .map(([userId, session]) => ({
         userId,
         username: session.username
@@ -43,25 +44,21 @@ io.on('connection', (socket) => {
 
   socket.on('user joined', (data) => {
     console.log('Usuario conectado:', data);
-    const userId = data.userId || uuidv4(); // Generar un userId si no se proporciona
+    const userId = data.userId || uuidv4();
     const username = data.username;
 
-    // Verificar que el username no esté vacío
     if (!username) {
       console.error('Nombre de usuario vacío, no se puede registrar la sesión:', data);
       return;
     }
 
-    // Almacenar la sesión del usuario
     userSessions.set(userId, { username, socket });
     if (!chatHistory[userId]) {
       chatHistory[userId] = [];
     }
 
-    // Enviar el userId al cliente
     socket.emit('session', { userId, username });
 
-    // Enviar la lista de usuarios conectados a todos
     const users = Array.from(userSessions.entries())
       .filter(([userId, session]) => userId && session.username)
       .map(([id, session]) => ({
@@ -83,13 +80,23 @@ io.on('connection', (socket) => {
     }
     chatHistory[data.userId].push(messageData);
     io.emit('chat message', messageData);
-    io.to('admins').emit('admin message', { userId: data.userId, ...messageData });
+
+    // Enviar el mensaje solo a los administradores que están viendo este chat
+    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
+      if (userId === data.userId) {
+        io.to(adminSocketId).emit('admin message', { userId: data.userId, ...messageData });
+      }
+    }
 
     if (data.message === 'Cargar Fichas') {
       const botMessage = { sender: 'Bot', message: 'TITULAR CTA BANCARIA PAGOSWON CBU 0000156303087805254500 ALIAS PAGOSWON.2' };
       chatHistory[data.userId].push(botMessage);
       io.emit('chat message', botMessage);
-      io.to('admins').emit('admin message', { userId: data.userId, ...botMessage });
+      for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
+        if (userId === data.userId) {
+          io.to(adminSocketId).emit('admin message', { userId: data.userId, ...botMessage });
+        }
+      }
     }
   });
 
@@ -105,7 +112,13 @@ io.on('connection', (socket) => {
     }
     chatHistory[data.userId].push(imageData);
     io.emit('image', imageData);
-    io.to('admins').emit('admin image', { userId: data.userId, ...imageData });
+
+    // Enviar la imagen solo a los administradores que están viendo este chat
+    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
+      if (userId === data.userId) {
+        io.to(adminSocketId).emit('admin image', { userId: data.userId, ...imageData });
+      }
+    }
 
     const botMessage = { 
       sender: 'Bot', 
@@ -113,7 +126,11 @@ io.on('connection', (socket) => {
     };
     chatHistory[data.userId].push(botMessage);
     io.emit('chat message', botMessage);
-    io.to('admins').emit('admin message', { userId: data.userId, ...botMessage });
+    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
+      if (userId === data.userId) {
+        io.to(adminSocketId).emit('admin message', { userId: data.userId, ...botMessage });
+      }
+    }
   });
 
   socket.on('agent message', (data) => {
@@ -128,7 +145,11 @@ io.on('connection', (socket) => {
     }
     chatHistory[data.userId].push(messageData);
     io.emit('chat message', { sender: 'Agent', message: data.message });
-    io.to('admins').emit('admin message', { userId: data.userId, ...messageData });
+    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
+      if (userId === data.userId) {
+        io.to(adminSocketId).emit('admin message', { userId: data.userId, ...messageData });
+      }
+    }
   });
 
   socket.on('request chat history', (data) => {
@@ -137,6 +158,8 @@ io.on('connection', (socket) => {
       console.error('Solicitud de historial inválida, falta userId:', data);
       return;
     }
+    // Almacenar qué administrador está viendo qué chat
+    adminSubscriptions.set(socket.id, data.userId);
     const history = chatHistory[data.userId] || [];
     socket.emit('chat history', { userId: data.userId, messages: history });
   });
@@ -159,6 +182,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
+    // Eliminar la suscripción del administrador
+    adminSubscriptions.delete(socket.id);
     for (let [userId, session] of userSessions.entries()) {
       if (session.socket.id === socket.id) {
         userSessions.delete(userId);
