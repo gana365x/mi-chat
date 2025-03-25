@@ -1,145 +1,272 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Agentes - GANA365</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>GANA365 Chat</title>
   <style>
     body {
       font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      height: 100vh;
-      box-sizing: border-box;
-    }
-
-    .container {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      gap: 20px;
-    }
-
-    .sidebar {
-      width: 250px;
-      background: #1a1a1a;
+      background-color: #000;
       color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-sizing: border-box;
-      overflow-y: auto;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    .sidebar h2 {
-      margin-top: 0;
-      font-size: 20px;
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
-
-    .user-list {
-      list-style: none;
-      padding: 0;
       margin: 0;
+      overflow: hidden;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
-    .user-list li {
-      padding: 10px;
-      background: #333;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-      font-size: 16px;
+    #backgroundIframe {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      z-index: -1;
     }
 
-    .user-list li:hover {
-      background: #444;
-    }
-
-    .user-list li.active {
-      background: #FF3B00;
-    }
-
-    .chat-area {
-      flex: 1;
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      display: none;
-      flex-direction: column;
-      box-sizing: border-box;
+    .chat-container {
+      position: fixed;
+      bottom: 30px;
+      right: 90px;
+      width: 320px;
+      height: 420px;
+      background: #1a1a1a;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
       border: 2px solid #FF3B00;
+      border-radius: 20px;
+      overflow: hidden;
+      display: none;
+      z-index: 10001;
+      text-align: center;
+      transform: translateX(-20px);
+      opacity: 0;
+      transition: all 0.3s ease-in-out;
     }
 
-    .chat-area.active {
-      display: flex;
+    .chat-container.open {
+      transform: translateX(0);
+      opacity: 1;
     }
 
     .chat-header {
+      background: #000000;
+      padding: 10px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       border-bottom: 2px solid #FF3B00;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
     }
 
-    .chat-header h2 {
-      margin: 0;
-      font-size: 18px;
+    .chat-logo {
+      width: 60px;
+      height: auto;
+    }
+
+    .chat-phone {
+      color: white;
       font-weight: bold;
-      color: #333;
+      font-size: 13px;
     }
 
     .close-chat {
-      background: #FF3B00;
-      color: white;
+      background: none;
       border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
+      color: white;
+      font-size: 18px;
       cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
-      font-size: 14px;
     }
 
     .close-chat:hover {
-      background: #d63100;
+      color: #d63100;
     }
 
-    .chat-messages {
-      flex: 1;
+    .chat-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #FF3B00;
+      color: white;
+      border: none;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .chat-button:hover {
+      background-color: #d63100;
+    }
+
+    .login-container {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .login-container h3 {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .login-container input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 25px;
+      background: #222;
+      color: white;
+      font-size: 16px;
+      text-align: center;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 12px;
+      background: #FF3B00;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 25px;
+      font-size: 16px;
+      margin-top: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .login-button:hover {
+      background: #d63100;
+      transform: scale(1.05);
+    }
+
+    .login-logo {
+      width: 120px;
+      max-height: 80px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chat-body {
+      display: none;
+      position: relative;
+      height: calc(100% - 60px);
+      background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
+      color: #111;
+      font-size: 14px;
+    }
+
+    #messages {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 60px;
       overflow-y: auto;
-      margin-bottom: 20px;
       padding: 10px;
-      background: #E5DDD5;
-      border-radius: 5px;
       box-sizing: border-box;
+    }
+
+    .chat-body.active {
+      display: block;
+    }
+
+    .row {
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 10px;
+      clear: both;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: #fff;
+      padding: 4px;
+      box-sizing: border-box;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+
+    .msg {
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 240px;
+      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+      position: relative;
+      border-top-left-radius: 0;
+    }
+
+    .msg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -10px;
+      width: 10px;
+      height: 10px;
+      background: #FFFFFF;
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+
+    .msg strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .buttons-wrapper {
+      margin-left: 44px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      clear: both;
+    }
+
+    .action-button {
+      background: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 15px;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      color: #111;
+      cursor: pointer;
+      width: 200px;
+      text-align: center;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+    }
+
+    .action-button:hover {
+      background-color: #DCF8C6;
+      color: #111;
     }
 
     .message {
-      margin: 0;
-      padding: 10px;
+      display: block;
+      margin: 5px 0;
+      padding: 8px 12px;
       border-radius: 8px;
       max-width: 70%;
-      word-wrap: break-word;
       position: relative;
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-      white-space: pre-wrap;
-      align-self: flex-start;
+      clear: both;
     }
 
     .message.bot {
       background: #FFFFFF;
-      align-self: flex-start;
+      float: left;
       border-top-left-radius: 0;
     }
 
@@ -156,7 +283,7 @@
 
     .message.user {
       background: #DCF8C6;
-      align-self: flex-end;
+      float: right;
       border-top-right-radius: 0;
     }
 
@@ -171,81 +298,293 @@
       clip-path: polygon(0 0, 100% 0, 0 100%);
     }
 
-    .message.agent {
-      background: #ADD8E6;
-      align-self: flex-start;
-      border-top-left-radius: 0;
-    }
-
-    .message.agent::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -10px;
-      width: 10px;
-      height: 10px;
-      background: #ADD8E6;
-      clip-path: polygon(100% 0, 0 0, 100% 100%);
-    }
-
     .message img {
       max-width: 100px;
       border-radius: 8px;
       display: block;
-      margin-top: 5px;
       cursor: pointer;
+    }
+
+    .message .timestamp {
+      font-size: 10px;
+      color: #666;
+      margin-left: 5px;
+      position: absolute;
+      bottom: 2px;
+      right: 5px;
     }
 
     .chat-input {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
       display: flex;
       align-items: center;
-      gap: 10px;
+      padding: 10px;
+      background: #F0F0F0;
+      box-sizing: border-box;
+      height: 60px;
     }
 
-    .chat-input input {
+    .chat-input input[type="text"] {
       flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
+      padding: 8px 12px;
+      border: none;
       border-radius: 20px;
+      margin-right: 10px;
       outline: none;
-      box-sizing: border-box;
-      font-size: 14px;
+      background: #FFFFFF;
+      font-size: 16px;
+      -webkit-appearance: none;
+    }
+
+    .chat-input input[type="file"] {
+      display: none;
+    }
+
+    .chat-input label {
+      cursor: pointer;
+      font-size: 20px;
+      margin-right: 10px;
+      color: #666;
     }
 
     .chat-input button {
-      background: #FF3B00;
-      color: white;
+      background: none;
       border: none;
-      padding: 10px 20px;
-      border-radius: 20px;
       cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
-      font-size: 14px;
+      font-size: 20px;
+      color: #075E54;
     }
 
-    .chat-input button:hover {
-      background: #d63100;
+    .recommend-message {
+      display: none;
+      position: relative;
+      height: calc(100% - 60px);
+      background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
+      color: #111;
+      font-size: 14px;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .recommend-message.active {
+      display: block;
+    }
+
+    .success-popup {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #FFFFFF;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      z-index: 10001;
+      width: 200px;
+    }
+
+    .success-popup.active {
+      display: block;
+    }
+
+    .success-popup .check-icon {
+      width: 40px;
+      height: 40px;
+      background: #E6F4EA;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+    }
+
+    .success-popup .check-icon::before {
+      content: '✔';
+      font-size: 24px;
+      color: #34C759;
+    }
+
+    .success-popup h3 {
+      font-size: 16px;
+      font-weight: bold;
+      color: #000;
+      margin: 0 0 5px;
+    }
+
+    .success-popup p {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 15px;
+    }
+
+    .success-popup button {
+      background: #007AFF;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .success-popup button:hover {
+      background: #005BB5;
+    }
+
+    .error-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #FFFFFF;
+      border-radius: 15px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      z-index: 999999;
+      width: 320px;
+      max-width: 90%;
+    }
+
+    .error-popup.active {
+      display: block;
+    }
+
+    .error-popup .error-icon {
+      width: 70px;
+      height: 70px;
+      background: #FEECEC;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .error-popup .error-icon::before {
+      content: '✖';
+      font-size: 40px;
+      color: #FF3B30;
+    }
+
+    .error-popup p {
+      font-size: 16px;
+      color: #1a1a1a;
+      margin-bottom: 25px;
+      font-weight: bold;
+    }
+
+    .error-popup button {
+      background: #6C63FF;
+      color: white;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .error-popup button:hover {
+      background: #4b44d4;
+    }
+
+    @media (max-width: 768px) {
+      .chat-container {
+        width: 90%;
+        height: 70vh;
+        bottom: 10px;
+        right: 5%;
+        transform: none;
+      }
+
+      .chat-button {
+        bottom: 10px;
+        right: 10px;
+      }
+
+      .chat-phone {
+        font-size: 11px;
+      }
+
+      .chat-logo {
+        width: 50px;
+      }
+
+      .close-chat {
+        font-size: 16px;
+      }
+
+      .login-container input {
+        font-size: 14px;
+      }
+
+      .login-button {
+        font-size: 14px;
+      }
+
+      .action-button {
+        width: 180px;
+        font-size: 12px;
+      }
+
+      .chat-input input[type="text"] {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="sidebar">
-      <h2>Usuarios Conectados</h2>
-      <ul class="user-list" id="userList"></ul>
+  <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
+  <button class="chat-button" id="chatButton" onclick="toggleChat()">💬</button>
+
+  <div class="chat-container" id="chatBox">
+    <div id="chatHeader" class="chat-header" style="display: none;">
+      <img src="https://gana365.online/images/logo.png" class="chat-logo" />
+      <span class="chat-phone">Soporte: +54 9 11 5412-8983</span>
+      <button onclick="toggleChat()" class="close-chat">✖</button>
     </div>
 
-    <div class="chat-area" id="chatArea">
-      <div class="chat-header">
-        <h2 id="chatUser">Chat con: <span id="currentUser"></span></h2>
-        <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
-      </div>
-      <div class="chat-messages" id="chatMessages"></div>
+    <div class="login-container" id="loginForm">
+      <h3>Bienvenido</h3>
+      <img src="https://gana365.online/images/logo.png" class="login-logo"/>
+      <input type="text" id="username" placeholder="Ingrese su usuario" required />
+      <input type="password" id="password" placeholder="Contraseña" required />
+      <button onclick="login()" class="login-button">Iniciar Chat</button>
+    </div>
+
+    <div id="chatBody" class="chat-body">
+      <div id="messages"></div>
       <div class="chat-input">
-        <input type="text" id="agentMessage" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendAgentMessage()">
-        <button onclick="sendAgentMessage()">Enviar</button>
+        <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
+        <label for="imageInput">📎</label>
+        <input type="file" id="imageInput" accept="image/*, .pdf" onchange="sendFile(event)">
+        <button onclick="sendMessage()">✈️</button>
       </div>
+    </div>
+
+    <div id="recommendMessage" class="recommend-message"></div>
+
+    <div id="successPopup" class="success-popup">
+      <div class="check-icon"></div>
+      <h3>Fichas cargadas</h3>
+      <p>Fichas cargadas correctamente</p>
+      <button onclick="closePopup()">OK</button>
+    </div>
+
+    <div id="errorPopup" class="error-popup">
+      <div class="error-icon"></div>
+      <p>Por favor, complete todos los campos</p>
+      <button onclick="closeErrorPopup()">OK</button>
     </div>
   </div>
 
@@ -265,157 +604,25 @@
       console.error('Error en Socket.IO:', error);
     });
 
-    let selectedUserId = null;
-    let selectedUsername = null;
-    const localChatHistory = {};
+    let currentUser = '';
+    let userId = '';
+    let isChatClosed = false;
+    let isChatOpen = false;
 
-    socket.on('user list', (users) => {
-      console.log('Lista de usuarios recibida:', users);
-      const userList = document.getElementById('userList');
-      userList.innerHTML = '';
-      users.forEach(user => {
-        if (!user.userId) {
-          console.error('Usuario sin userId:', user);
-          return;
-        }
-        const li = document.createElement('li');
-        li.textContent = user.username;
-        li.dataset.userId = user.userId;
-        li.onclick = () => selectUser(user.userId, user.username);
-        if (user.userId === selectedUserId) {
-          li.classList.add('active');
-        }
-        userList.appendChild(li);
-        socket.emit('request chat history', { userId: user.userId });
+    function scrollToBottom() {
+      const messagesDiv = document.getElementById("messages");
+      messagesDiv.scrollTo({
+        top: messagesDiv.scrollHeight,
+        behavior: 'smooth'
       });
-    });
-
-    function selectUser(userId, username) {
-      console.log('Usuario seleccionado:', { userId, username });
-      selectedUserId = userId;
-      selectedUsername = username;
-      const userList = document.getElementById('userList').children;
-      for (let li of userList) {
-        li.classList.remove('active');
-        if (li.dataset.userId === userId) {
-          li.classList.add('active');
-        }
-      }
-      const chatArea = document.getElementById('chatArea');
-      chatArea.classList.add('active');
-      document.getElementById('currentUser').textContent = username;
-      document.getElementById('chatMessages').innerHTML = '';
-      displayLocalMessages(userId);
-      if (userId) {
-        socket.emit('request chat history', { userId });
-      } else {
-        console.error('No se puede solicitar historial, userId está vacío');
-      }
     }
 
-    function displayLocalMessages(userId) {
-      const chatMessages = document.getElementById('chatMessages');
-      chatMessages.innerHTML = '';
-      const messages = localChatHistory[userId] || [];
-      if (messages.length > 0) {
-        messages.forEach(msg => {
-          console.log('Mostrando mensaje local:', msg);
-          const messageDiv = document.createElement('div');
-          messageDiv.classList.add('message');
-          if (msg.sender === 'Bot') {
-            messageDiv.classList.add('bot');
-          } else if (msg.sender === 'Agent') {
-            messageDiv.classList.add('agent');
-          } else {
-            messageDiv.classList.add('user');
-          }
-          if (msg.image) {
-            messageDiv.textContent = `${msg.sender}:`;
-            const img = document.createElement('img');
-            img.src = msg.image;
-            img.onclick = () => openImageInNewWindow(msg.image);
-            messageDiv.appendChild(img);
-          } else {
-            messageDiv.textContent = `${msg.sender}: ${msg.message}`;
-          }
-          chatMessages.appendChild(messageDiv);
-        });
-      } else {
-        console.log('No hay mensajes locales para este usuario:', userId);
-        chatMessages.innerHTML = '<p>No hay mensajes previos.</p>';
-      }
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+    function getCurrentTime() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
     }
-
-    socket.on('chat history', (data) => {
-      console.log('Historial de chat recibido:', data);
-      if (data.userId) {
-        localChatHistory[data.userId] = data.messages || [];
-        console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-        if (data.userId === selectedUserId) {
-          displayLocalMessages(data.userId);
-        }
-      } else {
-        console.log('Historial recibido para un usuario no seleccionado:', data.userId);
-      }
-    });
-
-    socket.on('admin message', (data) => {
-      console.log('Mensaje recibido en tiempo real:', data);
-      if (!data.userId || !data.sender || !data.message) {
-        console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
-        return;
-      }
-      if (!localChatHistory[data.userId]) {
-        localChatHistory[data.userId] = [];
-      }
-      localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
-      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-      if (data.userId === selectedUserId) {
-        const chatMessages = document.getElementById('chatMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message');
-        if (data.sender === 'Bot') {
-          messageDiv.classList.add('bot');
-        } else if (data.sender === 'Agent') {
-          messageDiv.classList.add('agent');
-        } else {
-          messageDiv.classList.add('user');
-        }
-        messageDiv.textContent = `${data.sender}: ${data.message}`;
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      } else {
-        console.log('Mensaje ignorado, no pertenece al usuario seleccionado:', { receivedUserId: data.userId, selectedUserId });
-      }
-    });
-
-    socket.on('admin image', (data) => {
-      console.log('Imagen recibida en tiempo real:', data);
-      if (!data.userId || !data.sender || !data.image) {
-        console.error('Imagen recibida inválida, falta userId, sender o image:', data);
-        return;
-      }
-      if (!localChatHistory[data.userId]) {
-        localChatHistory[data.userId] = [];
-      }
-      localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
-      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-      if (data.userId === selectedUserId) {
-        const chatMessages = document.getElementById('chatMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', 'user');
-        messageDiv.textContent = `${data.sender}:`;
-        const img = document.createElement('img');
-        img.src = data.image;
-        img.onclick = () => openImageInNewWindow(data.image);
-        messageDiv.appendChild(img);
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      } else {
-        console.log('Imagen ignorada, no pertenece al usuario seleccionado:', { receivedUserId: data.userId, selectedUserId });
-      }
-    });
 
     function openImageInNewWindow(imageSrc) {
       const newWindow = window.open('', '_blank');
@@ -437,36 +644,263 @@
       newWindow.document.close();
     }
 
-    function sendAgentMessage() {
-      const messageInput = document.getElementById('agentMessage');
-      const message = messageInput.value.trim();
-      if (message && selectedUserId) {
-        console.log('Enviando mensaje del agente:', { userId: selectedUserId, message });
-        socket.emit('agent message', { userId: selectedUserId, message });
-        if (!localChatHistory[selectedUserId]) {
-          localChatHistory[selectedUserId] = [];
+    function sendFile(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          socket.emit('image', { userId, sender: currentUser, image: e.target.result });
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+      } else {
+        console.error('No se seleccionó ningún archivo');
+      }
+    }
+
+    function setCookie(name, value, days) {
+      const date = new Date();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${date.toUTCString()}; path=/`;
+    }
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+      return match ? decodeURIComponent(match[2]) : "";
+    }
+
+    function toggleChat() {
+      console.log('toggleChat ejecutado. isChatOpen:', isChatOpen, 'isChatClosed:', isChatClosed);
+      const chat = document.getElementById("chatBox");
+      const button = document.getElementById("chatButton");
+
+      if (isChatOpen) {
+        console.log('Cerrando chat');
+        isChatOpen = false;
+        chat.classList.remove("open");
+        setTimeout(() => {
+          chat.style.display = "none";
+          button.textContent = "💬";
+        }, 300);
+      } else {
+        console.log('Abriendo chat');
+        isChatOpen = true;
+        button.textContent = "✖";
+        chat.style.display = "block";
+        setTimeout(() => chat.classList.add("open"), 10);
+      }
+    }
+
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!username || !password) {
+        const errorPopup = document.getElementById("errorPopup");
+        if (errorPopup) {
+          errorPopup.classList.add('active');
         }
-        localChatHistory[selectedUserId].push({ sender: 'Agent', message });
+        return;
+      }
+
+      console.log('Login ejecutado. Usuario:', username);
+      currentUser = username;
+      setCookie("chatUser", username, 30);
+      const storedUserId = getCookie("chatUserId");
+      socket.emit('user joined', { userId: storedUserId, username });
+    }
+
+    socket.on('session', (data) => {
+      console.log('Sesión recibida:', data);
+      userId = data.userId;
+      currentUser = data.username;
+      setCookie("chatUserId", userId, 30);
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("chatHeader").style.display = "flex";
+      showActionButtons();
+    });
+
+    function closeErrorPopup() {
+      console.log('Cerrando popup de error');
+      const errorPopup = document.getElementById("errorPopup");
+      errorPopup.classList.remove('active');
+    }
+
+    function showActionButtons() {
+      console.log('Mostrando botones de acción');
+      const chatBody = document.getElementById("chatBody");
+      const recommendMessage = document.getElementById("recommendMessage");
+      const chatHeader = document.getElementById("chatHeader");
+      chatHeader.style.display = "flex";
+      chatBody.classList.add("active");
+      recommendMessage.classList.remove("active");
+      const messagesDiv = document.getElementById("messages");
+      messagesDiv.innerHTML = '';
+
+      const welcomeDiv = document.createElement('div');
+      welcomeDiv.classList.add('row');
+      welcomeDiv.innerHTML = `
+        <img src="https://gana365.online/images/logo.png" class="logo">
+        <div class="msg">
+          <strong>Bienvenido a GANA365</strong>
+          ¡ASISTENCIA 24HS POR ESTA CHAT!<br>
+          Por favor elegí una opción 👇👇👇
+          <span class="timestamp">${getCurrentTime()}</span>
+        </div>
+      `;
+      messagesDiv.appendChild(welcomeDiv);
+
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.classList.add('buttons-wrapper');
+      buttonsDiv.innerHTML = `
+        <button class="action-button" onclick="handleAction('Cargar Fichas')">Cargar Fichas</button>
+        <button class="action-button" onclick="handleAction('Retirar')">Retirar</button>
+      `;
+      messagesDiv.appendChild(buttonsDiv);
+
+      setTimeout(scrollToBottom, 0);
+    }
+
+    function showRecommendMessage() {
+      console.log('Mostrando mensaje de recomendación');
+      const chatBody = document.getElementById("chatBody");
+      const recommendMessage = document.getElementById("recommendMessage");
+      chatBody.classList.remove("active");
+      recommendMessage.classList.add("active");
+
+      recommendMessage.innerHTML = '';
+
+      const recommendDiv = document.createElement('div');
+      recommendDiv.classList.add('row');
+      recommendDiv.innerHTML = `
+        <img src="https://gana365.online/images/logo.png" class="logo">
+        <div class="msg">
+          RECOMENDAMOS Y GANA<br>
+          BUSCANOS EN GOOGLE COMO<br>
+          463 SIEMPRE GANA
+          <span class="timestamp">${getCurrentTime()}</span>
+        </div>
+      `;
+      recommendMessage.appendChild(recommendDiv);
+
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.classList.add('buttons-wrapper');
+      buttonsDiv.innerHTML = `
+        <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
+      `;
+      recommendMessage.appendChild(buttonsDiv);
+
+      setTimeout(() => {
+        recommendMessage.scrollTo({
+          top: recommendMessage.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 0);
+    }
+
+    function handleAction(action) {
+      console.log('Acción ejecutada:', action, 'Usuario:', currentUser, 'UserId:', userId);
+      if (!currentUser || !userId) {
+        console.error('No hay usuario o userId definido para enviar el mensaje');
+        return;
+      }
+      socket.emit('chat message', { userId, sender: currentUser, message: action });
+      const buttonsWrapper = document.querySelector('.buttons-wrapper');
+      if (buttonsWrapper) buttonsWrapper.style.display = 'none';
+      setTimeout(scrollToBottom, 0);
+    }
+
+    function sendMessage() {
+      const messageInput = document.getElementById("messageInput");
+      const message = messageInput.value.trim();
+
+      if (message) {
+        console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'UserId:', userId);
+        socket.emit('chat message', { userId, sender: currentUser, message });
         messageInput.value = '';
-        displayLocalMessages(selectedUserId);
-      } else {
-        console.log('No se puede enviar mensaje: mensaje vacío o usuario no seleccionado');
       }
     }
 
-    function closeChat() {
-      if (selectedUserId) {
-        console.log('Cerrando chat para el usuario:', selectedUserId);
-        socket.emit('close chat', { userId: selectedUserId });
-        document.getElementById('chatArea').classList.remove('active');
-        selectedUserId = null;
-        selectedUsername = null;
+    socket.on('chat message', (data) => {
+      console.log('Mensaje recibido:', data);
+      const messagesDiv = document.getElementById("messages");
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+      messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
+      messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
+      messagesDiv.appendChild(messageDiv);
+      setTimeout(scrollToBottom, 0);
+    });
+
+    socket.on('image', (data) => {
+      console.log('Imagen recibida:', data);
+      const messagesDiv = document.getElementById("messages");
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+      messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
+      const img = document.createElement('img');
+      img.src = data.image;
+      img.onclick = () => openImageInNewWindow(data.image);
+      messageDiv.appendChild(img);
+      messageDiv.innerHTML += `<span class="timestamp">${getCurrentTime()}</span>`;
+      messagesDiv.appendChild(messageDiv);
+      setTimeout(scrollToBottom, 0);
+    });
+
+    socket.on('show success popup', () => {
+      console.log('Evento "show success popup" recibido');
+      const popup = document.getElementById("successPopup");
+      if (popup) {
+        console.log('Mostrando popup de éxito');
+        popup.classList.add('active');
+        setTimeout(() => {
+          if (popup.classList.contains('active')) {
+            console.log('Popup cerrado automáticamente después de 5 segundos');
+            closePopup();
+          }
+        }, 5000);
       } else {
-        console.log('No hay usuario seleccionado para cerrar el chat');
+        console.error('No se encontró el elemento #successPopup');
       }
+    });
+
+    function closePopup() {
+      console.log('Cerrando popup');
+      const popup = document.getElementById("successPopup");
+      popup.classList.remove('active');
+      socket.emit('popup closed', { userId, username: currentUser });
     }
 
-    socket.emit('admin connected');
+    socket.on('chat closed', (data) => {
+      console.log('Evento chat closed recibido:', data);
+      if (data.userId === userId) {
+        console.log('Chat cerrado por el agente para:', currentUser);
+        showRecommendMessage();
+        socket.emit('user joined', { userId, username: currentUser });
+      } else {
+        console.log('Evento chat closed no aplica a este usuario:', currentUser);
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const username = getCookie("chatUser");
+      console.log('Verificando cookie de usuario:', username);
+      if (username) {
+        console.log('Autologin ejecutado para usuario:', username);
+        currentUser = username;
+        const storedUserId = getCookie("chatUserId");
+        socket.emit('user joined', { userId: storedUserId, username });
+        isChatOpen = true;
+        const chat = document.getElementById("chatBox");
+        const button = document.getElementById("chatButton");
+        button.textContent = "✖";
+        chat.style.display = "block";
+        setTimeout(() => chat.classList.add("open"), 10);
+      } else {
+        console.log('No hay cookie de usuario, mostrando formulario de login');
+        document.getElementById("loginForm").style.display = "block";
+      }
+    });
   </script>
 </body>
 </html>
