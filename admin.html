@@ -367,11 +367,13 @@
         console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
         return;
       }
+      // Solo agregar el mensaje al historial del usuario correspondiente
       if (!localChatHistory[data.userId]) {
         localChatHistory[data.userId] = [];
       }
       localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
       console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+      // Solo mostrar el mensaje si el userId coincide con el usuario seleccionado
       if (data.userId === selectedUserId) {
         console.log('Mostrando mensaje para el usuario seleccionado:', data);
         const chatMessages = document.getElementById('chatMessages');
@@ -398,11 +400,13 @@
         console.error('Imagen recibida inválida, falta userId, sender o image:', data);
         return;
       }
+      // Solo agregar la imagen al historial del usuario correspondiente
       if (!localChatHistory[data.userId]) {
         localChatHistory[data.userId] = [];
       }
       localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
       console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+      // Solo mostrar la imagen si el userId coincide con el usuario seleccionado
       if (data.userId === selectedUserId) {
         console.log('Mostrando imagen para el usuario seleccionado:', data);
         const chatMessages = document.getElementById('chatMessages');
