@@ -582,6 +582,20 @@
 
     <div id="recommendMessage" class="recommend-message"></div>
 
+    <div id="finalMessage" class="recommend-message">
+  <div class="row">
+    <img src="https://gana365.online/images/logo.png" class="logo">
+    <div class="msg">
+      <strong>Gracias por elegirnos</strong><br>
+      No te olvides de recomendarnos 💎<br>
+      <span class="timestamp" id="finalMessageTimestamp"></span>
+    </div>
+  </div>
+  <div class="buttons-wrapper">
+    <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
+  </div>
+</div>
+
         </div> <!-- fin de .chat-container -->
 <!-- Nuevo popup fichas cargadas, fuera del chat flotante -->
 <div id="successPopup" class="success-popup">
@@ -913,19 +927,24 @@
   if (data.userId === userId) {
     console.log('Chat cerrado por el agente para:', currentUser);
 
-    // Mostrar popup visual de éxito
+    // Mostrar popup visual
     const popup = document.getElementById("successPopup");
-    if (popup) {
-      popup.classList.add("active");
-    }
+    if (popup) popup.classList.add("active");
 
-    // Mostrar mensaje de recomendación y botón de nuevo chat
-    showRecommendMessage();
-    
-    // Almacenar que se cerró el chat
+    // Ocultar otros
+    document.getElementById("chatBody").classList.remove("active");
+    document.getElementById("recommendMessage").classList.remove("active");
+
+    // Mostrar mensaje de agradecimiento
+    document.getElementById("finalMessage").classList.add("active");
+
+    // Mostrar hora actual
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById("finalMessageTimestamp").textContent = `${h}:${m}`;
+
     isChatClosed = true;
-
-    // Reabrir automáticamente sesión con mismo userId
     socket.emit('user joined', { userId, username: currentUser });
   }
 });
