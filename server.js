@@ -101,7 +101,7 @@ io.on('connection', (socket) => {
       const botMessage = { 
         userId: data.userId, 
         sender: 'Bot', 
-        message: '1-Usar cuenta personal.\n\n2-Enviar comprobante visible.\n\nTITULAR CTA BANCARIA PAGOSWON\n\nCBU\n0000156003987805254500\n\nALIAS\nPagoswon.2'
+        message: '1-Usar cuenta personal.\n\n2-Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance'
       };
       chatHistory[data.userId].push(botMessage);
       if (userSocket) {
