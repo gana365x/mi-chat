@@ -274,6 +274,11 @@
       const userList = document.getElementById('userList');
       userList.innerHTML = '';
       users.forEach(user => {
+        // Verificar que el userId no esté vacío
+        if (!user.userId) {
+          console.error('Usuario sin userId:', user);
+          return;
+        }
         const li = document.createElement('li');
         li.textContent = user.username;
         li.dataset.userId = user.userId; // Almacenar el userId en el elemento
@@ -303,7 +308,12 @@
       document.getElementById('currentUser').textContent = username;
       document.getElementById('chatMessages').innerHTML = '';
       displayLocalMessages(userId);
-      socket.emit('request chat history', { userId });
+      // Verificar que el userId no esté vacío antes de solicitar el historial
+      if (userId) {
+        socket.emit('request chat history', { userId });
+      } else {
+        console.error('No se puede solicitar historial, userId está vacío');
+      }
     }
 
     function displayLocalMessages(userId) {
