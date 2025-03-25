@@ -847,12 +847,6 @@
   const buttonsWrapper = document.querySelector('.buttons-wrapper');
   if (buttonsWrapper) buttonsWrapper.style.display = 'none';
 
-  // Primero mostramos el mensaje del usuario
-  const userMessage = document.createElement('div');
-  userMessage.classList.add('message', 'user');
-  userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
-  messagesDiv.appendChild(userMessage);
-
   // Después mostramos el mensaje automático del bot
   if (action === 'Cargar Fichas') {
     const botMessage = document.createElement('div');
