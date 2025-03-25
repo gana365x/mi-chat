@@ -438,65 +438,65 @@
       background: #005BB5;
     }
 
-    .error-popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #FFFFFF;
-      border-radius: 15px;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      z-index: 999999;
-      width: 320px;
-      max-width: 90%;
-    }
+   .error-popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 999999;
+  width: 420px;
+  max-width: 90%;
+}
 
-    .error-popup.active {
-      display: block;
-    }
+.error-popup.active {
+  display: block;
+}
 
-    .error-popup .error-icon {
-      width: 70px;
-      height: 70px;
-      background: #FEECEC;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-    }
+.error-popup .error-icon {
+  width: 90px;
+  height: 90px;
+  background: #FEECEC;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px;
+}
 
-    .error-popup .error-icon::before {
-      content: '✖';
-      font-size: 40px;
-      color: #FF3B30;
-    }
+.error-popup .error-icon::before {
+  content: '✖';
+  font-size: 50px;
+  color: #FF3B30;
+}
 
-    .error-popup p {
-      font-size: 16px;
-      color: #1a1a1a;
-      margin-bottom: 25px;
-      font-weight: bold;
-    }
+.error-popup p {
+  font-size: 18px;
+  color: #1a1a1a;
+  margin-bottom: 30px;
+  font-weight: 500;
+}
 
-    .error-popup button {
-      background: #6C63FF;
-      color: white;
-      border: none;
-      padding: 10px 30px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: background 0.3s ease;
-    }
+.error-popup button {
+  background: #6C63FF;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
 
-    .error-popup button:hover {
-      background: #4b44d4;
-    }
+.error-popup button:hover {
+  background: #4b44d4;
+}
 
     .bot-message-line {
       display: block;
@@ -587,12 +587,15 @@
       <button onclick="closePopup()">OK</button>
     </div>
 
-    <div id="errorPopup" class="error-popup">
-      <div class="error-icon"></div>
-      <p>Por favor, complete todos los campos</p>
-      <button onclick="closeErrorPopup()">OK</button>
-    </div>
-  </div>
+    </div> <!-- fin de .chat-container -->
+
+<!-- Popup error MOVIDO FUERA del chat flotante -->
+<div id="errorPopup" class="error-popup">
+  <div class="error-icon"></div>
+  <p>Por favor, complete todos los campos</p>
+  <button onclick="closeErrorPopup()">OK</button>
+</div>
+
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -627,12 +630,12 @@
       const now = new Date();
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
-      return ${hours}:${minutes};
+      return `${hours}:${minutes}`;
     }
 
     function openImageInNewWindow(imageSrc) {
       const newWindow = window.open('', '_blank');
-      newWindow.document.write(
+      newWindow.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
@@ -646,7 +649,7 @@
           <img src="${imageSrc}" alt="Imagen">
         </body>
         </html>
-      );
+      `);
       newWindow.document.close();
     }
 
@@ -667,7 +670,7 @@
     function setCookie(name, value, days) {
       const date = new Date();
       date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      document.cookie = ${name}=${encodeURIComponent(value)}; expires=${date.toUTCString()}; path=/;
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${date.toUTCString()}; path=/`;
     }
 
     function getCookie(name) {
@@ -745,7 +748,7 @@
 
       const welcomeDiv = document.createElement('div');
       welcomeDiv.classList.add('row');
-      welcomeDiv.innerHTML = 
+      welcomeDiv.innerHTML = `
         <img src="https://gana365.online/images/logo.png" class="logo">
         <div class="msg">
           <strong>Bienvenido a GANA365</strong>
@@ -753,15 +756,15 @@
           Por favor elegí una opción 👇👇👇
           <span class="timestamp">${getCurrentTime()}</span>
         </div>
-      ;
+      `;
       messagesDiv.appendChild(welcomeDiv);
 
       const buttonsDiv = document.createElement('div');
       buttonsDiv.classList.add('buttons-wrapper');
-      buttonsDiv.innerHTML = 
+      buttonsDiv.innerHTML = `
         <button class="action-button" onclick="handleAction('Cargar Fichas')">Cargar Fichas</button>
         <button class="action-button" onclick="handleAction('Retirar')">Retirar</button>
-      ;
+      `;
       messagesDiv.appendChild(buttonsDiv);
 
       setTimeout(scrollToBottom, 0);
@@ -778,7 +781,7 @@
 
       const recommendDiv = document.createElement('div');
       recommendDiv.classList.add('row');
-      recommendDiv.innerHTML = 
+      recommendDiv.innerHTML = `
         <img src="https://gana365.online/images/logo.png" class="logo">
         <div class="msg">
           RECOMENDAMOS Y GANA<br>
@@ -786,14 +789,14 @@
           463 SIEMPRE GANA
           <span class="timestamp">${getCurrentTime()}</span>
         </div>
-      ;
+      `;
       recommendMessage.appendChild(recommendDiv);
 
       const buttonsDiv = document.createElement('div');
       buttonsDiv.classList.add('buttons-wrapper');
-      buttonsDiv.innerHTML = 
+      buttonsDiv.innerHTML = `
         <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
-      ;
+      `;
       recommendMessage.appendChild(buttonsDiv);
 
       setTimeout(() => {
@@ -840,7 +843,7 @@
 
       // Si el mensaje es el de "Cargar Fichas" del bot, aplicamos formato especial
       if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
-        messageDiv.innerHTML = 
+        messageDiv.innerHTML = `
           <span class="bot-message-line">1-<strong>Usar</strong> cuenta personal.</span><br><br>
           <span class="bot-message-line">2-<strong>Enviar</strong> comprobante visible.</span><br><br>
           <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANCE SRL</strong></span><br><br>
@@ -849,10 +852,10 @@
           <span class="bot-message-line"><strong>ALIAS</strong></span><br>
           <span class="bot-message-line">leprance</span>
           <span class="timestamp">${getCurrentTime()}</span>
-        ;
+        `;
       } else {
         // Para otros mensajes, mostramos el texto tal cual
-        messageDiv.innerHTML = ${data.message}<span class="timestamp">${getCurrentTime()}</span>;
+        messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
       }
 
       messagesDiv.appendChild(messageDiv);
@@ -873,7 +876,7 @@
       img.src = data.image;
       img.onclick = () => openImageInNewWindow(data.image);
       messageDiv.appendChild(img);
-      messageDiv.innerHTML += <span class="timestamp">${getCurrentTime()}</span>;
+      messageDiv.innerHTML += `<span class="timestamp">${getCurrentTime()}</span>`;
       messagesDiv.appendChild(messageDiv);
       setTimeout(scrollToBottom, 0);
     });
@@ -903,15 +906,26 @@
     }
 
     socket.on('chat closed', (data) => {
-      console.log('Evento chat closed recibido:', data);
-      if (data.userId === userId) {
-        console.log('Chat cerrado por el agente para:', currentUser);
-        showRecommendMessage();
-        socket.emit('user joined', { userId, username: currentUser });
-      } else {
-        console.log('Evento chat closed no aplica a este usuario:', currentUser);
-      }
-    });
+  console.log('Evento chat closed recibido:', data);
+  if (data.userId === userId) {
+    console.log('Chat cerrado por el agente para:', currentUser);
+
+    // Mostrar popup visual de éxito
+    const popup = document.getElementById("successPopup");
+    if (popup) {
+      popup.classList.add("active");
+    }
+
+    // Mostrar mensaje de recomendación y botón de nuevo chat
+    showRecommendMessage();
+    
+    // Almacenar que se cerró el chat
+    isChatClosed = true;
+
+    // Reabrir automáticamente sesión con mismo userId
+    socket.emit('user joined', { userId, username: currentUser });
+  }
+});
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = getCookie("chatUser");
