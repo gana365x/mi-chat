@@ -646,6 +646,8 @@
     let userId = '';
     let isChatClosed = false;
     let isChatOpen = false;
+    let ignoreNextMessage = false;
+
 
     function scrollToBottom() {
       const messagesDiv = document.getElementById("messages");
@@ -847,13 +849,13 @@
   const buttonsWrapper = document.querySelector('.buttons-wrapper');
   if (buttonsWrapper) buttonsWrapper.style.display = 'none';
 
-  // ✅ Mostrar el mensaje del usuario primero
+  // ✅ Mostramos el mensaje del usuario
   const userMessage = document.createElement('div');
   userMessage.classList.add('message', 'user');
   userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
   messagesDiv.appendChild(userMessage);
 
-  // ✅ Mostrar respuesta automática del bot
+  // ✅ Mostramos el mensaje automático según el botón
   if (action === 'Cargar Fichas') {
     const botMessage = document.createElement('div');
     botMessage.classList.add('message', 'bot');
@@ -891,7 +893,10 @@
     messagesDiv.appendChild(retiroMessage);
   }
 
-  // ✅ Enviar al servidor (una sola vez)
+  // ✅ Evitamos que se repita abajo
+  ignoreNextMessage = true;
+
+  // ✅ Lo enviamos al servidor (para el admin)
   socket.emit('chat message', { userId, sender: currentUser, message: action });
 
   setTimeout(scrollToBottom, 0);
@@ -909,37 +914,42 @@
     }
 
     socket.on('chat message', (data) => {
-      console.log('Mensaje recibido:', data);
-      if (data.userId !== userId) {
-        console.log('Mensaje ignorado, no pertenece a este usuario:', data.userId);
-        return;
-      }
-      const messagesDiv = document.getElementById("messages");
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message');
-      messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
+  if (ignoreNextMessage && data.sender === currentUser && data.userId === userId) {
+    ignoreNextMessage = false;
+    return; // ❌ lo ignoramos porque ya lo mostramos
+  }
 
-      // Si el mensaje es el de "Cargar Fichas" del bot, aplicamos formato especial
-      if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
-        messageDiv.innerHTML = `
-    <div class="fichas-bancarias">
+  console.log('Mensaje recibido:', data);
+  if (data.userId !== userId) {
+    console.log('Mensaje ignorado, no pertenece a este usuario:', data.userId);
+    return;
+  }
+
+  const messagesDiv = document.getElementById("messages");
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message');
+  messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
+
+  // Si es mensaje automático del bot con banco
+  if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
+    messageDiv.innerHTML = `
+      <div class="fichas-bancarias">
         <p><strong>1- Usar</strong> cuenta personal.</p>
         <p><strong>2- Enviar</strong> comprobante visible.</p>
         <p><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></p>
         <p><strong>CBU:</strong> 0000156002555796327337</p>
         <p><strong>ALIAS:</strong> leprance</p>
         <span class="timestamp">${getCurrentTime()}</span>
-    </div>
+      </div>
     `;
+  } else {
+    // mensaje normal
+    messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
+  }
 
-      } else {
-        // Para otros mensajes, mostramos el texto tal cual
-        messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
-      }
-
-      messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 0);
-    });
+  messagesDiv.appendChild(messageDiv);
+  setTimeout(scrollToBottom, 0);
+});
 
     socket.on('image', (data) => {
   console.log('Imagen recibida:', data);
