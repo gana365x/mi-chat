@@ -274,20 +274,18 @@
       const userList = document.getElementById('userList');
       userList.innerHTML = '';
       users.forEach(user => {
-        // Verificar que el userId no esté vacío
         if (!user.userId) {
           console.error('Usuario sin userId:', user);
           return;
         }
         const li = document.createElement('li');
         li.textContent = user.username;
-        li.dataset.userId = user.userId; // Almacenar el userId en el elemento
+        li.dataset.userId = user.userId;
         li.onclick = () => selectUser(user.userId, user.username);
         if (user.userId === selectedUserId) {
           li.classList.add('active');
         }
         userList.appendChild(li);
-        // Solicitar el historial de cada usuario al recibir la lista
         socket.emit('request chat history', { userId: user.userId });
       });
     });
@@ -308,7 +306,6 @@
       document.getElementById('currentUser').textContent = username;
       document.getElementById('chatMessages').innerHTML = '';
       displayLocalMessages(userId);
-      // Verificar que el userId no esté vacío antes de solicitar el historial
       if (userId) {
         socket.emit('request chat history', { userId });
       } else {
@@ -388,6 +385,8 @@
         messageDiv.textContent = `${data.sender}: ${data.message}`;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+      } else {
+        console.log('Mensaje ignorado, no pertenece al usuario seleccionado:', { receivedUserId: data.userId, selectedUserId });
       }
     });
 
@@ -413,6 +412,8 @@
         messageDiv.appendChild(img);
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+      } else {
+        console.log('Imagen ignorada, no pertenece al usuario seleccionado:', { receivedUserId: data.userId, selectedUserId });
       }
     });
 
