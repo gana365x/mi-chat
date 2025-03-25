@@ -98,10 +98,14 @@ io.on('connection', (socket) => {
 
     // Respuesta del bot para "Cargar Fichas"
     if (data.message === 'Cargar Fichas') {
-      const botMessage = { 
-        userId: data.userId, 
-        sender: 'Bot', 
-        message: 'TITULAR CTA BANCARIA PAGOSWON CBU 0000156303087805254500 ALIAS PAGOSWON.2' 
+  const botMessage = { 
+    userId: data.userId, 
+    sender: 'Bot', 
+    message: `1-U𝘴𝘢𝘳 cuenta 𝘱𝘦𝘳𝘴𝘰𝘯𝘢𝘭.\n\n2-Enviar 𝘤𝘰𝘮𝘱𝘳𝘰𝘣𝘢𝘯𝘵𝘦 𝘷𝘪𝘴𝘪𝘣𝘭𝘦.\n\nTITULAR CTA BANCARIA PAGOSWON\n\nCBU\n0000156003987805254500\n\nALIAS\nPagoswon.2`
+  };
+  ...
+}
+
       };
       chatHistory[data.userId].push(botMessage);
       if (userSocket) {
