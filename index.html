@@ -837,16 +837,58 @@
     }
 
     function handleAction(action) {
-      console.log('Acción ejecutada:', action, 'Usuario:', currentUser, 'UserId:', userId);
-      if (!currentUser || !userId) {
-        console.error('No hay usuario o userId definido para enviar el mensaje');
-        return;
-      }
-      socket.emit('chat message', { userId, sender: currentUser, message: action });
-      const buttonsWrapper = document.querySelector('.buttons-wrapper');
-      if (buttonsWrapper) buttonsWrapper.style.display = 'none';
-      setTimeout(scrollToBottom, 0);
-    }
+  console.log('Acción ejecutada:', action, 'Usuario:', currentUser, 'UserId:', userId);
+  if (!currentUser || !userId) {
+    console.error('No hay usuario o userId definido para enviar el mensaje');
+    return;
+  }
+
+  socket.emit('chat message', { userId, sender: currentUser, message: action });
+
+  const buttonsWrapper = document.querySelector('.buttons-wrapper');
+  if (buttonsWrapper) buttonsWrapper.style.display = 'none';
+
+  const messagesDiv = document.getElementById("messages");
+
+  if (action === 'Cargar Fichas') {
+    const botMessage = document.createElement('div');
+    botMessage.classList.add('message', 'bot');
+    botMessage.innerHTML = `
+      <div class="fichas-bancarias">
+        <p><strong>1- Usar</strong> cuenta personal.</p>
+        <p><strong>2- Enviar</strong> comprobante visible.</p>
+        <p><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></p>
+        <p><strong>CBU:</strong> 0000156002555796327337</p>
+        <p><strong>ALIAS:</strong> leprance</p>
+        <span class="timestamp">${getCurrentTime()}</span>
+      </div>
+    `;
+    messagesDiv.appendChild(botMessage);
+  }
+
+  if (action === 'Retirar') {
+    const retiroMessage = document.createElement('div');
+    retiroMessage.classList.add('message', 'bot');
+    retiroMessage.innerHTML = `
+      <div class="fichas-bancarias">
+        <p><strong>PARA RETIRAR COMPLETAR</strong></p>
+        <p><strong>DATOS:</strong></p>
+        <p>Utilizar tu propia cuenta bancaria</p>
+        <br>
+        <p>👇👇👇</p>
+        <p><strong>USUARIO:</strong></p>
+        <p><strong>MONTO A RETIRAR:</strong></p>
+        <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
+        <p><strong>CBU:</strong></p>
+        <p><strong>COMPROBANTE DE TU ULTIMA CARGA:</strong></p>
+        <span class="timestamp">${getCurrentTime()}</span>
+      </div>
+    `;
+    messagesDiv.appendChild(retiroMessage);
+  }
+
+  setTimeout(scrollToBottom, 0);
+}
 
     function sendMessage() {
       const messageInput = document.getElementById("messageInput");
