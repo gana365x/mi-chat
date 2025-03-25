@@ -927,27 +927,58 @@
   if (data.userId === userId) {
     console.log('Chat cerrado por el agente para:', currentUser);
 
-    // Mostrar popup visual
+    // Mostrar popup visual de éxito
     const popup = document.getElementById("successPopup");
-    if (popup) popup.classList.add("active");
+    if (popup) {
+      popup.classList.add("active");
+    }
 
-    // Ocultar otros
-    document.getElementById("chatBody").classList.remove("active");
-    document.getElementById("recommendMessage").classList.remove("active");
+    // Mostrar mensaje de agradecimiento con botón nuevo
+    showFinalThanksMessage();
 
-    // Mostrar mensaje de agradecimiento
-    document.getElementById("finalMessage").classList.add("active");
-
-    // Mostrar hora actual
-    const now = new Date();
-    const h = String(now.getHours()).padStart(2, '0');
-    const m = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById("finalMessageTimestamp").textContent = `${h}:${m}`;
-
+    // Marcar como cerrado
     isChatClosed = true;
+
+    // Reabrir sesión
     socket.emit('user joined', { userId, username: currentUser });
   }
 });
+
+    function showFinalThanksMessage() {
+  console.log('Mostrando mensaje de agradecimiento final');
+  const chatBody = document.getElementById("chatBody");
+  const recommendMessage = document.getElementById("recommendMessage");
+  chatBody.classList.remove("active");
+  recommendMessage.classList.add("active");
+
+  recommendMessage.innerHTML = '';
+
+  const finalDiv = document.createElement('div');
+  finalDiv.classList.add('row');
+  finalDiv.innerHTML = `
+    <img src="https://gana365.online/images/logo.png" class="logo">
+    <div class="msg">
+      <strong>Gracias por elegirnos</strong><br>
+      No te olvides de recomendarnos 😊<br>
+      <span class="timestamp">${getCurrentTime()}</span>
+    </div>
+  `;
+  recommendMessage.appendChild(finalDiv);
+
+  const buttonsDiv = document.createElement('div');
+  buttonsDiv.classList.add('buttons-wrapper');
+  buttonsDiv.innerHTML = `
+    <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
+  `;
+  recommendMessage.appendChild(buttonsDiv);
+
+  setTimeout(() => {
+    recommendMessage.scrollTo({
+      top: recommendMessage.scrollHeight,
+      behavior: 'smooth'
+    });
+  }, 0);
+}
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = getCookie("chatUser");
