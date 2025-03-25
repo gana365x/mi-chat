@@ -144,22 +144,8 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Respuesta del bot
-    const botMessage = { 
-      userId: data.userId, 
-      sender: 'Bot', 
-      message: '✅️¡excelente! Recibido✅️\n\n¡En menos de\n\n5 minutos sus fichas\n\nserán acreditadas!\n\nen breve serán acreditadas.' 
-    };
-    chatHistory[data.userId].push(botMessage);
-    if (userSocket) {
-      userSocket.emit('chat message', botMessage);
-    }
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        console.log(`Enviando mensaje de bot a admin ${adminSocketId} para userId ${data.userId}:`, botMessage);
-        io.to(adminSocketId).emit('admin message', botMessage);
-      }
-    }
+    // Eliminamos este bloque para evitar duplicado, ya está manejado del lado del cliente
+
   });
 
   socket.on('agent message', (data) => {
