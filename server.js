@@ -18,11 +18,8 @@ const io = socketIo(server, {
 
 const PORT = process.env.PORT || 3000;
 
-// Mapa para almacenar sesiones: { userId: { username, socket } }
 const userSessions = new Map();
-// Mapa para almacenar el historial de chats: { userId: [mensajes] }
 const chatHistory = {};
-// Mapa para almacenar qué administradores están viendo qué chats: { adminSocketId: userId }
 const adminSubscriptions = new Map();
 
 app.use(express.static(__dirname));
@@ -80,7 +77,6 @@ io.on('connection', (socket) => {
     }
     chatHistory[data.userId].push(messageData);
 
-    // Enviar el mensaje solo al usuario que lo envió
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) {
       userSocket.emit('chat message', messageData);
@@ -88,7 +84,6 @@ io.on('connection', (socket) => {
       console.error('No se encontró el socket del usuario:', data.userId);
     }
 
-    // Enviar el mensaje a los administradores suscritos
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         console.log(`Enviando mensaje a admin ${adminSocketId} para userId ${data.userId}:`, messageData);
@@ -96,12 +91,11 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Respuesta del bot para "Cargar Fichas" con el nuevo formato
     if (data.message === 'Cargar Fichas') {
       const botMessage = { 
         userId: data.userId, 
         sender: 'Bot', 
-        message: '1-Usar cuenta personal.\n\n2-Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance'
+        message: '1-Usar cuenta personal.\n\n2-Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANSE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance'
       };
       chatHistory[data.userId].push(botMessage);
       if (userSocket) {
@@ -109,26 +103,27 @@ io.on('connection', (socket) => {
       }
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
-          console.log(`Enviando mensaje de bot a admin ${adminSocketId} para userId ${data.userId}:`, botMessage);
           io.to(adminSocketId).emit('admin message', botMessage);
-        // Respuesta del bot para "Retirar"
-if (data.message === 'Retirar') {
-  const botMessage = {
-    userId: data.userId,
-    sender: 'Bot',
-    message: 'PARA RETIRAR COMPLETAR\n\nDATOS:\n\nUtilizar tu propia cuenta bancaria\n\n👇👇👇\n\nUSUARIO :\nMONTO A RETIRAR :\nNOMBRE DE CTA BANCARIA :\nCBU:\nCOMPROBANTE DE TU ULTIMA CARGA :'
-  };
-  chatHistory[data.userId].push(botMessage);
-  const userSocket = userSessions.get(data.userId)?.socket;
-  if (userSocket) {
-    userSocket.emit('chat message', botMessage);
-  }
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === data.userId) {
-      io.to(adminSocketId).emit('admin message', botMessage);
+        }
+      }
     }
-  }
-}
+
+    if (data.message === 'Retirar') {
+      const botMessage = { 
+        userId: data.userId, 
+        sender: 'Bot', 
+        message: 'PARA RETIRAR COMPLETAR\n\nDATOS:\n\nUtilizar tu propia cuenta bancaria\n\n\n\n👇👇👇\n\nUSUARIO :\n\nMONTO A RETIRAR :\n\nNOMBRE DE CTA BANCARIA :\n\nCBU:\n\nCOMPROBANTE DE TU ULTIMA CARGA :'
+      };
+      chatHistory[data.userId].push(botMessage);
+      if (userSocket) {
+        userSocket.emit('chat message', botMessage);
+      }
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
+          io.to(adminSocketId).emit('admin message', botMessage);
+        }
+      }
+    }
   });
 
   socket.on('image', (data) => {
@@ -143,24 +138,16 @@ if (data.message === 'Retirar') {
     }
     chatHistory[data.userId].push(imageData);
 
-    // Enviar la imagen solo al usuario que la envió
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) {
       userSocket.emit('image', imageData);
-    } else {
-      console.error('No se encontró el socket del usuario:', data.userId);
     }
 
-    // Enviar la imagen a los administradores suscritos
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
-        console.log(`Enviando imagen a admin ${adminSocketId} para userId ${data.userId}:`, imageData);
         io.to(adminSocketId).emit('admin image', imageData);
       }
     }
-
-    // Eliminamos este bloque para evitar duplicado, ya está manejado del lado del cliente
-
   });
 
   socket.on('agent message', (data) => {
@@ -175,38 +162,26 @@ if (data.message === 'Retirar') {
     }
     chatHistory[data.userId].push(messageData);
 
-    // Enviar el mensaje solo al usuario correspondiente
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) {
       userSocket.emit('chat message', messageData);
-    } else {
-      console.error('No se encontró el socket del usuario:', data.userId);
     }
 
-    // Enviar a los administradores suscritos
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
-        console.log(`Enviando mensaje de agente a admin ${adminSocketId} para userId ${data.userId}:`, messageData);
         io.to(adminSocketId).emit('admin message', messageData);
       }
     }
   });
 
   socket.on('request chat history', (data) => {
-    console.log('Solicitud de historial para:', data);
-    if (!data.userId) {
-      console.error('Solicitud de historial inválida, falta userId:', data);
-      return;
-    }
-    // Almacenar qué administrador está viendo qué chat
+    if (!data.userId) return;
     adminSubscriptions.set(socket.id, data.userId);
-    console.log('Suscripción actualizada:', Array.from(adminSubscriptions.entries()));
     const history = chatHistory[data.userId] || [];
     socket.emit('chat history', { userId: data.userId, messages: history });
   });
 
   socket.on('close chat', (data) => {
-    console.log('Chat cerrado para:', data);
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) {
       userSocket.emit('chat closed', { userId: data.userId });
@@ -222,10 +197,7 @@ if (data.message === 'Retirar') {
   });
 
   socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id);
-    // Eliminar la suscripción del administrador
     adminSubscriptions.delete(socket.id);
-    console.log('Suscripción eliminada:', Array.from(adminSubscriptions.entries()));
     for (let [userId, session] of userSessions.entries()) {
       if (session.socket.id === socket.id) {
         userSessions.delete(userId);
