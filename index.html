@@ -843,7 +843,40 @@
     return;
   }
 
+  const messagesDiv = document.getElementById("messages");
+
+  // Primero mostrar el mensaje del usuario ("Retirar")
+  const userMessage = document.createElement('div');
+  userMessage.classList.add('message', 'user');
+  userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
+  messagesDiv.appendChild(userMessage);
+
+  // Emitir el mensaje
   socket.emit('chat message', { userId, sender: currentUser, message: action });
+
+  // Si es "Retirar", mostramos el mensaje automático
+  if (action === 'Retirar') {
+    const autoMessage = document.createElement('div');
+    autoMessage.classList.add('message', 'bot');
+    autoMessage.innerHTML = `
+      <strong>PARA RETIRAR COMPLETAR</strong><br><br>
+      DATOS:<br><br>
+      Utilizar tu propia cuenta bancaria<br><br>
+      👇👇👇<br><br>
+      USUARIO :<br>
+      MONTO A RETIRAR :<br>
+      NOMBRE DE CTA BANCARIA :<br>
+      CBU:<br>
+      COMPROBANTE DE TU ULTIMA CARGA :<br>
+      <span class="timestamp">${getCurrentTime()}</span>
+    `;
+    messagesDiv.appendChild(autoMessage);
+  }
+
+  const buttonsWrapper = document.querySelector('.buttons-wrapper');
+  if (buttonsWrapper) buttonsWrapper.style.display = 'none';
+  setTimeout(scrollToBottom, 0);
+}
 
   const buttonsWrapper = document.querySelector('.buttons-wrapper');
   if (buttonsWrapper) buttonsWrapper.style.display = 'none';
