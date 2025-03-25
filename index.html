@@ -11,9 +11,9 @@
       color: white;
       margin: 0;
       overflow: hidden;
-      -webkit-text-size-adjust: 100%; /* Evita que iOS ajuste el tamaño del texto */
-      -webkit-tap-highlight-color: transparent; /* Evita el resaltado al tocar en móviles */
-      touch-action: manipulation; /* Desactiva gestos de zoom en móviles */
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     #backgroundIframe {
@@ -124,7 +124,7 @@
       font-size: 16px;
       text-align: center;
       outline: none;
-      -webkit-appearance: none; /* Evita el zoom al escribir en iOS */
+      -webkit-appearance: none;
     }
 
     .login-button {
@@ -336,7 +336,7 @@
       outline: none;
       background: #FFFFFF;
       font-size: 16px;
-      -webkit-appearance: none; /* Evita el zoom al escribir en iOS */
+      -webkit-appearance: none;
     }
 
     .chat-input input[type="file"] {
@@ -498,7 +498,6 @@
       background: #4b44d4;
     }
 
-    /* Ajustes para móviles */
     @media (max-width: 768px) {
       .chat-container {
         width: 90%;
@@ -568,7 +567,7 @@
       <div class="chat-input">
         <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
         <label for="imageInput">📎</label>
-        <input type="file" id="imageInput" accept="image/*, .pdf" capture="environment" onchange="sendFile(event)">
+        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif" onchange="sendFile(event)">
         <button onclick="sendMessage()">✈️</button>
       </div>
     </div>
