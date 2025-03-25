@@ -227,6 +227,11 @@
     .chat-input button:hover {
       background: #d63100;
     }
+
+    .bot-message-line {
+      display: block;
+      line-height: 1.5; /* Ajusta el espaciado entre líneas */
+    }
   </style>
 </head>
 <body>
@@ -336,6 +341,16 @@
             img.src = msg.image;
             img.onclick = () => openImageInNewWindow(msg.image);
             messageDiv.appendChild(img);
+          } else if (msg.sender === 'Bot' && msg.message.includes('Usar cuenta personal')) {
+            messageDiv.innerHTML = `
+              <span class="bot-message-line">1-<strong>Usar</strong> cuenta personal.</span><br><br>
+              <span class="bot-message-line">2-<strong>Enviar</strong> comprobante visible.</span><br><br>
+              <span class="bot-message-line"><strong>TITULAR CTA BANCARIA PAGOSWON</strong></span><br><br>
+              <span class="bot-message-line"><strong>CBU</strong></span><br>
+              <span class="bot-message-line">0000156003987805254500</span><br><br>
+              <span class="bot-message-line"><strong>ALIAS</strong></span><br>
+              <span class="bot-message-line">Pagoswon.2</span>
+            `;
           } else {
             messageDiv.textContent = `${msg.sender}: ${msg.message}`;
           }
@@ -386,7 +401,20 @@
         } else {
           messageDiv.classList.add('user');
         }
-        messageDiv.textContent = `${data.sender}: ${data.message}`;
+        // Si el mensaje es el de "Cargar Fichas" del bot, aplicamos formato especial
+        if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
+          messageDiv.innerHTML = `
+            <span class="bot-message-line">1-<strong>Usar</strong> cuenta personal.</span><br><br>
+            <span class="bot-message-line">2-<strong>Enviar</strong> comprobante visible.</span><br><br>
+            <span class="bot-message-line"><strong>TITULAR CTA BANCARIA PAGOSWON</strong></span><br><br>
+            <span class="bot-message-line"><strong>CBU</strong></span><br>
+            <span class="bot-message-line">0000156003987805254500</span><br><br>
+            <span class="bot-message-line"><strong>ALIAS</strong></span><br>
+            <span class="bot-message-line">Pagoswon.2</span>
+          `;
+        } else {
+          messageDiv.textContent = `${data.sender}: ${data.message}`;
+        }
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
       } else {
@@ -475,5 +503,5 @@
 
     socket.emit('admin connected');
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
