@@ -265,7 +265,8 @@
       console.error('Error en Socket.IO:', error);
     });
 
-    let selectedUser = null;
+    let selectedUserId = null;
+    let selectedUsername = null;
     const localChatHistory = {};
 
     socket.on('user list', (users) => {
@@ -274,39 +275,41 @@
       userList.innerHTML = '';
       users.forEach(user => {
         const li = document.createElement('li');
-        li.textContent = user;
-        li.onclick = () => selectUser(user);
-        if (user === selectedUser) {
+        li.textContent = user.username;
+        li.dataset.userId = user.userId; // Almacenar el userId en el elemento
+        li.onclick = () => selectUser(user.userId, user.username);
+        if (user.userId === selectedUserId) {
           li.classList.add('active');
         }
         userList.appendChild(li);
         // Solicitar el historial de cada usuario al recibir la lista
-        socket.emit('request chat history', { username: user });
+        socket.emit('request chat history', { userId: user.userId });
       });
     });
 
-    function selectUser(user) {
-      console.log('Usuario seleccionado:', user);
-      selectedUser = user;
+    function selectUser(userId, username) {
+      console.log('Usuario seleccionado:', { userId, username });
+      selectedUserId = userId;
+      selectedUsername = username;
       const userList = document.getElementById('userList').children;
       for (let li of userList) {
         li.classList.remove('active');
-        if (li.textContent === user) {
+        if (li.dataset.userId === userId) {
           li.classList.add('active');
         }
       }
       const chatArea = document.getElementById('chatArea');
       chatArea.classList.add('active');
-      document.getElementById('currentUser').textContent = user;
+      document.getElementById('currentUser').textContent = username;
       document.getElementById('chatMessages').innerHTML = '';
-      displayLocalMessages(user);
-      socket.emit('request chat history', { username: user });
+      displayLocalMessages(userId);
+      socket.emit('request chat history', { userId });
     }
 
-    function displayLocalMessages(username) {
+    function displayLocalMessages(userId) {
       const chatMessages = document.getElementById('chatMessages');
       chatMessages.innerHTML = '';
-      const messages = localChatHistory[username] || [];
+      const messages = localChatHistory[userId] || [];
       if (messages.length > 0) {
         messages.forEach(msg => {
           console.log('Mostrando mensaje local:', msg);
@@ -331,7 +334,7 @@
           chatMessages.appendChild(messageDiv);
         });
       } else {
-        console.log('No hay mensajes locales para este usuario:', username);
+        console.log('No hay mensajes locales para este usuario:', userId);
         chatMessages.innerHTML = '<p>No hay mensajes previos.</p>';
       }
       chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -339,31 +342,29 @@
 
     socket.on('chat history', (data) => {
       console.log('Historial de chat recibido:', data);
-      if (data.username) {
-        localChatHistory[data.username] = data.messages || [];
-        console.log('Historial local actualizado para', data.username, ':', localChatHistory[data.username]);
-        if (data.username === selectedUser) {
-          displayLocalMessages(data.username);
+      if (data.userId) {
+        localChatHistory[data.userId] = data.messages || [];
+        console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+        if (data.userId === selectedUserId) {
+          displayLocalMessages(data.userId);
         }
       } else {
-        console.log('Historial recibido para un usuario no seleccionado:', data.username);
+        console.log('Historial recibido para un usuario no seleccionado:', data.userId);
       }
     });
 
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
-      if (!data.username || !data.sender || !data.message) {
-        console.error('Mensaje recibido inválido, falta username, sender o message:', data);
+      if (!data.userId || !data.sender || !data.message) {
+        console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
         return;
       }
-      // Solo agregar el mensaje al historial del usuario correspondiente
-      if (!localChatHistory[data.username]) {
-        localChatHistory[data.username] = [];
+      if (!localChatHistory[data.userId]) {
+        localChatHistory[data.userId] = [];
       }
-      localChatHistory[data.username].push({ sender: data.sender, message: data.message });
-      console.log('Historial local actualizado para', data.username, ':', localChatHistory[data.username]);
-      // Solo mostrar el mensaje si el usuario está seleccionado
-      if (data.username === selectedUser) {
+      localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
+      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+      if (data.userId === selectedUserId) {
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
@@ -382,18 +383,16 @@
 
     socket.on('admin image', (data) => {
       console.log('Imagen recibida en tiempo real:', data);
-      if (!data.sender || !data.image) {
-        console.error('Imagen recibida inválida, falta sender o image:', data);
+      if (!data.userId || !data.sender || !data.image) {
+        console.error('Imagen recibida inválida, falta userId, sender o image:', data);
         return;
       }
-      // Solo agregar la imagen al historial del usuario correspondiente
-      if (!localChatHistory[data.sender]) {
-        localChatHistory[data.sender] = [];
+      if (!localChatHistory[data.userId]) {
+        localChatHistory[data.userId] = [];
       }
-      localChatHistory[data.sender].push({ sender: data.sender, image: data.image });
-      console.log('Historial local actualizado para', data.sender, ':', localChatHistory[data.sender]);
-      // Solo mostrar la imagen si el usuario está seleccionado
-      if (data.sender === selectedUser) {
+      localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
+      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+      if (data.userId === selectedUserId) {
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', 'user');
@@ -430,26 +429,27 @@
     function sendAgentMessage() {
       const messageInput = document.getElementById('agentMessage');
       const message = messageInput.value.trim();
-      if (message && selectedUser) {
-        console.log('Enviando mensaje del agente:', { username: selectedUser, message });
-        socket.emit('agent message', { username: selectedUser, message });
-        if (!localChatHistory[selectedUser]) {
-          localChatHistory[selectedUser] = [];
+      if (message && selectedUserId) {
+        console.log('Enviando mensaje del agente:', { userId: selectedUserId, message });
+        socket.emit('agent message', { userId: selectedUserId, message });
+        if (!localChatHistory[selectedUserId]) {
+          localChatHistory[selectedUserId] = [];
         }
-        localChatHistory[selectedUser].push({ sender: 'Agent', message });
+        localChatHistory[selectedUserId].push({ sender: 'Agent', message });
         messageInput.value = '';
-        displayLocalMessages(selectedUser);
+        displayLocalMessages(selectedUserId);
       } else {
         console.log('No se puede enviar mensaje: mensaje vacío o usuario no seleccionado');
       }
     }
 
     function closeChat() {
-      if (selectedUser) {
-        console.log('Cerrando chat para el usuario:', selectedUser);
-        socket.emit('close chat', { username: selectedUser });
+      if (selectedUserId) {
+        console.log('Cerrando chat para el usuario:', selectedUserId);
+        socket.emit('close chat', { userId: selectedUserId });
         document.getElementById('chatArea').classList.remove('active');
-        selectedUser = null;
+        selectedUserId = null;
+        selectedUsername = null;
       } else {
         console.log('No hay usuario seleccionado para cerrar el chat');
       }
