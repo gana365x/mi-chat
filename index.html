@@ -375,68 +375,70 @@
     }
 
     .success-popup {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #FFFFFF;
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      z-index: 10001;
-      width: 200px;
-    }
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #E6F4EA;
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 999999;
+  width: 420px;
+  max-width: 90%;
+}
 
-    .success-popup.active {
-      display: block;
-    }
+.success-popup.active {
+  display: block;
+}
 
-    .success-popup .check-icon {
-      width: 40px;
-      height: 40px;
-      background: #E6F4EA;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px;
-    }
+.success-popup .success-icon {
+  width: 90px;
+  height: 90px;
+  background: #DFF6E1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px;
+}
 
-    .success-popup .check-icon::before {
-      content: '✔';
-      font-size: 24px;
-      color: #34C759;
-    }
+.success-popup .success-icon::before {
+  content: '✔';
+  font-size: 50px;
+  color: #34C759;
+}
 
-    .success-popup h3 {
-      font-size: 16px;
-      font-weight: bold;
-      color: #000;
-      margin: 0 0 5px;
-    }
+.success-popup .success-title {
+  font-size: 18px;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
 
-    .success-popup p {
-      font-size: 14px;
-      color: #666;
-      margin: 0 0 15px;
-    }
+.success-popup .success-subtext {
+  font-size: 16px;
+  color: #4a4a4a;
+  margin-bottom: 30px;
+}
 
-    .success-popup button {
-      background: #007AFF;
-      color: white;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: bold;
-    }
+.success-popup button {
+  background: #007AFF;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
 
-    .success-popup button:hover {
-      background: #005BB5;
-    }
+.success-popup button:hover {
+  background: #005BB5;
+}
 
    .error-popup {
   display: none;
@@ -580,15 +582,16 @@
 
     <div id="recommendMessage" class="recommend-message"></div>
 
-    <div id="successPopup" class="success-popup">
-      <div class="check-icon"></div>
-      <h3>Fichas cargadas</h3>
-      <p>Fichas cargadas correctamente</p>
-      <button onclick="closePopup()">OK</button>
-    </div>
+        </div> <!-- fin de .chat-container -->
+<!-- Nuevo popup fichas cargadas, fuera del chat flotante -->
+<div id="successPopup" class="success-popup">
+  <div class="success-icon"></div>
+  <p class="success-title">Fichas cargadas</p>
+  <p class="success-subtext">Fichas cargadas correctamente</p>
+  <button onclick="closePopup()">OK</button>
+</div>
 
-    </div> <!-- fin de .chat-container -->
-
+  
 <!-- Popup error MOVIDO FUERA del chat flotante -->
 <div id="errorPopup" class="error-popup">
   <div class="error-icon"></div>
