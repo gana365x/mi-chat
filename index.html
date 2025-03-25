@@ -856,24 +856,7 @@
   userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
   messagesDiv.appendChild(userMessage);
 
-  // ✅ Mostramos el mensaje automático según el botón
-  if (action === 'Cargar Fichas') {
-    const botMessage = document.createElement('div');
-    botMessage.classList.add('message', 'bot');
-    botMessage.innerHTML = `
-      <div class="fichas-bancarias">
-        <p><strong>1- Usar</strong> cuenta personal.</p>
-        <p><strong>2- Enviar</strong> comprobante visible.</p>
-        <p><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></p>
-        <p><strong>CBU:</strong> 0000156002555796327337</p>
-        <p><strong>ALIAS:</strong> leprance</p>
-        <span class="timestamp">${getCurrentTime()}</span>
-      </div>
-    `;
-    messagesDiv.appendChild(botMessage);
-  }
-
-  if (action === 'Retirar') {
+    if (action === 'Retirar') {
     const retiroMessage = document.createElement('div');
     retiroMessage.classList.add('message', 'bot');
     retiroMessage.innerHTML = `
