@@ -82,8 +82,8 @@ io.on('connection', (socket) => {
     io.emit('chat message', messageData);
 
     // Enviar el mensaje solo a los administradores que están viendo este chat
-    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
-      if (userId === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         console.log(`Enviando mensaje a admin ${adminSocketId} para userId ${data.userId}:`, messageData);
         io.to(adminSocketId).emit('admin message', { userId: data.userId, ...messageData });
       }
@@ -93,8 +93,8 @@ io.on('connection', (socket) => {
       const botMessage = { sender: 'Bot', message: 'TITULAR CTA BANCARIA PAGOSWON CBU 0000156303087805254500 ALIAS PAGOSWON.2' };
       chatHistory[data.userId].push(botMessage);
       io.emit('chat message', botMessage);
-      for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
-        if (userId === data.userId) {
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
           console.log(`Enviando mensaje de bot a admin ${adminSocketId} para userId ${data.userId}:`, botMessage);
           io.to(adminSocketId).emit('admin message', { userId: data.userId, ...botMessage });
         }
@@ -116,8 +116,8 @@ io.on('connection', (socket) => {
     io.emit('image', imageData);
 
     // Enviar la imagen solo a los administradores que están viendo este chat
-    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
-      if (userId === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         console.log(`Enviando imagen a admin ${adminSocketId} para userId ${data.userId}:`, imageData);
         io.to(adminSocketId).emit('admin image', { userId: data.userId, ...imageData });
       }
@@ -129,8 +129,8 @@ io.on('connection', (socket) => {
     };
     chatHistory[data.userId].push(botMessage);
     io.emit('chat message', botMessage);
-    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
-      if (userId === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         console.log(`Enviando mensaje de bot a admin ${adminSocketId} para userId ${data.userId}:`, botMessage);
         io.to(adminSocketId).emit('admin message', { userId: data.userId, ...botMessage });
       }
@@ -149,8 +149,8 @@ io.on('connection', (socket) => {
     }
     chatHistory[data.userId].push(messageData);
     io.emit('chat message', { sender: 'Agent', message: data.message });
-    for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
-      if (userId === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         console.log(`Enviando mensaje de agente a admin ${adminSocketId} para userId ${data.userId}:`, messageData);
         io.to(adminSocketId).emit('admin message', { userId: data.userId, ...messageData });
       }
