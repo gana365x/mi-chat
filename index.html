@@ -498,6 +498,11 @@
       background: #4b44d4;
     }
 
+    .bot-message-line {
+      display: block;
+      line-height: 1.5; /* Ajusta el espaciado entre líneas */
+    }
+
     @media (max-width: 768px) {
       .chat-container {
         width: 90%;
@@ -823,17 +828,42 @@
 
     socket.on('chat message', (data) => {
       console.log('Mensaje recibido:', data);
+      if (data.userId !== userId) {
+        console.log('Mensaje ignorado, no pertenece a este usuario:', data.userId);
+        return;
+      }
       const messagesDiv = document.getElementById("messages");
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message');
       messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
-      messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
+
+      // Si el mensaje es el de "Cargar Fichas" del bot, aplicamos formato especial
+      if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
+        messageDiv.innerHTML = `
+          <span class="bot-message-line">1-<strong>Usar</strong> cuenta personal.</span><br><br>
+          <span class="bot-message-line">2-<strong>Enviar</strong> comprobante visible.</span><br><br>
+          <span class="bot-message-line"><strong>TITULAR CTA BANCARIA PAGOSWON</strong></span><br><br>
+          <span class="bot-message-line"><strong>CBU</strong></span><br>
+          <span class="bot-message-line">0000156003987805254500</span><br><br>
+          <span class="bot-message-line"><strong>ALIAS</strong></span><br>
+          <span class="bot-message-line">Pagoswon.2</span>
+          <span class="timestamp">${getCurrentTime()}</span>
+        `;
+      } else {
+        // Para otros mensajes, mostramos el texto tal cual
+        messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
+      }
+
       messagesDiv.appendChild(messageDiv);
       setTimeout(scrollToBottom, 0);
     });
 
     socket.on('image', (data) => {
       console.log('Imagen recibida:', data);
+      if (data.userId !== userId) {
+        console.log('Imagen ignorada, no pertenece a este usuario:', data.userId);
+        return;
+      }
       const messagesDiv = document.getElementById("messages");
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message');
@@ -902,5 +932,5 @@
       }
     });
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f52088e0f9ab3',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
