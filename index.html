@@ -906,15 +906,26 @@
     }
 
     socket.on('chat closed', (data) => {
-      console.log('Evento chat closed recibido:', data);
-      if (data.userId === userId) {
-        console.log('Chat cerrado por el agente para:', currentUser);
-        showRecommendMessage();
-        socket.emit('user joined', { userId, username: currentUser });
-      } else {
-        console.log('Evento chat closed no aplica a este usuario:', currentUser);
-      }
-    });
+  console.log('Evento chat closed recibido:', data);
+  if (data.userId === userId) {
+    console.log('Chat cerrado por el agente para:', currentUser);
+
+    // Mostrar popup visual de éxito
+    const popup = document.getElementById("successPopup");
+    if (popup) {
+      popup.classList.add("active");
+    }
+
+    // Mostrar mensaje de recomendación y botón de nuevo chat
+    showRecommendMessage();
+    
+    // Almacenar que se cerró el chat
+    isChatClosed = true;
+
+    // Reabrir automáticamente sesión con mismo userId
+    socket.emit('user joined', { userId, username: currentUser });
+  }
+});
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = getCookie("chatUser");
