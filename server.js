@@ -105,7 +105,6 @@ io.on('connection', (socket) => {
   };
   ...
 }
-
       };
       chatHistory[data.userId].push(botMessage);
       if (userSocket) {
