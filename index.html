@@ -555,6 +555,7 @@
     });
 
     let currentUser = '';
+    let sessionId = '';
     let isChatClosed = false;
     let isChatOpen = false;
 
@@ -598,7 +599,7 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          socket.emit('image', { sender: currentUser, image: e.target.result });
+          socket.emit('image', { sessionId, sender: currentUser, image: e.target.result });
         };
         reader.readAsDataURL(file);
         event.target.value = '';
@@ -738,12 +739,12 @@
     }
 
     function handleAction(action) {
-      console.log('Acción ejecutada:', action, 'Usuario:', currentUser);
-      if (!currentUser) {
-        console.error('No hay usuario definido para enviar el mensaje');
+      console.log('Acción ejecutada:', action, 'Usuario:', currentUser, 'SessionId:', sessionId);
+      if (!currentUser || !sessionId) {
+        console.error('No hay usuario o sessionId definido para enviar el mensaje');
         return;
       }
-      socket.emit('chat message', { sender: currentUser, message: action });
+      socket.emit('chat message', { sessionId, sender: currentUser, message: action });
       const buttonsWrapper = document.querySelector('.buttons-wrapper');
       if (buttonsWrapper) buttonsWrapper.style.display = 'none';
       setTimeout(scrollToBottom, 0);
@@ -754,14 +755,24 @@
       const message = messageInput.value.trim();
 
       if (message) {
-        console.log('Enviando mensaje:', message, 'Usuario:', currentUser);
-        socket.emit('chat message', { sender: currentUser, message });
+        console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'SessionId:', sessionId);
+        socket.emit('chat message', { sessionId, sender: currentUser, message });
         messageInput.value = '';
       }
     }
 
+    socket.on('session assigned', (data) => {
+      console.log('SessionId asignado:', data.sessionId);
+      sessionId = data.sessionId;
+      setCookie("sessionId", sessionId, 30);
+    });
+
     socket.on('chat message', (data) => {
       console.log('Mensaje recibido:', data);
+      if (data.sessionId !== sessionId) {
+        console.log('Mensaje ignorado, no pertenece a esta sesión:', data.sessionId);
+        return;
+      }
       const messagesDiv = document.getElementById("messages");
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message');
@@ -773,6 +784,10 @@
 
     socket.on('image', (data) => {
       console.log('Imagen recibida:', data);
+      if (data.sessionId !== sessionId) {
+        console.log('Imagen ignorada, no pertenece a esta sesión:', data.sessionId);
+        return;
+      }
       const messagesDiv = document.getElementById("messages");
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message');
@@ -810,18 +825,25 @@
       socket.emit('popup closed', { username: currentUser });
     }
 
-    socket.on('chat closed', () => {
-      console.log('Chat cerrado por el agente');
-      showRecommendMessage();
-      socket.emit('user joined', currentUser);
+    socket.on('chat closed', (data) => {
+      console.log('Evento chat closed recibido:', data);
+      if (data.sessionId === sessionId) {
+        console.log('Chat cerrado por el agente para:', currentUser);
+        showRecommendMessage();
+        socket.emit('user joined', currentUser);
+      } else {
+        console.log('Evento chat closed no aplica a esta sesión:', sessionId);
+      }
     });
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = getCookie("chatUser");
-      console.log('Verificando cookie de usuario:', username);
-      if (username) {
+      const storedSessionId = getCookie("sessionId");
+      console.log('Verificando cookie de usuario:', username, 'SessionId:', storedSessionId);
+      if (username && storedSessionId) {
         console.log('Autologin ejecutado para usuario:', username);
         currentUser = username;
+        sessionId = storedSessionId;
         document.getElementById("loginForm").style.display = "none";
         document.getElementById("chatHeader").style.display = "flex";
         showActionButtons();
@@ -832,7 +854,7 @@
         chat.style.display = "block";
         setTimeout(() => chat.classList.add("open"), 10);
       } else {
-        console.log('No hay cookie de usuario, mostrando formulario de login');
+        console.log('No hay cookie de usuario o sessionId, mostrando formulario de login');
         document.getElementById("loginForm").style.display = "block";
       }
     });
