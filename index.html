@@ -771,25 +771,36 @@
     }
 
     function showRecommendMessage() {
-      console.log('Mostrando mensaje de recomendación');
-      const chatBody = document.getElementById("chatBody");
-      const recommendMessage = document.getElementById("recommendMessage");
-      chatBody.classList.remove("active");
-      recommendMessage.classList.add("active");
+  console.log('Mostrando mensaje de recomendación');
+  const chatBody = document.getElementById("chatBody");
+  const recommendMessage = document.getElementById("recommendMessage");
+  chatBody.classList.remove("active");
+  recommendMessage.classList.add("active");
 
-      recommendMessage.innerHTML = '';
+  recommendMessage.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 50px;">
+      <div style="
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        width: 85%;
+        max-width: 260px;
+        font-size: 14px;
+        font-style: italic;
+        text-align: center;
+        color: #111;
+      ">
+        <div style="margin-bottom: 10px;"><strong>📣 RECOMENDANOS Y GANA</strong></div>
+        <div>👉🏼BUSCANOS EN GOOGLE COMO<br>463 SIEMPRE GANA👈🏼</div>
+      </div>
 
-      const recommendDiv = document.createElement('div');
-      recommendDiv.classList.add('row');
-      recommendDiv.innerHTML = `
-        <img src="https://gana365.online/images/logo.png" class="logo">
-        <div class="msg">
-          RECOMENDAMOS Y GANA<br>
-          BUSCANOS EN GOOGLE COMO<br>
-          463 SIEMPRE GANA
-          <span class="timestamp">${getCurrentTime()}</span>
-        </div>
-      `;
+      <button class="action-button" style="margin-top: 20px;" onclick="showActionButtons()">
+        Iniciar Nuevo Chat
+      </button>
+    </div>
+  `;
+}
       recommendMessage.appendChild(recommendDiv);
 
       const buttonsDiv = document.createElement('div');
