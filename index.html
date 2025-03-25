@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>GANA365 Chat</title>
   <style>
     body {
@@ -11,6 +11,9 @@
       color: white;
       margin: 0;
       overflow: hidden;
+      -webkit-text-size-adjust: 100%; /* Evita que iOS ajuste el tamaño del texto */
+      -webkit-tap-highlight-color: transparent; /* Evita el resaltado al tocar en móviles */
+      touch-action: manipulation; /* Desactiva gestos de zoom en móviles */
     }
 
     #backgroundIframe {
@@ -121,6 +124,7 @@
       font-size: 16px;
       text-align: center;
       outline: none;
+      -webkit-appearance: none; /* Evita el zoom al escribir en iOS */
     }
 
     .login-button {
@@ -331,6 +335,8 @@
       margin-right: 10px;
       outline: none;
       background: #FFFFFF;
+      font-size: 16px;
+      -webkit-appearance: none; /* Evita el zoom al escribir en iOS */
     }
 
     .chat-input input[type="file"] {
@@ -491,6 +497,51 @@
     .error-popup button:hover {
       background: #4b44d4;
     }
+
+    /* Ajustes para móviles */
+    @media (max-width: 768px) {
+      .chat-container {
+        width: 90%;
+        height: 70vh;
+        bottom: 10px;
+        right: 5%;
+        transform: none;
+      }
+
+      .chat-button {
+        bottom: 10px;
+        right: 10px;
+      }
+
+      .chat-phone {
+        font-size: 11px;
+      }
+
+      .chat-logo {
+        width: 50px;
+      }
+
+      .close-chat {
+        font-size: 16px;
+      }
+
+      .login-container input {
+        font-size: 14px;
+      }
+
+      .login-button {
+        font-size: 14px;
+      }
+
+      .action-button {
+        width: 180px;
+        font-size: 12px;
+      }
+
+      .chat-input input[type="text"] {
+        font-size: 14px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -517,7 +568,7 @@
       <div class="chat-input">
         <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
         <label for="imageInput">📎</label>
-        <input type="file" id="imageInput" accept="image/*,.pdf" onchange="sendFile(event)">
+        <input type="file" id="imageInput" accept="image/*, .pdf" capture="environment" onchange="sendFile(event)">
         <button onclick="sendMessage()">✈️</button>
       </div>
     </div>
@@ -555,7 +606,7 @@
     });
 
     let currentUser = '';
-    let sessionId = '';
+    let userId = '';
     let isChatClosed = false;
     let isChatOpen = false;
 
@@ -599,10 +650,12 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          socket.emit('image', { sessionId, sender: currentUser, image: e.target.result });
+          socket.emit('image', { userId, sender: currentUser, image: e.target.result });
         };
         reader.readAsDataURL(file);
         event.target.value = '';
+      } else {
+        console.error('No se seleccionó ningún archivo');
       }
     }
 
@@ -654,10 +707,19 @@
       console.log('Login ejecutado. Usuario:', username);
       currentUser = username;
       setCookie("chatUser", username, 30);
+      const storedUserId = getCookie("chatUserId");
+      socket.emit('user joined', { userId: storedUserId, username });
+    }
+
+    socket.on('session', (data) => {
+      console.log('Sesión recibida:', data);
+      userId = data.userId;
+      currentUser = data.username;
+      setCookie("chatUserId", userId, 30);
       document.getElementById("loginForm").style.display = "none";
       document.getElementById("chatHeader").style.display = "flex";
       showActionButtons();
-    }
+    });
 
     function closeErrorPopup() {
       console.log('Cerrando popup de error');
@@ -697,7 +759,6 @@
       `;
       messagesDiv.appendChild(buttonsDiv);
 
-      socket.emit('user joined', currentUser);
       setTimeout(scrollToBottom, 0);
     }
 
@@ -739,12 +800,12 @@
     }
 
     function handleAction(action) {
-      console.log('Acción ejecutada:', action, 'Usuario:', currentUser, 'SessionId:', sessionId);
-      if (!currentUser || !sessionId) {
-        console.error('No hay usuario o sessionId definido para enviar el mensaje');
+      console.log('Acción ejecutada:', action, 'Usuario:', currentUser, 'UserId:', userId);
+      if (!currentUser || !userId) {
+        console.error('No hay usuario o userId definido para enviar el mensaje');
         return;
       }
-      socket.emit('chat message', { sessionId, sender: currentUser, message: action });
+      socket.emit('chat message', { userId, sender: currentUser, message: action });
       const buttonsWrapper = document.querySelector('.buttons-wrapper');
       if (buttonsWrapper) buttonsWrapper.style.display = 'none';
       setTimeout(scrollToBottom, 0);
@@ -755,24 +816,14 @@
       const message = messageInput.value.trim();
 
       if (message) {
-        console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'SessionId:', sessionId);
-        socket.emit('chat message', { sessionId, sender: currentUser, message });
+        console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'UserId:', userId);
+        socket.emit('chat message', { userId, sender: currentUser, message });
         messageInput.value = '';
       }
     }
 
-    socket.on('session assigned', (data) => {
-      console.log('SessionId asignado:', data.sessionId);
-      sessionId = data.sessionId;
-      setCookie("sessionId", sessionId, 30);
-    });
-
     socket.on('chat message', (data) => {
       console.log('Mensaje recibido:', data);
-      if (data.sessionId !== sessionId) {
-        console.log('Mensaje ignorado, no pertenece a esta sesión:', data.sessionId);
-        return;
-      }
       const messagesDiv = document.getElementById("messages");
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message');
@@ -784,10 +835,6 @@
 
     socket.on('image', (data) => {
       console.log('Imagen recibida:', data);
-      if (data.sessionId !== sessionId) {
-        console.log('Imagen ignorada, no pertenece a esta sesión:', data.sessionId);
-        return;
-      }
       const messagesDiv = document.getElementById("messages");
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message');
@@ -822,31 +869,28 @@
       console.log('Cerrando popup');
       const popup = document.getElementById("successPopup");
       popup.classList.remove('active');
-      socket.emit('popup closed', { username: currentUser });
+      socket.emit('popup closed', { userId, username: currentUser });
     }
 
     socket.on('chat closed', (data) => {
       console.log('Evento chat closed recibido:', data);
-      if (data.sessionId === sessionId) {
+      if (data.userId === userId) {
         console.log('Chat cerrado por el agente para:', currentUser);
         showRecommendMessage();
-        socket.emit('user joined', currentUser);
+        socket.emit('user joined', { userId, username: currentUser });
       } else {
-        console.log('Evento chat closed no aplica a esta sesión:', sessionId);
+        console.log('Evento chat closed no aplica a este usuario:', currentUser);
       }
     });
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = getCookie("chatUser");
-      const storedSessionId = getCookie("sessionId");
-      console.log('Verificando cookie de usuario:', username, 'SessionId:', storedSessionId);
-      if (username && storedSessionId) {
+      console.log('Verificando cookie de usuario:', username);
+      if (username) {
         console.log('Autologin ejecutado para usuario:', username);
         currentUser = username;
-        sessionId = storedSessionId;
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("chatHeader").style.display = "flex";
-        showActionButtons();
+        const storedUserId = getCookie("chatUserId");
+        socket.emit('user joined', { userId: storedUserId, username });
         isChatOpen = true;
         const chat = document.getElementById("chatBox");
         const button = document.getElementById("chatButton");
@@ -854,7 +898,7 @@
         chat.style.display = "block";
         setTimeout(() => chat.classList.add("open"), 10);
       } else {
-        console.log('No hay cookie de usuario o sessionId, mostrando formulario de login');
+        console.log('No hay cookie de usuario, mostrando formulario de login');
         document.getElementById("loginForm").style.display = "block";
       }
     });
