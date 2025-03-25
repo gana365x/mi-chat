@@ -893,23 +893,37 @@
     });
 
     socket.on('image', (data) => {
-      console.log('Imagen recibida:', data);
-      if (data.userId !== userId) {
-        console.log('Imagen ignorada, no pertenece a este usuario:', data.userId);
-        return;
-      }
-      const messagesDiv = document.getElementById("messages");
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message');
-      messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
-      const img = document.createElement('img');
-      img.src = data.image;
-      img.onclick = () => openImageInNewWindow(data.image);
-      messageDiv.appendChild(img);
-      messageDiv.innerHTML += `<span class="timestamp">${getCurrentTime()}</span>`;
-      messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 0);
-    });
+  console.log('Imagen recibida:', data);
+  if (data.userId !== userId) {
+    console.log('Imagen ignorada, no pertenece a este usuario:', data.userId);
+    return;
+  }
+
+  const messagesDiv = document.getElementById("messages");
+
+  // Mostrar la imagen recibida
+  const imageDiv = document.createElement('div');
+  imageDiv.classList.add('message', 'user');
+  const img = document.createElement('img');
+  img.src = data.image;
+  img.onclick = () => openImageInNewWindow(data.image);
+  imageDiv.appendChild(img);
+  imageDiv.innerHTML += `<span class="timestamp">${getCurrentTime()}</span>`;
+  messagesDiv.appendChild(imageDiv);
+
+  // Mostrar mensaje automático de confirmación
+  const confirmMessage = document.createElement('div');
+  confirmMessage.classList.add('message', 'bot');
+  confirmMessage.innerHTML = `
+    ✅️¡excelente! Recibido✅️ <br>
+    ¡En menos de 5 minutos sus fichas serán acreditadas!<br>
+    En breve serán acreditadas.
+    <span class="timestamp">${getCurrentTime()}</span>
+  `;
+  messagesDiv.appendChild(confirmMessage);
+
+  setTimeout(scrollToBottom, 0);
+});
 
     socket.on('show success popup', () => {
       console.log('Evento "show success popup" recibido');
