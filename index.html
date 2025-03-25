@@ -587,12 +587,15 @@
       <button onclick="closePopup()">OK</button>
     </div>
 
-    <div id="errorPopup" class="error-popup">
-      <div class="error-icon"></div>
-      <p>Por favor, complete todos los campos</p>
-      <button onclick="closeErrorPopup()">OK</button>
-    </div>
-  </div>
+    </div> <!-- fin de .chat-container -->
+
+<!-- Popup error MOVIDO FUERA del chat flotante -->
+<div id="errorPopup" class="error-popup">
+  <div class="error-icon"></div>
+  <p>Por favor, complete todos los campos</p>
+  <button onclick="closeErrorPopup()">OK</button>
+</div>
+
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
