@@ -111,9 +111,24 @@ io.on('connection', (socket) => {
         if (subscribedUserId === data.userId) {
           console.log(`Enviando mensaje de bot a admin ${adminSocketId} para userId ${data.userId}:`, botMessage);
           io.to(adminSocketId).emit('admin message', botMessage);
-        }
-      }
+        // Respuesta del bot para "Retirar"
+if (data.message === 'Retirar') {
+  const botMessage = {
+    userId: data.userId,
+    sender: 'Bot',
+    message: 'PARA RETIRAR COMPLETAR\n\nDATOS:\n\nUtilizar tu propia cuenta bancaria\n\n👇👇👇\n\nUSUARIO :\nMONTO A RETIRAR :\nNOMBRE DE CTA BANCARIA :\nCBU:\nCOMPROBANTE DE TU ULTIMA CARGA :'
+  };
+  chatHistory[data.userId].push(botMessage);
+  const userSocket = userSessions.get(data.userId)?.socket;
+  if (userSocket) {
+    userSocket.emit('chat message', botMessage);
+  }
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === data.userId) {
+      io.to(adminSocketId).emit('admin message', botMessage);
     }
+  }
+}
   });
 
   socket.on('image', (data) => {
