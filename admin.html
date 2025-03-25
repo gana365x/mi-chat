@@ -236,6 +236,16 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
+    .bot-message-line {
+  font-size: 13px;
+  line-height: 1.3;
+  margin: 2px 0;
+}
+
+.bot-message-block {
+  padding: 5px;
+}
+
   </style>
 </head>
 <body>
@@ -347,14 +357,15 @@
             messageDiv.appendChild(img);
           } else if (msg.sender === 'Bot' && msg.message.includes('Usar cuenta personal')) {
             messageDiv.innerHTML = `
-              <span class="bot-message-line">1-<strong>Usar</strong> cuenta personal.</span><br><br>
-              <span class="bot-message-line">2-<strong>Enviar</strong> comprobante visible.</span><br><br>
-              <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></span><br><br>
-              <span class="bot-message-line"><strong>CBU</strong></span><br>
-              <span class="bot-message-line">0000156002555796327337</span><br><br>
-              <span class="bot-message-line"><strong>ALIAS</strong></span><br>
-              <span class="bot-message-line">leprance</span>
-            `;
+      <div class="bot-message-block">
+        <div class="bot-message-line"><strong>1- Usar</strong> cuenta personal.</div>
+        <div class="bot-message-line"><strong>2- Enviar</strong> comprobante visible.</div>
+        <div class="bot-message-line" style="margin-top: 8px;"><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></div>
+        <div class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</div>
+        <div class="bot-message-line"><strong>ALIAS:</strong> leprance</div>
+    </div>
+  `;
+
           } else {
             messageDiv.textContent = `${msg.sender}: ${msg.message}`;
           }
