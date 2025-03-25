@@ -551,36 +551,35 @@
 </head>
 <body>
   <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
-  <button class="chat-button" id="chatButton" onclick="toggleChat()">💬</button>
+<button class="chat-button" id="chatButton" onclick="toggleChat()">💬</button>
 
-  <div class="chat-container" id="chatBox">
-    <div id="chatHeader" class="chat-header" style="display: none;">
-      <img src="https://gana365.online/images/logo.png" class="chat-logo" />
-      <span class="chat-phone">Soporte: +54 9 11 5412-8983</span>
-      <button onclick="toggleChat()" class="close-chat">✖</button>
+<div class="chat-container" id="chatBox">
+  <div id="chatHeader" class="chat-header" style="display: none;">
+    <img src="https://gana365.online/images/logo.png" class="chat-logo" />
+    <span class="chat-phone">Soporte: +54 9 11 5412-8983</span>
+    <button onclick="toggleChat()" class="close-chat">✖</button>
+  </div>
+
+  <div class="login-container" id="loginForm">
+    <h3>Bienvenido</h3>
+    <img src="https://gana365.online/images/logo.png" class="login-logo"/>
+    <input type="text" id="username" placeholder="Ingrese su usuario" required />
+    <input type="password" id="password" placeholder="Contraseña" required />
+    <button onclick="login()" class="login-button">Iniciar Chat</button>
+  </div>
+
+  <div id="chatBody" class="chat-body">
+    <div id="messages"></div>
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
+      <label for="imageInput">📎</label>
+      <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif" onchange="sendFile(event)">
+      <button onclick="sendMessage()">✈️</button>
     </div>
+  </div>
 
-    <div class="login-container" id="loginForm">
-      <h3>Bienvenido</h3>
-      <img src="https://gana365.online/images/logo.png" class="login-logo"/>
-      <input type="text" id="username" placeholder="Ingrese su usuario" required />
-      <input type="password" id="password" placeholder="Contraseña" required />
-      <button onclick="login()" class="login-button">Iniciar Chat</button>
-    </div>
-
-    <div id="chatBody" class="chat-body">
-      <div id="messages"></div>
-      <div class="chat-input">
-        <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
-        <label for="imageInput">📎</label>
-        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif" onchange="sendFile(event)">
-        <button onclick="sendMessage()">✈️</button>
-      </div>
-    </div>
-
-    <div id="recommendMessage" class="recommend-message"></div>
-
-   </div> <!-- fin del div con id="chatBox" -->
+  <div id="recommendMessage" class="recommend-message"></div>
+</div> <!-- fin del div con id="chatBox" -->
 
 <!-- Popup de éxito fuera del chat flotante -->
 <div id="successPopup" class="success-popup">
