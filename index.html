@@ -847,7 +847,13 @@
   const buttonsWrapper = document.querySelector('.buttons-wrapper');
   if (buttonsWrapper) buttonsWrapper.style.display = 'none';
 
-  // Después mostramos el mensaje automático del bot
+  // ✅ Mostrar el mensaje del usuario primero
+  const userMessage = document.createElement('div');
+  userMessage.classList.add('message', 'user');
+  userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
+  messagesDiv.appendChild(userMessage);
+
+  // ✅ Mostrar respuesta automática del bot
   if (action === 'Cargar Fichas') {
     const botMessage = document.createElement('div');
     botMessage.classList.add('message', 'bot');
@@ -885,7 +891,7 @@
     messagesDiv.appendChild(retiroMessage);
   }
 
-  // Finalmente lo enviamos al servidor (para que llegue al admin y quede registrado)
+  // ✅ Enviar al servidor (una sola vez)
   socket.emit('chat message', { userId, sender: currentUser, message: action });
 
   setTimeout(scrollToBottom, 0);
