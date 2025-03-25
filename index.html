@@ -927,19 +927,24 @@
   if (data.userId === userId) {
     console.log('Chat cerrado por el agente para:', currentUser);
 
-    // Mostrar popup visual de éxito
+    // Mostrar popup visual
     const popup = document.getElementById("successPopup");
-    if (popup) {
-      popup.classList.add("active");
-    }
+    if (popup) popup.classList.add("active");
 
-    // Mostrar mensaje de agradecimiento con nuevo botón
-    showFinalThanksMessage();
+    // Ocultar otros
+    document.getElementById("chatBody").classList.remove("active");
+    document.getElementById("recommendMessage").classList.remove("active");
 
-    // Almacenar que se cerró el chat
+    // Mostrar mensaje de agradecimiento
+    document.getElementById("finalMessage").classList.add("active");
+
+    // Mostrar hora actual
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById("finalMessageTimestamp").textContent = `${h}:${m}`;
+
     isChatClosed = true;
-
-    // Reabrir automáticamente sesión con mismo userId
     socket.emit('user joined', { userId, username: currentUser });
   }
 });
