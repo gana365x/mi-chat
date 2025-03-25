@@ -927,24 +927,22 @@
   if (data.userId === userId) {
     console.log('Chat cerrado por el agente para:', currentUser);
 
-    // Mostrar popup visual de éxito
     const popup = document.getElementById("successPopup");
     if (popup) {
       popup.classList.add("active");
     }
 
-    // Mostrar mensaje de agradecimiento con botón nuevo
-    showFinalThanksMessage();
+    // ✅ Esta vez mostramos la pantalla personalizada
+    setTimeout(() => {
+      showFinalThanksMessage(); // 👈 Esto reemplaza showActionButtons
+    }, 500); // Le damos medio segundo para que no se pise con el popup
 
-    // Marcar como cerrado
     isChatClosed = true;
-
-    // Reabrir sesión
     socket.emit('user joined', { userId, username: currentUser });
   }
 });
 
-    function showFinalThanksMessage() {
+   function showFinalThanksMessage() {
   console.log('Mostrando mensaje de agradecimiento final');
   const chatBody = document.getElementById("chatBody");
   const recommendMessage = document.getElementById("recommendMessage");
