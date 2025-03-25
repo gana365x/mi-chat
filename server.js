@@ -84,6 +84,7 @@ io.on('connection', (socket) => {
     // Enviar el mensaje solo a los administradores que están viendo este chat
     for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
       if (userId === data.userId) {
+        console.log(`Enviando mensaje a admin ${adminSocketId} para userId ${data.userId}:`, messageData);
         io.to(adminSocketId).emit('admin message', { userId: data.userId, ...messageData });
       }
     }
@@ -94,6 +95,7 @@ io.on('connection', (socket) => {
       io.emit('chat message', botMessage);
       for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
         if (userId === data.userId) {
+          console.log(`Enviando mensaje de bot a admin ${adminSocketId} para userId ${data.userId}:`, botMessage);
           io.to(adminSocketId).emit('admin message', { userId: data.userId, ...botMessage });
         }
       }
@@ -116,6 +118,7 @@ io.on('connection', (socket) => {
     // Enviar la imagen solo a los administradores que están viendo este chat
     for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
       if (userId === data.userId) {
+        console.log(`Enviando imagen a admin ${adminSocketId} para userId ${data.userId}:`, imageData);
         io.to(adminSocketId).emit('admin image', { userId: data.userId, ...imageData });
       }
     }
@@ -128,6 +131,7 @@ io.on('connection', (socket) => {
     io.emit('chat message', botMessage);
     for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
       if (userId === data.userId) {
+        console.log(`Enviando mensaje de bot a admin ${adminSocketId} para userId ${data.userId}:`, botMessage);
         io.to(adminSocketId).emit('admin message', { userId: data.userId, ...botMessage });
       }
     }
@@ -147,6 +151,7 @@ io.on('connection', (socket) => {
     io.emit('chat message', { sender: 'Agent', message: data.message });
     for (let [adminSocketId, userId] of adminSubscriptions.entries()) {
       if (userId === data.userId) {
+        console.log(`Enviando mensaje de agente a admin ${adminSocketId} para userId ${data.userId}:`, messageData);
         io.to(adminSocketId).emit('admin message', { userId: data.userId, ...messageData });
       }
     }
@@ -160,6 +165,7 @@ io.on('connection', (socket) => {
     }
     // Almacenar qué administrador está viendo qué chat
     adminSubscriptions.set(socket.id, data.userId);
+    console.log('Suscripción actualizada:', Array.from(adminSubscriptions.entries()));
     const history = chatHistory[data.userId] || [];
     socket.emit('chat history', { userId: data.userId, messages: history });
   });
@@ -184,6 +190,7 @@ io.on('connection', (socket) => {
     console.log('Cliente desconectado:', socket.id);
     // Eliminar la suscripción del administrador
     adminSubscriptions.delete(socket.id);
+    console.log('Suscripción eliminada:', Array.from(adminSubscriptions.entries()));
     for (let [userId, session] of userSessions.entries()) {
       if (session.socket.id === socket.id) {
         userSessions.delete(userId);
