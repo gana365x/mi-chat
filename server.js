@@ -96,12 +96,12 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Respuesta del bot para "Cargar Fichas"
+    // Respuesta del bot para "Cargar Fichas" con el nuevo formato
     if (data.message === 'Cargar Fichas') {
       const botMessage = { 
         userId: data.userId, 
         sender: 'Bot', 
-        message: 'TITULAR CTA BANCARIA PAGOSWON CBU 0000156303087805254500 ALIAS PAGOSWON.2' 
+        message: '1-Usar cuenta personal.\n\n2-Enviar comprobante visible.\n\nTITULAR CTA BANCARIA PAGOSWON\n\nCBU\n0000156003987805254500\n\nALIAS\nPagoswon.2'
       };
       chatHistory[data.userId].push(botMessage);
       if (userSocket) {
