@@ -438,65 +438,65 @@
       background: #005BB5;
     }
 
-    .error-popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #FFFFFF;
-      border-radius: 15px;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      z-index: 999999;
-      width: 320px;
-      max-width: 90%;
-    }
+   .error-popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 999999;
+  width: 420px;
+  max-width: 90%;
+}
 
-    .error-popup.active {
-      display: block;
-    }
+.error-popup.active {
+  display: block;
+}
 
-    .error-popup .error-icon {
-      width: 70px;
-      height: 70px;
-      background: #FEECEC;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-    }
+.error-popup .error-icon {
+  width: 90px;
+  height: 90px;
+  background: #FEECEC;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px;
+}
 
-    .error-popup .error-icon::before {
-      content: '✖';
-      font-size: 40px;
-      color: #FF3B30;
-    }
+.error-popup .error-icon::before {
+  content: '✖';
+  font-size: 50px;
+  color: #FF3B30;
+}
 
-    .error-popup p {
-      font-size: 16px;
-      color: #1a1a1a;
-      margin-bottom: 25px;
-      font-weight: bold;
-    }
+.error-popup p {
+  font-size: 18px;
+  color: #1a1a1a;
+  margin-bottom: 30px;
+  font-weight: 500;
+}
 
-    .error-popup button {
-      background: #6C63FF;
-      color: white;
-      border: none;
-      padding: 10px 30px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: background 0.3s ease;
-    }
+.error-popup button {
+  background: #6C63FF;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
 
-    .error-popup button:hover {
-      background: #4b44d4;
-    }
+.error-popup button:hover {
+  background: #4b44d4;
+}
 
     .bot-message-line {
       display: block;
