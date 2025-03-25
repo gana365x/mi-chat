@@ -549,6 +549,18 @@
         font-size: 14px;
       }
     }
+
+    .fichas-bancarias {
+  text-align: left;
+  line-height: 1.2;
+  font-size: 13px;
+  margin: 0;
+  padding: 0;
+}
+.fichas-bancarias p {
+  margin: 4px 0;
+}
+
   </style>
 </head>
 <body>
@@ -861,15 +873,16 @@
       // Si el mensaje es el de "Cargar Fichas" del bot, aplicamos formato especial
       if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
         messageDiv.innerHTML = `
-          <span class="bot-message-line">1-<strong>Usar</strong> cuenta personal.</span><br><br>
-          <span class="bot-message-line">2-<strong>Enviar</strong> comprobante visible.</span><br><br>
-          <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANCE SRL</strong></span><br><br>
-          <span class="bot-message-line"><strong>CBU</strong></span><br>
-          <span class="bot-message-line">0000156002555796327337</span><br><br>
-          <span class="bot-message-line"><strong>ALIAS</strong></span><br>
-          <span class="bot-message-line">leprance</span>
-          <span class="timestamp">${getCurrentTime()}</span>
-        `;
+    <div class="fichas-bancarias">
+        <p><strong>1- Usar</strong> cuenta personal.</p>
+        <p><strong>2- Enviar</strong> comprobante visible.</p>
+        <p><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></p>
+        <p><strong>CBU:</strong> 0000156002555796327337</p>
+        <p><strong>ALIAS:</strong> leprance</p>
+        <span class="timestamp">${getCurrentTime()}</span>
+    </div>
+    `;
+
       } else {
         // Para otros mensajes, mostramos el texto tal cual
         messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
