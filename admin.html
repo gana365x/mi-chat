@@ -278,10 +278,9 @@
     const socket = io();
 
     socket.on('connect', () => {
-  console.log('Conectado al servidor de Socket.IO');
-  socket.emit('admin connected'); // 👈 Esto estaba faltando
-  });
-    
+      console.log('Conectado al servidor de Socket.IO');
+    });
+
     socket.on('connect_error', (error) => {
       console.error('Error de conexión a Socket.IO:', error);
     });
@@ -374,12 +373,9 @@
     </div>
   `;
 
-          } else if (msg.message && msg.message.startsWith('<div')) {
-  // Interpretar el HTML como tal si es un mensaje con etiquetas
-  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
-} else {
-  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message.replace(/\n/g, "<br>")}`;
-}
+          } else {
+            messageDiv.textContent = `${msg.sender}: ${msg.message}`;
+          }
           chatMessages.appendChild(messageDiv);
         });
       } else {
@@ -390,15 +386,17 @@
     }
 
     socket.on('chat history', (data) => {
-  console.log('Historial de chat recibido:', data);
-  if (data.userId) {
-    localChatHistory[data.userId] = data.messages || [];
-    console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-    displayLocalMessages(data.userId); // 👈 lo mostramos igual aunque no haya coincidido con selectedUserId
-  } else {
-    console.log('Historial recibido para un usuario no seleccionado:', data.userId);
-  }
-});
+      console.log('Historial de chat recibido:', data);
+      if (data.userId) {
+        localChatHistory[data.userId] = data.messages || [];
+        console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+        if (data.userId === selectedUserId) {
+          displayLocalMessages(data.userId);
+        }
+      } else {
+        console.log('Historial recibido para un usuario no seleccionado:', data.userId);
+      }
+    });
 
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
@@ -436,26 +434,26 @@
   `;
 } else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
   messageDiv.innerHTML = `
-    <div style="font-size: 13px; line-height: 1.1; padding: 2px 5px;">
-      <p style="margin: 0;"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</p>
-      <p style="margin: 4px 0;">👉 👉 👉</p>
-      <p style="margin: 0;"><strong>USUARIO:</strong> ________</p>
-      <p style="margin: 0;"><strong>MONTO A RETIRAR:</strong> ________</p>
-      <p style="margin: 0;"><strong>NOMBRE DE CTA BANCARIA:</strong> ________</p>
-      <p style="margin: 0;"><strong>CBU:</strong> ________</p>
-      <p style="margin: 0;"><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</p>
+    <div style="font-size: 12px; line-height: 1.2;">
+      <p><strong>PARA RETIRAR COMPLETAR</strong></p>
+      <p><strong>DATOS:</strong></p>
+      <p>Utilizar tu propia cuenta bancaria</p>
+      <p>👇👇👇</p>
+      <p><strong>USUARIO:</strong></p>
+      <p><strong>MONTO A RETIRAR:</strong></p>
+      <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
+      <p><strong>CBU:</strong></p>
+      <p><strong>COMPROBANTE DE TU ÚLTIMA CARGA:</strong></p>
     </div>
   `;
-}
 } else {
   // para el resto de los mensajes normales
-  const formatted = data.message ? data.message.replace(/\n/g, "<br>") : '';
+  const formatted = data.message.replace(/\n/g, "<br>");
   messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
 }
 
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-      
       } else {
         console.log('Mensaje ignorado, no pertenece al usuario seleccionado:', { receivedUserId: data.userId, selectedUserId });
       }
@@ -540,10 +538,7 @@
       }
     }
 
-    socket.on('connect', () => {
-  console.log('Conectado al servidor de Socket.IO');
-  socket.emit('admin connected'); // <- Movido aquí
-});
+    socket.emit('admin connected');
     const lastUserId = sessionStorage.getItem('lastUserId');
 const lastUsername = sessionStorage.getItem('lastUsername');
 if (lastUserId && lastUsername) {
