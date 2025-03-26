@@ -1,3 +1,11 @@
+const fs = require('fs');
+const path = require('path');
+
+const historyFilePath = path.join(__dirname, 'chatHistory.json');
+
+function saveChatHistory() {
+  fs.writeFileSync(historyFilePath, JSON.stringify(chatHistory, null, 2));
+}
 
 const express = require('express');
 const http = require('http');
@@ -20,18 +28,16 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 const userSessions = new Map();
 const chatHistory = {};
-const adminSubscriptions = new Map();
 
-app.use(express.static(__dirname));
-
-io.on('connection', (socket) => {
-  socket.on('admin connected', () => {
-    socket.join('admins');
-    const users = Array.from(userSessions.entries())
-      .filter(([userId, session]) => userId && session.username)
-      .map(([userId, session]) => ({ userId, username: session.username }));
-    socket.emit('user list', users);
-  });
+// 🔁 Cargar historial guardado al iniciar
+if (fs.existsSync(historyFilePath)) {
+  const data = fs.readFileSync(historyFilePath, 'utf-8');
+  try {
+    Object.assign(chatHistory, JSON.parse(data));
+  } catch (e) {
+    console.error('Error al leer el historial:', e);
+  }
+}
 
   socket.on('user joined', (data) => {
     const userId = data.userId || uuidv4();
