@@ -437,18 +437,17 @@
   `;
 } else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
   messageDiv.innerHTML = `
-    <div style="font-size: 12px; line-height: 1.2;">
-      <p><strong>PARA RETIRAR COMPLETAR</strong></p>
-      <p><strong>DATOS:</strong></p>
-      <p>Utilizar tu propia cuenta bancaria</p>
-      <p>👇👇👇</p>
-      <p><strong>USUARIO:</strong></p>
-      <p><strong>MONTO A RETIRAR:</strong></p>
-      <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
-      <p><strong>CBU:</strong></p>
-      <p><strong>COMPROBANTE DE TU ÚLTIMA CARGA:</strong></p>
+    <div style="font-size: 13px; line-height: 1.1; padding: 2px 5px;">
+      <p style="margin: 0;"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</p>
+      <p style="margin: 4px 0;">👉 👉 👉</p>
+      <p style="margin: 0;"><strong>USUARIO:</strong> ________</p>
+      <p style="margin: 0;"><strong>MONTO A RETIRAR:</strong> ________</p>
+      <p style="margin: 0;"><strong>NOMBRE DE CTA BANCARIA:</strong> ________</p>
+      <p style="margin: 0;"><strong>CBU:</strong> ________</p>
+      <p style="margin: 0;"><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</p>
     </div>
   `;
+}
 } else {
   // para el resto de los mensajes normales
   const formatted = data.message.replace(/\n/g, "<br>");
