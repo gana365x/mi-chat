@@ -357,7 +357,7 @@
             messageDiv.classList.add('user');
           }
           if (msg.image) {
-            messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${data.message}`;
+            messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
             const img = document.createElement('img');
             img.src = msg.image;
             img.onclick = () => openImageInNewWindow(msg.image);
