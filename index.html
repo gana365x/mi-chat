@@ -908,7 +908,8 @@
     `;
   } else {
     // mensaje normal
-    messageDiv.innerHTML = `${data.message}<span class="timestamp">${getCurrentTime()}</span>`;
+    const formattedMessage = data.message.replace(/\n/g, "<br>");
+messageDiv.innerHTML = `${formattedMessage}<span class="timestamp">${getCurrentTime()}</span>`;
   }
 
   messagesDiv.appendChild(messageDiv);
