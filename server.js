@@ -77,7 +77,17 @@ io.on('connection', (socket) => {
       const botMsg = {
         userId: data.userId,
         sender: 'Bot',
-        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`
+        message: `1- Usar cuenta personal.
+
+2- Enviar comprobante visible.
+
+TITULAR CTA BANCARIA LEPRANCE SRL
+
+CBU
+0000156002555796327337
+
+ALIAS
+leprance`
       };
       chatHistory[data.userId].push(botMsg);
       if (userSocket) userSocket.emit('chat message', botMsg);
@@ -92,7 +102,23 @@ io.on('connection', (socket) => {
       const retiroMsg = {
         userId: data.userId,
         sender: 'Bot',
-        message: `PARA RETIRAR COMPLETAR\n\nDATOS:\n\nUtilizar tu propia cuenta bancaria\n\n👇👇👇\n\nUSUARIO :\n\nMONTO A RETIRAR :\n\nNOMBRE DE CTA BANCARIA :\n\nCBU:\n\nCOMPROBANTE DE TU ULTIMA CARGA :`
+        message: `PARA RETIRAR COMPLETAR
+
+DATOS:
+
+Utilizar tu propia cuenta bancaria
+
+👇👇👇
+
+USUARIO :
+
+MONTO A RETIRAR :
+
+NOMBRE DE CTA BANCARIA :
+
+CBU:
+
+COMPROBANTE DE TU ULTIMA CARGA :`
       };
       chatHistory[data.userId].push(retiroMsg);
       if (userSocket) userSocket.emit('chat message', retiroMsg);
@@ -120,11 +146,12 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Mensaje automático luego de imagen
     const botResponse = {
       userId: data.userId,
       sender: 'Bot',
-      message: '✅️¡excelente! Recibido✅️\n¡En menos de 5 minutos sus fichas serán acreditadas!\nEn breve serán acreditadas.'
+      message: '✅️¡excelente! Recibido✅️
+¡En menos de 5 minutos sus fichas serán acreditadas!
+En breve serán acreditadas.'
     };
     chatHistory[data.userId].push(botResponse);
     if (userSocket) userSocket.emit('chat message', botResponse);
