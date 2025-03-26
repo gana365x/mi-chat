@@ -146,7 +146,7 @@ io.on('connection', (socket) => {
     const botResponse = {
       userId: data.userId,
       sender: 'Bot',
-      message: '✅️¡excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!'
+      message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!'
     };
     chatHistory[data.userId].push(botResponse);
     saveChatHistory();
