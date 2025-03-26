@@ -932,6 +932,20 @@
   setTimeout(scrollToBottom, 0);
 });
 
+    socket.on('image', (data) => {
+  if (data.userId !== userId) return;
+
+  const messagesDiv = document.getElementById("messages");
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message', 'user');
+  messageDiv.innerHTML = `
+    <img src="${data.image}" onclick="openImageInNewWindow('${data.image}')" />
+    <span class="timestamp">${getCurrentTime()}</span>
+  `;
+  messagesDiv.appendChild(messageDiv);
+  setTimeout(scrollToBottom, 0);
+});
+
     socket.on('show success popup', () => {
       console.log('Evento "show success popup" recibido');
       const popup = document.getElementById("successPopup");
