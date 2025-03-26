@@ -103,15 +103,15 @@ leprance`
     userId: data.userId,
     sender: 'Bot',
     message: `
-      <div class="fichas-bancarias">
-        <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong> Utilizar tu propia cuenta bancaria</p>
-        <p>👇👇👇</p>
-        <p><strong>USUARIO :</strong></p>
-        <p><strong>MONTO A RETIRAR :</strong></p>
-        <p><strong>NOMBRE DE CTA BANCARIA :</strong></p>
-        <p><strong>CBU:</strong></p>
-        <p><strong>COMPROBANTE DE TU ULTIMA CARGA :</strong></p>
-      </div>
+     <div class="fichas-bancarias">
+  <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong> Usar cuenta bancaria propia</p>
+  <p>👇👇👇</p>
+  <p><strong>USUARIO:</strong> __________</p>
+  <p><strong>MONTO A RETIRAR:</strong> __________</p>
+  <p><strong>NOMBRE DE CTA BANCARIA:</strong> __________</p>
+  <p><strong>CBU:</strong> __________</p>
+  <p><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> __________</p>
+</div>
     `
   };
   chatHistory[data.userId].push(retiroMsg);
