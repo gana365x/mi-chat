@@ -1,17 +1,14 @@
 const fs = require('fs');
 const path = require('path');
-
-const historyFilePath = path.join(__dirname, 'chatHistory.json');
-
-function saveChatHistory() {
-  fs.writeFileSync(historyFilePath, JSON.stringify(chatHistory, null, 2));
-}
-
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 
+// 📁 Ruta al archivo de historial
+const historyFilePath = path.join(__dirname, 'chatHistory.json');
+
+// 🧠 Estado en memoria
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -28,8 +25,9 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 const userSessions = new Map();
 const chatHistory = {};
+const adminSubscriptions = new Map(); // 🧠 Agregado esto
 
-// 🔁 Cargar historial guardado al iniciar
+// 📥 Cargar historial desde archivo
 if (fs.existsSync(historyFilePath)) {
   const data = fs.readFileSync(historyFilePath, 'utf-8');
   try {
@@ -39,18 +37,34 @@ if (fs.existsSync(historyFilePath)) {
   }
 }
 
+// 💾 Guardar historial al archivo
+function saveChatHistory() {
+  fs.writeFileSync(historyFilePath, JSON.stringify(chatHistory, null, 2));
+}
+
+// 🚀 Manejo de conexiones
+io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
     const userId = data.userId || uuidv4();
     const username = data.username;
     if (!username) return;
+
     userSessions.set(userId, { username, socket });
     if (!chatHistory[userId]) chatHistory[userId] = [];
     socket.emit('session', { userId, username });
 
     const users = Array.from(userSessions.entries())
-      .filter(([userId, session]) => userId && session.username)
+      .filter(([id, session]) => id && session.username)
       .map(([id, session]) => ({ userId: id, username: session.username }));
     io.emit('user list', users);
+  });
+
+  socket.on('admin connected', () => {
+    socket.join('admins');
+    const users = Array.from(userSessions.entries())
+      .filter(([id, session]) => id && session.username)
+      .map(([id, session]) => ({ userId: id, username: session.username }));
+    socket.emit('user list', users);
   });
 
   socket.on('chat message', (data) => {
@@ -59,6 +73,7 @@ if (fs.existsSync(historyFilePath)) {
     const messageData = { userId: data.userId, sender: data.sender, message: data.message };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
+    saveChatHistory(); // ✅ Guardar en disco
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -73,19 +88,10 @@ if (fs.existsSync(historyFilePath)) {
       const botMsg = {
         userId: data.userId,
         sender: 'Bot',
-        message: `1- Usar cuenta personal.
-
-2- Enviar comprobante visible.
-
-TITULAR CTA BANCARIA LEPRANCE SRL
-
-CBU
-0000156002555796327337
-
-ALIAS
-leprance`
+        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`
       };
       chatHistory[data.userId].push(botMsg);
+      saveChatHistory();
       if (userSocket) userSocket.emit('chat message', botMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
@@ -110,6 +116,7 @@ leprance`
         </div>`
       };
       chatHistory[data.userId].push(retiroMsg);
+      saveChatHistory();
       if (userSocket) userSocket.emit('chat message', retiroMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
@@ -124,6 +131,7 @@ leprance`
     const imageData = { userId: data.userId, sender: data.sender, image: data.image };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(imageData);
+    saveChatHistory();
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('image', imageData);
@@ -137,9 +145,10 @@ leprance`
     const botResponse = {
       userId: data.userId,
       sender: 'Bot',
-      message: '✅️¡excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!<br>En breve serán acreditadas.'
+      message: '✅️¡excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!'
     };
     chatHistory[data.userId].push(botResponse);
+    saveChatHistory();
     if (userSocket) userSocket.emit('chat message', botResponse);
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
@@ -153,6 +162,7 @@ leprance`
     const messageData = { userId: data.userId, sender: 'Agent', message: data.message };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
+    saveChatHistory();
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -172,28 +182,26 @@ leprance`
   });
 
   socket.on('close chat', (data) => {
-  const userSocket = userSessions.get(data.userId)?.socket;
-  if (userSocket) {
-    userSocket.emit('chat closed', { userId: data.userId });
-  }
+    const userSocket = userSessions.get(data.userId)?.socket;
+    if (userSocket) {
+      userSocket.emit('chat closed', { userId: data.userId });
+    }
 
-  // No eliminamos el historial ni al usuario del mapa general
-  // Solo lo sacamos de la lista de conectados si hace falta
-  if (userSessions.has(data.userId)) {
-    const session = userSessions.get(data.userId);
-    userSessions.set(data.userId, { ...session, socket: null }); // desconectado pero persistente
-  }
+    if (userSessions.has(data.userId)) {
+      const session = userSessions.get(data.userId);
+      userSessions.set(data.userId, { ...session, socket: null });
+    }
 
-  const users = Array.from(userSessions.entries())
-    .filter(([id, session]) => id && session.username)
-    .map(([id, session]) => ({ userId: id, username: session.username }));
-  io.emit('user list', users);
-});
+    const users = Array.from(userSessions.entries())
+      .filter(([id, session]) => id && session.username)
+      .map(([id, session]) => ({ userId: id, username: session.username }));
+    io.emit('user list', users);
+  });
 
   socket.on('disconnect', () => {
     adminSubscriptions.delete(socket.id);
     for (let [userId, session] of userSessions.entries()) {
-      if (session.socket.id === socket.id) {
+      if (session.socket?.id === socket.id) {
         userSessions.delete(userId);
         const users = Array.from(userSessions.entries())
           .filter(([userId, session]) => userId && session.username)
@@ -204,6 +212,8 @@ leprance`
     }
   });
 });
+
+app.use(express.static(__dirname));
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
