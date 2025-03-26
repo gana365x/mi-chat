@@ -99,35 +99,20 @@ leprance`
     }
 
     if (data.message === 'Retirar') {
-      const retiroMsg = {
-        userId: data.userId,
-        sender: 'Bot',
-        message: `PARA RETIRAR COMPLETAR
-
-DATOS:
-
-Utilizar tu propia cuenta bancaria
-
-👇👇👇
-
-USUARIO :
-
-MONTO A RETIRAR :
-
-NOMBRE DE CTA BANCARIA :
-
-CBU:
-
-COMPROBANTE DE TU ULTIMA CARGA :`
-      };
-      chatHistory[data.userId].push(retiroMsg);
-      if (userSocket) userSocket.emit('chat message', retiroMsg);
-      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-        if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', retiroMsg);
-        }
-      }
+  const retiroMsg = {
+    userId: data.userId,
+    sender: 'Bot',
+    message: `PARA RETIRAR COMPLETAR\n\nDATOS:\nUtilizar tu propia cuenta bancaria\n\n👇👇👇\n\nUSUARIO:\nMONTO A RETIRAR:\nNOMBRE DE CTA BANCARIA:\nCBU:\nCOMPROBANTE DE TU ULTIMA CARGA:`
+  };
+  chatHistory[data.userId].push(retiroMsg);
+  if (userSocket) userSocket.emit('chat message', retiroMsg);
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === data.userId) {
+      io.to(adminSocketId).emit('admin message', retiroMsg);
     }
+  }
+}
+
   });
 
   socket.on('image', (data) => {
