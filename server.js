@@ -112,7 +112,6 @@ leprance`
     }
   }
 }
-
   });
 
   socket.on('image', (data) => {
