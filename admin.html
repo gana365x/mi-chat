@@ -278,9 +278,10 @@
     const socket = io();
 
     socket.on('connect', () => {
-      console.log('Conectado al servidor de Socket.IO');
-    });
-
+  console.log('Conectado al servidor de Socket.IO');
+  socket.emit('admin connected'); // 👈 Esto estaba faltando
+  });
+    
     socket.on('connect_error', (error) => {
       console.error('Error de conexión a Socket.IO:', error);
     });
@@ -538,7 +539,10 @@
       }
     }
 
-    socket.emit('admin connected');
+    socket.on('connect', () => {
+  console.log('Conectado al servidor de Socket.IO');
+  socket.emit('admin connected'); // <- Movido aquí
+});
     const lastUserId = sessionStorage.getItem('lastUserId');
 const lastUsername = sessionStorage.getItem('lastUsername');
 if (lastUserId && lastUsername) {
