@@ -134,7 +134,7 @@ leprance`
     const botResponse = {
     userId: data.userId,
       sender: 'Bot',
-      message: `✅️¡excelente! Recibido✅️\n¡En menos de 5 minutos sus fichas serán acreditadas!\nEn breve serán acreditadas.`
+      message: `✅️¡Excelente! Recibido✅️\n¡En menos de 5 minutos sus fichas serán acreditadas!\nEn breve serán acreditadas.`
      };
     chatHistory[data.userId].push(botResponse);
     if (userSocket) userSocket.emit('chat message', botResponse);
