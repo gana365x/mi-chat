@@ -450,7 +450,7 @@
 } else {
   // para el resto de los mensajes normales
   const formatted = data.message ? data.message.replace(/\n/g, "<br>") : '';
-messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
+  messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
 }
 
         chatMessages.appendChild(messageDiv);
