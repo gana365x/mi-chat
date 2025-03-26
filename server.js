@@ -105,15 +105,16 @@ io.on('connection', (socket) => {
         userId: data.userId,
         sender: 'Bot',
         message: `
-        <div class="fichas-bancarias" style="font-size: 12px;">
-          <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong> Usar cuenta bancaria propia</p>
-          <p>👇👇👇</p>
-          <p><strong>USUARIO:</strong> __________</p>
-          <p><strong>MONTO A RETIRAR:</strong> __________</p>
-          <p><strong>NOMBRE DE CTA BANCARIA:</strong> __________</p>
-          <p><strong>CBU:</strong> __________</p>
-          <p><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> __________</p>
-        </div>`
+  <div style="font-size: 13px; line-height: 1.3; font-family: 'Segoe UI', sans-serif; color: #222;">
+    <div><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</div>
+    <div style="margin: 6px 0;">👇👇👇</div>
+    <div><strong>USUARIO:</strong> __________</div>
+    <div><strong>MONTO A RETIRAR:</strong> __________</div>
+    <div><strong>NOMBRE DE CTA BANCARIA:</strong> __________</div>
+    <div><strong>CBU:</strong> __________</div>
+    <div><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> __________</div>
+  </div>`
+
       };
       chatHistory[data.userId].push(retiroMsg);
       saveChatHistory();
