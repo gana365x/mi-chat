@@ -324,6 +324,7 @@
         if (li.dataset.userId === userId) {
           li.classList.add('active');
         sessionStorage.setItem('lastUserId', userId);
+        sessionStorage.setItem('lastUsername', username);
         }
       }
       const chatArea = document.getElementById('chatArea');
@@ -538,6 +539,16 @@
     }
 
     socket.emit('admin connected');
+    const lastUserId = sessionStorage.getItem('lastUserId');
+const lastUsername = sessionStorage.getItem('lastUsername');
+if (lastUserId && lastUsername) {
+  selectedUserId = lastUserId;
+  selectedUsername = lastUsername;
+  const chatArea = document.getElementById('chatArea');
+  chatArea.classList.add('active');
+  document.getElementById('currentUser').textContent = lastUsername;
+  socket.emit('request chat history', { userId: lastUserId });
+}
     const lastUserId = sessionStorage.getItem('lastUserId');
 if (lastUserId) {
   socket.emit('request chat history', { userId: lastUserId });
