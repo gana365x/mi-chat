@@ -1,4 +1,3 @@
-
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -29,6 +28,7 @@ io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado:', socket.id);
 
   socket.on('admin connected', () => {
+    console.log('Administrador conectado:', socket.id);
     socket.join('admins');
     const users = Array.from(userSessions.entries())
       .filter(([userId, session]) => userId && session.username)
@@ -43,17 +43,24 @@ io.on('connection', (socket) => {
 
     userSessions.set(userId, { username, socket });
     if (!chatHistory[userId]) chatHistory[userId] = [];
+
     socket.emit('session', { userId, username });
 
     const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => id && session.username)
+      .filter(([userId, session]) => userId && session.username)
       .map(([id, session]) => ({ userId: id, username: session.username }));
     io.emit('user list', users);
   });
 
   socket.on('chat message', (data) => {
     if (!data.userId || !data.sender || !data.message) return;
-    const messageData = { userId: data.userId, sender: data.sender, message: data.message };
+
+    const messageData = {
+      userId: data.userId,
+      sender: data.sender,
+      message: data.message
+    };
+
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
 
@@ -66,46 +73,32 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Bot respuesta a "Cargar Fichas"
     if (data.message === 'Cargar Fichas') {
-      const botMessage = {
+      const botMsg = {
         userId: data.userId,
         sender: 'Bot',
-        message: '1- Usar cuenta personal.
-2- Enviar comprobante visible.
-TITULAR CTA BANCARIA LEPRANSE SRL
-CBU: 0000156002555796327337
-ALIAS: leprance'
+        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`
       };
-      chatHistory[data.userId].push(botMessage);
-      if (userSocket) userSocket.emit('chat message', botMessage);
+      chatHistory[data.userId].push(botMsg);
+      if (userSocket) userSocket.emit('chat message', botMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', botMessage);
+          io.to(adminSocketId).emit('admin message', botMsg);
         }
       }
     }
 
-    // Bot respuesta a "Retirar"
     if (data.message === 'Retirar') {
-      const botMessage = {
+      const retiroMsg = {
         userId: data.userId,
         sender: 'Bot',
-        message: 'PARA RETIRAR COMPLETAR DATOS:
-Utilizar tu propia cuenta bancaria
-
-👇👇👇
-USUARIO:
-MONTO A RETIRAR:
-NOMBRE DE CTA BANCARIA:
-CBU:
-COMPROBANTE DE TU ULTIMA CARGA:'
+        message: `PARA RETIRAR COMPLETAR\n\nDATOS:\n\nUtilizar tu propia cuenta bancaria\n\n👇👇👇\n\nUSUARIO :\n\nMONTO A RETIRAR :\n\nNOMBRE DE CTA BANCARIA :\n\nCBU:\n\nCOMPROBANTE DE TU ULTIMA CARGA :`
       };
-      chatHistory[data.userId].push(botMessage);
-      if (userSocket) userSocket.emit('chat message', botMessage);
+      chatHistory[data.userId].push(retiroMsg);
+      if (userSocket) userSocket.emit('chat message', retiroMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', botMessage);
+          io.to(adminSocketId).emit('admin message', retiroMsg);
         }
       }
     }
@@ -113,30 +106,31 @@ COMPROBANTE DE TU ULTIMA CARGA:'
 
   socket.on('image', (data) => {
     if (!data.userId || !data.sender || !data.image) return;
+
     const imageData = { userId: data.userId, sender: data.sender, image: data.image };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(imageData);
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('image', imageData);
+
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin image', imageData);
       }
     }
 
-    const confirmMessage = {
+    // Mensaje automático luego de imagen
+    const botResponse = {
       userId: data.userId,
       sender: 'Bot',
-      message: '✅️¡excelente! Recibido✅️
-¡En menos de 5 minutos sus fichas serán acreditadas!
-En breve serán acreditadas.'
+      message: '✅️¡excelente! Recibido✅️\n¡En menos de 5 minutos sus fichas serán acreditadas!\nEn breve serán acreditadas.'
     };
-    chatHistory[data.userId].push(confirmMessage);
-    if (userSocket) userSocket.emit('chat message', confirmMessage);
+    chatHistory[data.userId].push(botResponse);
+    if (userSocket) userSocket.emit('chat message', botResponse);
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin message', confirmMessage);
+        io.to(adminSocketId).emit('admin message', botResponse);
       }
     }
   });
@@ -149,6 +143,7 @@ En breve serán acreditadas.'
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
+
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', messageData);
@@ -168,7 +163,7 @@ En breve serán acreditadas.'
     if (userSocket) userSocket.emit('chat closed', { userId: data.userId });
     userSessions.delete(data.userId);
     const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => id && session.username)
+      .filter(([userId, session]) => userId && session.username)
       .map(([id, session]) => ({ userId: id, username: session.username }));
     io.emit('user list', users);
   });
@@ -179,7 +174,7 @@ En breve serán acreditadas.'
       if (session.socket.id === socket.id) {
         userSessions.delete(userId);
         const users = Array.from(userSessions.entries())
-          .filter(([id, session]) => id && session.username)
+          .filter(([userId, session]) => userId && session.username)
           .map(([id, session]) => ({ userId: id, username: session.username }));
         io.emit('user list', users);
         break;
