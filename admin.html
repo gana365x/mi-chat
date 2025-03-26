@@ -423,18 +423,33 @@
         }
         // Si el mensaje es el de "Cargar Fichas" del bot, aplicamos formato especial
         if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
-          messageDiv.innerHTML = `
-            <span class="bot-message-line">1-<strong>Usar</strong> cuenta personal.</span><br><br>
-            <span class="bot-message-line">2-<strong>Enviar</strong> comprobante visible.</span><br><br>
-            <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANCE SRL</strong></span><br><br>
-            <span class="bot-message-line"><strong>CBU</strong></span><br>
-            <span class="bot-message-line">0000156002555796327337</span><br><br>
-            <span class="bot-message-line"><strong>ALIAS</strong></span><br>
-            <span class="bot-message-line">leprance</span>
-          `;
-        } else {
-          messageDiv.textContent = `${data.sender}: ${data.message}`;
-        }
+  messageDiv.innerHTML = `
+    <span class="bot-message-line">1- <strong>Usar</strong> cuenta personal.</span><br><br>
+    <span class="bot-message-line">2- <strong>Enviar</strong> comprobante visible.</span><br><br>
+    <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANCE SRL</strong></span><br><br>
+    <span class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</span><br><br>
+    <span class="bot-message-line"><strong>ALIAS:</strong> leprance</span>
+  `;
+} else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
+  messageDiv.innerHTML = `
+    <div style="font-size: 12px; line-height: 1.2;">
+      <p><strong>PARA RETIRAR COMPLETAR</strong></p>
+      <p><strong>DATOS:</strong></p>
+      <p>Utilizar tu propia cuenta bancaria</p>
+      <p>👇👇👇</p>
+      <p><strong>USUARIO:</strong></p>
+      <p><strong>MONTO A RETIRAR:</strong></p>
+      <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
+      <p><strong>CBU:</strong></p>
+      <p><strong>COMPROBANTE DE TU ÚLTIMA CARGA:</strong></p>
+    </div>
+  `;
+} else {
+  // para el resto de los mensajes normales
+  const formatted = data.message.replace(/\n/g, "<br>");
+  messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
+}
+
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
       } else {
