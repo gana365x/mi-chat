@@ -147,12 +147,10 @@ COMPROBANTE DE TU ULTIMA CARGA :`
     }
 
     const botResponse = {
-      userId: data.userId,
+    userId: data.userId,
       sender: 'Bot',
-      message: '✅️¡excelente! Recibido✅️
-¡En menos de 5 minutos sus fichas serán acreditadas!
-En breve serán acreditadas.'
-    };
+      message: `✅️¡excelente! Recibido✅️\n¡En menos de 5 minutos sus fichas serán acreditadas!\nEn breve serán acreditadas.`
+     };
     chatHistory[data.userId].push(botResponse);
     if (userSocket) userSocket.emit('chat message', botResponse);
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
