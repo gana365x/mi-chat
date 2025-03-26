@@ -102,7 +102,17 @@ leprance`
   const retiroMsg = {
     userId: data.userId,
     sender: 'Bot',
-    message: `PARA RETIRAR COMPLETAR\n\nDATOS:\nUtilizar tu propia cuenta bancaria\n\n👇👇👇\n\nUSUARIO:\nMONTO A RETIRAR:\nNOMBRE DE CTA BANCARIA:\nCBU:\nCOMPROBANTE DE TU ULTIMA CARGA:`
+    message: `
+      <div class="fichas-bancarias">
+        <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong> Utilizar tu propia cuenta bancaria</p>
+        <p>👇👇👇</p>
+        <p><strong>USUARIO :</strong></p>
+        <p><strong>MONTO A RETIRAR :</strong></p>
+        <p><strong>NOMBRE DE CTA BANCARIA :</strong></p>
+        <p><strong>CBU:</strong></p>
+        <p><strong>COMPROBANTE DE TU ULTIMA CARGA :</strong></p>
+      </div>
+    `
   };
   chatHistory[data.userId].push(retiroMsg);
   if (userSocket) userSocket.emit('chat message', retiroMsg);
