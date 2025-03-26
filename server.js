@@ -45,19 +45,29 @@ function saveChatHistory() {
 // 🚀 Manejo de conexiones
 io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
-    const userId = data.userId || uuidv4();
-    const username = data.username;
-    if (!username) return;
+  let userId = data.userId;
+  const username = data.username;
+  if (!username) return;
 
-    userSessions.set(userId, { username, socket });
-    if (!chatHistory[userId]) chatHistory[userId] = [];
-    socket.emit('session', { userId, username });
+  if (!userId) {
+    userId = uuidv4();
+  }
 
-    const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => id && session.username)
-      .map(([id, session]) => ({ userId: id, username: session.username }));
-    io.emit('user list', users);
-  });
+  // ✅ Siempre actualizamos el socket del usuario
+  userSessions.set(userId, { username, socket });
+
+  // ✅ Enviamos la sesión al cliente (esto guarda el userId en cookie)
+  socket.emit('session', { userId, username });
+
+  // ✅ Si no hay historial previo, lo iniciamos
+  if (!chatHistory[userId]) chatHistory[userId] = [];
+
+  // ✅ Actualizamos la lista de usuarios conectados
+  const users = Array.from(userSessions.entries())
+    .filter(([id, session]) => session.socket) // sólo usuarios con socket activo
+    .map(([id, session]) => ({ userId: id, username: session.username }));
+  io.emit('user list', users);
+});
 
   socket.on('admin connected', () => {
     socket.join('admins');
