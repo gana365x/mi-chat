@@ -166,15 +166,23 @@ leprance`
   });
 
   socket.on('close chat', (data) => {
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('chat closed', { userId: data.userId });
-    // userSessions.delete(data.userId); ❌ NO lo eliminamos
-  userSessions.set(data.userId, { ...userSessions.get(data.userId), socket: null }); // Opcional: dejar como desconectado
-    const users = Array.from(userSessions.entries())
-      .filter(([userId, session]) => userId && session.username)
-      .map(([id, session]) => ({ userId: id, username: session.username }));
-    io.emit('user list', users);
-  });
+  const userSocket = userSessions.get(data.userId)?.socket;
+  if (userSocket) {
+    userSocket.emit('chat closed', { userId: data.userId });
+  }
+
+  // No eliminamos el historial ni al usuario del mapa general
+  // Solo lo sacamos de la lista de conectados si hace falta
+  if (userSessions.has(data.userId)) {
+    const session = userSessions.get(data.userId);
+    userSessions.set(data.userId, { ...session, socket: null }); // desconectado pero persistente
+  }
+
+  const users = Array.from(userSessions.entries())
+    .filter(([id, session]) => id && session.username)
+    .map(([id, session]) => ({ userId: id, username: session.username }));
+  io.emit('user list', users);
+});
 
   socket.on('disconnect', () => {
     adminSubscriptions.delete(socket.id);
