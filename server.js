@@ -168,7 +168,8 @@ leprance`
   socket.on('close chat', (data) => {
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat closed', { userId: data.userId });
-    userSessions.delete(data.userId);
+    // userSessions.delete(data.userId); ❌ NO lo eliminamos
+  userSessions.set(data.userId, { ...userSessions.get(data.userId), socket: null }); // Opcional: dejar como desconectado
     const users = Array.from(userSessions.entries())
       .filter(([userId, session]) => userId && session.username)
       .map(([id, session]) => ({ userId: id, username: session.username }));
