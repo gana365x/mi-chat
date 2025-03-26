@@ -856,27 +856,7 @@
   userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
   messagesDiv.appendChild(userMessage);
 
-    if (action === 'Retirar') {
-    const retiroMessage = document.createElement('div');
-    retiroMessage.classList.add('message', 'bot');
-    retiroMessage.innerHTML = `
-      <div class="fichas-bancarias">
-        <p><strong>PARA RETIRAR COMPLETAR</strong></p>
-        <p><strong>DATOS:</strong></p>
-        <p>Utilizar tu propia cuenta bancaria</p>
-        <br>
-        <p>👇👇👇</p>
-        <p><strong>USUARIO:</strong></p>
-        <p><strong>MONTO A RETIRAR:</strong></p>
-        <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
-        <p><strong>CBU:</strong></p>
-        <p><strong>COMPROBANTE DE TU ULTIMA CARGA:</strong></p>
-        <span class="timestamp">${getCurrentTime()}</span>
-      </div>
-    `;
-    messagesDiv.appendChild(retiroMessage);
-  }
-
+   
   // ✅ Evitamos que se repita abajo
   ignoreNextMessage = true;
 
@@ -954,18 +934,7 @@
   imageDiv.innerHTML += `<span class="timestamp">${getCurrentTime()}</span>`;
   messagesDiv.appendChild(imageDiv);
 
-  // Mostrar mensaje automático de confirmación
-  const confirmMessage = document.createElement('div');
-  confirmMessage.classList.add('message', 'bot');
-  confirmMessage.innerHTML = `
-    ✅️¡excelente! Recibido✅️ <br>
-    ¡En menos de 5 minutos sus fichas serán acreditadas!<br>
-    En breve serán acreditadas.
-    <span class="timestamp">${getCurrentTime()}</span>
-  `;
-  messagesDiv.appendChild(confirmMessage);
-
-  setTimeout(scrollToBottom, 0);
+    setTimeout(scrollToBottom, 0);
 });
 
     socket.on('show success popup', () => {
