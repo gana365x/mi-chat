@@ -373,9 +373,12 @@
     </div>
   `;
 
-          } else {
-            messageDiv.textContent = `${msg.sender}: ${msg.message}`;
-          }
+          } else if (msg.message && msg.message.startsWith('<div')) {
+  // Interpretar el HTML como tal si es un mensaje con etiquetas
+  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
+} else {
+  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message.replace(/\n/g, "<br>")}`;
+}
           chatMessages.appendChild(messageDiv);
         });
       } else {
