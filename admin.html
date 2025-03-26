@@ -389,17 +389,15 @@
     }
 
     socket.on('chat history', (data) => {
-      console.log('Historial de chat recibido:', data);
-      if (data.userId) {
-        localChatHistory[data.userId] = data.messages || [];
-        console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-        if (data.userId === selectedUserId) {
-          displayLocalMessages(data.userId);
-        }
-      } else {
-        console.log('Historial recibido para un usuario no seleccionado:', data.userId);
-      }
-    });
+  console.log('Historial de chat recibido:', data);
+  if (data.userId) {
+    localChatHistory[data.userId] = data.messages || [];
+    console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+    displayLocalMessages(data.userId); // 👈 lo mostramos igual aunque no haya coincidido con selectedUserId
+  } else {
+    console.log('Historial recibido para un usuario no seleccionado:', data.userId);
+  }
+});
 
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
