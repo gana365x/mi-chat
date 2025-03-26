@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -17,7 +18,6 @@ const io = socketIo(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-
 const userSessions = new Map();
 const chatHistory = {};
 const adminSubscriptions = new Map();
@@ -25,10 +25,7 @@ const adminSubscriptions = new Map();
 app.use(express.static(__dirname));
 
 io.on('connection', (socket) => {
-  console.log('Nuevo cliente conectado:', socket.id);
-
   socket.on('admin connected', () => {
-    console.log('Administrador conectado:', socket.id);
     socket.join('admins');
     const users = Array.from(userSessions.entries())
       .filter(([userId, session]) => userId && session.username)
@@ -40,10 +37,8 @@ io.on('connection', (socket) => {
     const userId = data.userId || uuidv4();
     const username = data.username;
     if (!username) return;
-
     userSessions.set(userId, { username, socket });
     if (!chatHistory[userId]) chatHistory[userId] = [];
-
     socket.emit('session', { userId, username });
 
     const users = Array.from(userSessions.entries())
@@ -55,12 +50,7 @@ io.on('connection', (socket) => {
   socket.on('chat message', (data) => {
     if (!data.userId || !data.sender || !data.message) return;
 
-    const messageData = {
-      userId: data.userId,
-      sender: data.sender,
-      message: data.message
-    };
-
+    const messageData = { userId: data.userId, sender: data.sender, message: data.message };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
 
@@ -99,34 +89,32 @@ leprance`
     }
 
     if (data.message === 'Retirar') {
-  const retiroMsg = {
-    userId: data.userId,
-    sender: 'Bot',
-    message: `
-     <div class="fichas-bancarias">
-  <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong> Usar cuenta bancaria propia</p>
-  <p>👇👇👇</p>
-  <p><strong>USUARIO:</strong> __________</p>
-  <p><strong>MONTO A RETIRAR:</strong> __________</p>
-  <p><strong>NOMBRE DE CTA BANCARIA:</strong> __________</p>
-  <p><strong>CBU:</strong> __________</p>
-  <p><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> __________</p>
-</div>
-    `
-  };
-  chatHistory[data.userId].push(retiroMsg);
-  if (userSocket) userSocket.emit('chat message', retiroMsg);
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === data.userId) {
-      io.to(adminSocketId).emit('admin message', retiroMsg);
+      const retiroMsg = {
+        userId: data.userId,
+        sender: 'Bot',
+        message: `
+        <div class="fichas-bancarias" style="font-size: 12px;">
+          <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong> Usar cuenta bancaria propia</p>
+          <p>👇👇👇</p>
+          <p><strong>USUARIO:</strong> __________</p>
+          <p><strong>MONTO A RETIRAR:</strong> __________</p>
+          <p><strong>NOMBRE DE CTA BANCARIA:</strong> __________</p>
+          <p><strong>CBU:</strong> __________</p>
+          <p><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> __________</p>
+        </div>`
+      };
+      chatHistory[data.userId].push(retiroMsg);
+      if (userSocket) userSocket.emit('chat message', retiroMsg);
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
+          io.to(adminSocketId).emit('admin message', retiroMsg);
+        }
+      }
     }
-  }
-}
   });
 
   socket.on('image', (data) => {
     if (!data.userId || !data.sender || !data.image) return;
-
     const imageData = { userId: data.userId, sender: data.sender, image: data.image };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(imageData);
@@ -141,10 +129,10 @@ leprance`
     }
 
     const botResponse = {
-    userId: data.userId,
+      userId: data.userId,
       sender: 'Bot',
-      message: `✅️¡Excelente! Recibido✅️\n¡En menos de 5 minutos sus fichas serán acreditadas!\nEn breve serán acreditadas.`
-     };
+      message: '✅️¡excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!<br>En breve serán acreditadas.'
+    };
     chatHistory[data.userId].push(botResponse);
     if (userSocket) userSocket.emit('chat message', botResponse);
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
