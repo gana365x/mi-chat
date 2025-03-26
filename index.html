@@ -552,7 +552,7 @@
 
     .fichas-bancarias {
   text-align: left;
-  line-height: 1.4;
+  line-height: 1.2;
   font-size: 11px;
   margin: 0;
   padding: 0;
@@ -880,21 +880,18 @@
     socket.on('chat message', (data) => {
   if (ignoreNextMessage && data.sender === currentUser && data.userId === userId) {
     ignoreNextMessage = false;
-    return; // ❌ lo ignoramos porque ya lo mostramos
+    return;
   }
 
   console.log('Mensaje recibido:', data);
-  if (data.userId !== userId) {
-    console.log('Mensaje ignorado, no pertenece a este usuario:', data.userId);
-    return;
-  }
+  if (data.userId !== userId) return;
 
   const messagesDiv = document.getElementById("messages");
   const messageDiv = document.createElement('div');
   messageDiv.classList.add('message');
   messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
 
-  // Si es mensaje automático del bot con banco
+  // 👇 Mensaje especial para "Cargar Fichas"
   if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
     messageDiv.innerHTML = `
       <div class="fichas-bancarias">
@@ -906,36 +903,33 @@
         <span class="timestamp">${getCurrentTime()}</span>
       </div>
     `;
-  } else {
-    // mensaje normal
+  }
+
+  // 👇 Mensaje especial para "Retirar"
+  else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
+    messageDiv.innerHTML = `
+      <div class="fichas-bancarias">
+        <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong></p>
+        <p>Utilizar tu propia cuenta bancaria</p>
+        <p>👇👇👇</p>
+        <p><u>USUARIO :</u></p>
+        <p><u>MONTO A RETIRAR :</u></p>
+        <p><u>NOMBRE DE CTA BANCARIA :</u></p>
+        <p><u>CBU:</u></p>
+        <p><u>COMPROBANTE DE TU ULTIMA CARGA :</u></p>
+        <span class="timestamp">${getCurrentTime()}</span>
+      </div>
+    `;
+  }
+
+  // 👇 Todos los demás mensajes (normal)
+  else {
     const formattedMessage = data.message.replace(/\n/g, "<br>");
-messageDiv.innerHTML = `${formattedMessage}<span class="timestamp">${getCurrentTime()}</span>`;
+    messageDiv.innerHTML = `${formattedMessage}<span class="timestamp">${getCurrentTime()}</span>`;
   }
 
   messagesDiv.appendChild(messageDiv);
   setTimeout(scrollToBottom, 0);
-});
-
-    socket.on('image', (data) => {
-  console.log('Imagen recibida:', data);
-  if (data.userId !== userId) {
-    console.log('Imagen ignorada, no pertenece a este usuario:', data.userId);
-    return;
-  }
-
-  const messagesDiv = document.getElementById("messages");
-
-  // Mostrar la imagen recibida
-  const imageDiv = document.createElement('div');
-  imageDiv.classList.add('message', 'user');
-  const img = document.createElement('img');
-  img.src = data.image;
-  img.onclick = () => openImageInNewWindow(data.image);
-  imageDiv.appendChild(img);
-  imageDiv.innerHTML += `<span class="timestamp">${getCurrentTime()}</span>`;
-  messagesDiv.appendChild(imageDiv);
-
-    setTimeout(scrollToBottom, 0);
 });
 
     socket.on('show success popup', () => {
