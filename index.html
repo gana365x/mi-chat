@@ -613,8 +613,8 @@
 <!-- Nuevo popup fichas cargadas, fuera del chat flotante -->
 <div id="successPopup" class="success-popup">
   <div class="success-icon"></div>
-  <p class="success-title">Fichas cargadas</p>
-  <p class="success-subtext">Fichas cargadas correctamente</p>
+  <p class="success-title" id="popupTitle">Fichas cargadas</p>
+  <p class="success-subtext" id="popupSubtext">Fichas cargadas correctamente</p>
   <button onclick="closePopup()">OK</button>
 </div>
 
@@ -856,7 +856,9 @@
   userMessage.innerHTML = `${action}<span class="timestamp">${getCurrentTime()}</span>`;
   messagesDiv.appendChild(userMessage);
 
-   
+  // ✅ Guardamos la acción elegida (Cargar o Retirar)
+  sessionStorage.setItem("ultimaAccion", action);
+
   // ✅ Evitamos que se repita abajo
   ignoreNextMessage = true;
 
@@ -997,33 +999,43 @@
   chatBody.classList.remove("active");
   recommendMessage.classList.add("active");
 
-  recommendMessage.innerHTML = '';
+  const ultimaAccion = sessionStorage.getItem("ultimaAccion");
+recommendMessage.innerHTML = '';
 
-  const finalDiv = document.createElement('div');
-  finalDiv.classList.add('row');
-  finalDiv.innerHTML = `
-    <img src="https://gana365.online/images/logo.png" class="logo">
-    <div class="msg">
+const finalDiv = document.createElement('div');
+finalDiv.classList.add('row');
+finalDiv.innerHTML = `
+  <img src="https://gana365.online/images/logo.png" class="logo">
+  <div class="msg">
+    ${ultimaAccion === 'Retirar' ? `
+      <strong>❤ Premio Pagado ❤</strong><br>
+      (MIRA TU CUENTA BANCARIA)<br><br>
+      Gana 365 te desea éxitos<br><br>
+      Entra en nuestro canal<br>
+      👇🏻👇🏻👇🏻<br>
+      ¡UNITE A LA COMUNIDAD HACIENDO CLICK AQUÍ!
+    ` : `
       <strong>Gracias por elegirnos</strong><br>
-      No te olvides de recomendarnos 😊<br>
-      <span class="timestamp">${getCurrentTime()}</span>
-    </div>
-  `;
-  recommendMessage.appendChild(finalDiv);
+      No te olvides de recomendarnos 😊
+    `}
+    <span class="timestamp">${getCurrentTime()}</span>
+  </div>
+`;
+recommendMessage.appendChild(finalDiv);
 
-  const buttonsDiv = document.createElement('div');
-  buttonsDiv.classList.add('buttons-wrapper');
-  buttonsDiv.innerHTML = `
-    <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
-  `;
-  recommendMessage.appendChild(buttonsDiv);
+const buttonsDiv = document.createElement('div');
+buttonsDiv.classList.add('buttons-wrapper');
+buttonsDiv.innerHTML = `
+  <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
+`;
+recommendMessage.appendChild(buttonsDiv);
 
-  setTimeout(() => {
-    recommendMessage.scrollTo({
-      top: recommendMessage.scrollHeight,
-      behavior: 'smooth'
-    });
-  }, 0);
+setTimeout(() => {
+  recommendMessage.scrollTo({
+    top: recommendMessage.scrollHeight,
+    behavior: 'smooth'
+  });
+}, 0);
 }
 
     document.addEventListener("DOMContentLoaded", () => {
