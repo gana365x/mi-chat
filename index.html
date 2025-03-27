@@ -374,21 +374,6 @@
       display: block;
     }
 
-    .popup-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 999998;
-}
-
-.popup-overlay.active {
-  display: block;
-}
-
     .success-popup {
   display: none;
   position: fixed;
@@ -625,16 +610,14 @@
 </div>
 
         </div> <!-- fin de .chat-container -->
-<!-- Fondo que bloquea todo cuando aparece el popup -->
-<div id="popupOverlay" class="popup-overlay"></div>
-
-<!-- Popup de éxito -->
+<!-- Nuevo popup fichas cargadas, fuera del chat flotante -->
 <div id="successPopup" class="success-popup">
   <div class="success-icon"></div>
-  <p class="success-title">Fichas cargadas</p>
-  <p class="success-subtext">Fichas cargadas correctamente</p>
+  <p class="success-title" id="popupTitle">Fichas cargadas</p>
+<p class="success-subtext" id="popupSubtext">Fichas cargadas correctamente</p>
   <button onclick="closePopup()">OK</button>
 </div>
+
   
 <!-- Popup error MOVIDO FUERA del chat flotante -->
 <div id="errorPopup" class="error-popup">
@@ -969,31 +952,25 @@
       console.log('Evento "show success popup" recibido');
       const popup = document.getElementById("successPopup");
       if (popup) {
-  console.log('Mostrando popup de éxito');
-
-  const overlay = document.getElementById("popupOverlay");
-  popup.classList.add('active');
-  overlay.classList.add('active');
-
-  setTimeout(() => {
-    if (popup.classList.contains('active')) {
-      console.log('Popup cerrado automáticamente después de 5 segundos');
-      closePopup();
-    }
-  }, 5000);
-} else {
-  console.error('No se encontró el elemento #successPopup');
-}
+        console.log('Mostrando popup de éxito');
+        popup.classList.add('active');
+        setTimeout(() => {
+          if (popup.classList.contains('active')) {
+            console.log('Popup cerrado automáticamente después de 5 segundos');
+            closePopup();
+          }
+        }, 5000);
+      } else {
+        console.error('No se encontró el elemento #successPopup');
+      }
     });
 
     function closePopup() {
-  console.log('Cerrando popup');
-  const popup = document.getElementById("successPopup");
-const overlay = document.getElementById("popupOverlay");
-popup.classList.add('active');
-overlay.classList.add('active');
-  socket.emit('popup closed', { userId, username: currentUser });
-}
+      console.log('Cerrando popup');
+      const popup = document.getElementById("successPopup");
+      popup.classList.remove('active');
+      socket.emit('popup closed', { userId, username: currentUser });
+    }
 
     socket.on('chat closed', (data) => {
   console.log('Evento chat closed recibido:', data);
@@ -1014,7 +991,6 @@ overlay.classList.add('active');
         popupSubtext.textContent = "Fichas cargadas correctamente";
       }
       popup.classList.add("active");
-      overlay.classList.add("active");
     }
 
     setTimeout(() => {
