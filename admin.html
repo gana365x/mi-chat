@@ -530,53 +530,9 @@ li.user-read {
 li.classList.add('user-item');
 li.dataset.userId = user.userId;
 
-const actionsPopup = document.createElement('div');
-actionsPopup.className = 'user-actions-popup';
-
-const deleteIcon = document.createElement('button');
-deleteIcon.innerHTML = '🗑';
-deleteIcon.className = 'delete-btn';
-
-// ❌ Acá está el problema:
-actionsPopup.appendChild(editIcon); // ⚠️ Todavía no existe
-actionsPopup.appendChild(deleteIcon);
-
-        deleteIcon.onclick = () => {
-  actionsPopup.innerHTML = `
-    <div class="confirm-delete">
-      <button class="confirm-btn">✅</button>
-      <button class="cancel-btn">❌</button>
-    </div>
-  `;
-
-  // Acción cuando confirmás eliminar
-  actionsPopup.querySelector('.confirm-btn').onclick = () => {
-    userList.removeChild(li); // ✅ Lo saca visualmente de la lista
-    // 👉 Si querés eliminarlo también del backend, después te agrego el socket.emit aquí
-  };
-
-  // Acción cuando cancelás
-  actionsPopup.querySelector('.cancel-btn').onclick = () => {
-    actionsPopup.innerHTML = ''; // 🔄 Limpiamos
-    
-  };
-};
-
-actionsPopup.appendChild(editIcon);
-actionsPopup.appendChild(deleteIcon);
-li.appendChild(actionsPopup);
-
 const nameDisplay = document.createElement('span');
 nameDisplay.className = 'username-display';
 nameDisplay.textContent = user.username;
-
-const editIcon = document.createElement('button');
-editIcon.innerHTML = '✏️';
-editIcon.className = 'edit-btn';
-        
-actionsPopup.appendChild(editIcon);
-actionsPopup.appendChild(deleteIcon);
-
 
 const input = document.createElement('input');
 input.type = 'text';
@@ -594,13 +550,25 @@ cancelBtn.innerHTML = '❌';
 cancelBtn.className = 'cancel-btn';
 cancelBtn.style.display = 'none';
 
+const editIcon = document.createElement('button');
+editIcon.innerHTML = '✏️';
+editIcon.className = 'edit-btn';
+
+const deleteIcon = document.createElement('button');
+deleteIcon.innerHTML = '🗑';
+deleteIcon.className = 'delete-btn';
+
+const actionsPopup = document.createElement('div');
+actionsPopup.className = 'user-actions-popup';
+actionsPopup.appendChild(editIcon);
+actionsPopup.appendChild(deleteIcon);
+
+// acciones del lápiz y basurita
 editIcon.onclick = () => {
   nameDisplay.style.display = 'none';
   input.style.display = 'inline-block';
   checkBtn.style.display = 'inline-block';
   cancelBtn.style.display = 'inline-block';
-
-  // Ocultamos los íconos flotantes
   actionsPopup.style.display = 'none';
 };
 
@@ -620,6 +588,24 @@ cancelBtn.onclick = () => {
   resetEditUI();
 };
 
+deleteIcon.onclick = () => {
+  actionsPopup.innerHTML = `
+    <div class="confirm-delete">
+      <button class="confirm-btn">✅</button>
+      <button class="cancel-btn">❌</button>
+    </div>
+  `;
+  actionsPopup.querySelector('.confirm-btn').onclick = () => {
+    userList.removeChild(li);
+    // 🔜 emit al backend si querés eliminar el usuario permanentemente
+  };
+  actionsPopup.querySelector('.cancel-btn').onclick = () => {
+    actionsPopup.innerHTML = '';
+    actionsPopup.appendChild(editIcon);
+    actionsPopup.appendChild(deleteIcon);
+  };
+};
+
 function resetEditUI() {
   nameDisplay.style.display = 'inline-block';
   input.style.display = 'none';
@@ -628,7 +614,23 @@ function resetEditUI() {
   editIcon.style.display = 'inline-block';
 }
 
+li.appendChild(nameDisplay);
+li.appendChild(input);
+li.appendChild(editIcon);
+li.appendChild(checkBtn);
+li.appendChild(cancelBtn);
+li.appendChild(actionsPopup);
+
+li.addEventListener('mouseenter', () => {
+  actionsPopup.style.display = 'flex';
+});
+li.addEventListener('mouseleave', () => {
+  actionsPopup.style.display = 'none';
+});
+
 li.onclick = () => selectUser(user.userId, user.username);
+userList.appendChild(li);
+socket.emit('request chat history', { userId: user.userId });
 
 li.appendChild(nameDisplay);
 li.appendChild(input);
