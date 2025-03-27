@@ -280,7 +280,17 @@
     socket.on('connect', () => {
       console.log('Conectado al servidor de Socket.IO');
     });
+    function updateUsername(userId, newUsername) {
+  console.log('Actualizando nombre de usuario para', userId, 'a', newUsername);
+  socket.emit('update username', { userId, newUsername });
 
+  if (userId === selectedUserId) {
+    selectedUsername = newUsername;
+    document.getElementById('currentUser').textContent = newUsername;
+    sessionStorage.setItem('lastUsername', newUsername);
+  }
+}
+    
     socket.on('connect_error', (error) => {
       console.error('Error de conexión a Socket.IO:', error);
     });
@@ -303,14 +313,21 @@
           return;
         }
         const li = document.createElement('li');
-        li.textContent = user.username;
-        li.dataset.userId = user.userId;
-        li.onclick = () => selectUser(user.userId, user.username);
-        if (user.userId === selectedUserId) {
-          li.classList.add('active');
-        }
-        userList.appendChild(li);
-        socket.emit('request chat history', { userId: user.userId });
+        const nameInput = document.createElement('input');
+nameInput.type = 'text';
+nameInput.value = user.username;
+nameInput.className = 'username-input';
+nameInput.dataset.userId = user.userId;
+nameInput.onblur = () => updateUsername(user.userId, nameInput.value);
+
+li.appendChild(nameInput);
+li.dataset.userId = user.userId;
+li.onclick = () => selectUser(user.userId, nameInput.value);
+if (user.userId === selectedUserId) {
+  li.classList.add('active');
+}
+userList.appendChild(li);
+socket.emit('request chat history', { userId: user.userId });
       });
     });
 
