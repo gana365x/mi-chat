@@ -365,14 +365,16 @@
   img.src = msg.image;
   img.onclick = () => openImageInNewWindow(msg.image);
   messageDiv.appendChild(img);
-} else if (msg.sender === 'Bot' && msg.message.includes('Usar cuenta personal')) {
+} else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
   messageDiv.innerHTML = `
-    <div class="bot-message-block">
-      <div class="bot-message-line"><strong>1- Usar</strong> cuenta personal.</div>
-      <div class="bot-message-line"><strong>2- Enviar</strong> comprobante visible.</div>
-      <div class="bot-message-line" style="margin-top: 8px;"><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></div>
-      <div class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</div>
-      <div class="bot-message-line"><strong>ALIAS:</strong> leprance</div>
+    <div style="font-size: 11.5px; line-height: 1.1; padding: 2px 4px; font-family: 'Segoe UI', sans-serif;">
+      <div style="margin-bottom: 2px;"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</div>
+      <div style="margin: 2px 0;">👉👉👉</div>
+      <div><strong>USUARIO:</strong> ________</div>
+      <div><strong>MONTO A RETIRAR:</strong> ________</div>
+      <div><strong>NOMBRE DE CTA BANCARIA:</strong> ________</div>
+      <div><strong>CBU:</strong> ________</div>
+      <div><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</div>
     </div>
   `;
 } else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
