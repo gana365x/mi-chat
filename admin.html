@@ -365,6 +365,71 @@ li.user-read {
   font-size: 14px;
   font-family: 'Segoe UI', sans-serif;
 }
+    
+.user-item {
+  background: #333;
+  color: white;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: space-between;
+  transition: background 0.3s, opacity 0.3s;
+  position: relative;
+  border-left: 4px solid transparent;
+}
+
+.user-item:hover {
+  background: #444;
+}
+
+.user-item.active {
+  background: #FF3B00;
+  color: white;
+}
+
+.user-item.unread {
+  border-left: 4px solid #FF3B00;
+}
+
+.user-item.closed {
+  opacity: 0.5;
+}
+
+.username-display {
+  flex-grow: 1;
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+}
+
+.edit-input {
+  flex-grow: 1;
+  padding: 4px 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: none;
+}
+
+.edit-btn,
+.confirm-btn,
+.cancel-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.edit-btn:hover,
+.confirm-btn:hover,
+.cancel-btn:hover {
+  transform: scale(1.2);
+  color: #FF3B00;
+}
 
   </style>
 </head>
