@@ -376,8 +376,20 @@
           </div>
         `;
       } else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
-        messageDiv.innerHTML = msg.message; // Ya viene como HTML
-      } else {
+  messageDiv.innerHTML = `
+    <div style="font-size: 12px; line-height: 1.1; font-family: 'Segoe UI', sans-serif; padding: 4px 6px;">
+      <p style="margin: 0;"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</p>
+      <p style="margin: 2px 0;">👉 👉 👉</p>
+      <p style="margin: 0;"><strong>USUARIO:</strong> ________</p>
+      <p style="margin: 0;"><strong>MONTO A RETIRAR:</strong> ________</p>
+      <p style="margin: 0;"><strong>NOMBRE DE CTA BANCARIA:</strong> ________</p>
+      <p style="margin: 0;"><strong>CBU:</strong> ________</p>
+      <p style="margin: 0;"><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</p>
+    </div>
+  `;
+}
+
+    } else {
         const formatted = msg.message ? msg.message.replace(/\n/g, "<br>") : '';
         messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${formatted}`;
       }
