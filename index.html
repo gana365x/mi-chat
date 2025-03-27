@@ -756,9 +756,11 @@
 
       if (!username || !password) {
         const errorPopup = document.getElementById("errorPopup");
-        if (errorPopup) {
-          errorPopup.classList.add('active');
-        }
+const overlay = document.getElementById("popupOverlay");
+if (errorPopup && overlay) {
+  errorPopup.classList.add('active');
+  overlay.classList.add('active'); // ✅ Bloquea el fondo
+}
         return;
       }
 
@@ -780,10 +782,12 @@
     });
 
     function closeErrorPopup() {
-      console.log('Cerrando popup de error');
-      const errorPopup = document.getElementById("errorPopup");
-      errorPopup.classList.remove('active');
-    }
+  console.log('Cerrando popup de error');
+  const errorPopup = document.getElementById("errorPopup");
+  const overlay = document.getElementById("popupOverlay");
+  errorPopup.classList.remove('active');
+  overlay.classList.remove('active'); // ✅ Desbloquea el fondo
+}
 
     function showActionButtons() {
       console.log('Mostrando botones de acción');
