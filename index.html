@@ -581,7 +581,7 @@
 </head>
 <body>
   <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
-  <button class="chat-button" id="chatButton">💬</button>
+  <button class="chat-button" id="chatButton" onclick="toggleChat()">💬</button>
 
   <div class="chat-container" id="chatBox">
     <div id="chatHeader" class="chat-header" style="display: none;">
@@ -772,7 +772,18 @@ if (errorPopup && overlay) {
         return;
       }
 
-     
+     // ✅ Función que se ejecuta al iniciar sesión manualmente
+function login(username) {
+  console.log('Login ejecutado. Usuario:', username);
+  currentUser = username;
+
+  // Guardamos el nombre y el ID (si existiera)
+  setCookie("chatUser", username, 30);
+  const storedUserId = getCookie("chatUserId");
+
+  socket.emit('user joined', { userId: storedUserId, username });
+}
+
 // ✅ Si ya hay sesión guardada, saltamos el login automáticamente
 window.addEventListener('DOMContentLoaded', () => {
   const savedUsername = getCookie("chatUser");
@@ -794,16 +805,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ✅ Cuando el servidor confirma la sesión, guardamos datos
 socket.on('session', (data) => {
-  console.log('Sesión recibida:', data);
+  console.log('✅ Sesión recibida del servidor:', data);
   userId = data.userId;
   currentUser = data.username;
+
   setCookie("chatUserId", userId, 30);
+  setCookie("chatUser", data.username, 30);
+
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("chatHeader").style.display = "flex";
   showActionButtons();
-
-  // ✅ Pedimos el historial al servidor apenas se inicia la sesión
-  socket.emit('request chat history', { userId });
 });
 
       // ✅ Al reconectar, pedimos el historial si tenemos el userId
@@ -822,8 +833,8 @@ socket.on('chat history', (data) => {
 
   console.log("📜 Historial recibido:", data);
 
-  const messagesDiv = document.getElementById("messages");
-messagesDiv.innerHTML = ""; // ✅ Solo borramos los mensajes, no el contenedor general
+  const chatBox = document.getElementById("chatBox"); // cambialo si tu contenedor se llama distinto
+  chatBox.innerHTML = ""; // limpiamos chat anterior
 
   data.messages.forEach(msg => {
     if (msg.message || msg.image) {
@@ -1156,34 +1167,25 @@ setTimeout(() => {
 }, 0);
 }
 
-      <script>
-  function toggleChat() {
-    console.log('toggleChat ejecutado. isChatOpen:', isChatOpen, 'isChatClosed:', isChatClosed);
-    const chat = document.getElementById("chatBox");
-    const button = document.getElementById("chatButton");
-
-    if (isChatOpen) {
-      console.log('Cerrando chat');
-      isChatOpen = false;
-      chat.classList.remove("open");
-      setTimeout(() => {
-        chat.style.display = "none";
-        button.textContent = "💬";
-      }, 300);
-    } else {
-      console.log('Abriendo chat');
-      isChatOpen = true;
-      button.textContent = "✖";
-      chat.style.display = "block";
-      setTimeout(() => chat.classList.add("open"), 10);
-    }
-  }
-
-      document.addEventListener("DOMContentLoaded", () => {
-  const chatButton = document.getElementById("chatButton");
-  chatButton.addEventListener("click", toggleChat);
-});
-      
-</script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const username = getCookie("chatUser");
+      console.log('Verificando cookie de usuario:', username);
+      if (username) {
+        console.log('Autologin ejecutado para usuario:', username);
+        currentUser = username;
+        const storedUserId = getCookie("chatUserId");
+        socket.emit('user joined', { userId: storedUserId, username });
+        isChatOpen = true;
+        const chat = document.getElementById("chatBox");
+        const button = document.getElementById("chatButton");
+        button.textContent = "✖";
+        chat.style.display = "block";
+        setTimeout(() => chat.classList.add("open"), 10);
+      } else {
+        console.log('No hay cookie de usuario, mostrando formulario de login');
+        document.getElementById("loginForm").style.display = "block";
+      }
+    });
+  </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f52088e0f9ab3',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
