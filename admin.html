@@ -475,17 +475,21 @@ li.user-read {
     </div>
 
     <div class="chat-area" id="chatArea">
-      <div class="chat-header">
-        <h2 id="chatUser">Chat con: <span id="currentUser"></span></h2>
-        <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
-      </div>
-      <div class="chat-messages" id="chatMessages"></div>
-      <div class="chat-input">
-        <input type="text" id="agentMessage" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendAgentMessage()">
-        <button onclick="sendAgentMessage()">Enviar</button>
-      </div>
-    </div>
+  <div class="chat-header">
+    <h2 id="chatUser">Chat con: 
+      <span id="currentUser">[Nombre del Usuario]</span>
+      <button id="editNameButton" onclick="editName()">✏️ Editar Nombre</button>
+      <button id="saveNameButton" onclick="saveName()" style="display:none;">Guardar</button>
+      <button id="cancelEditButton" onclick="cancelEdit()" style="display:none;">Cancelar</button>
+    </h2>
+    <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
   </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input">
+    <input type="text" id="agentMessage" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendAgentMessage()">
+    <button onclick="sendAgentMessage()">Enviar</button>
+  </div>
+</div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
