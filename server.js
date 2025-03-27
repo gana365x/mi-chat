@@ -70,31 +70,40 @@ io.on('connection', (socket) => {
   });
 
   // 🆕 NUEVO: Permitir que el admin actualice el nombre de usuario
-  socket.on('update username', ({ userId, newUsername }) => {
-    if (userSessions.has(userId)) {
-      const session = userSessions.get(userId);
-      userSessions.set(userId, { ...session, username: newUsername });
+  // 🆕 NUEVO: Permitir que el admin actualice el nombre de usuario
+socket.on('update username', ({ userId, newUsername }) => {
+  if (userSessions.has(userId)) {
+    const session = userSessions.get(userId);
+    userSessions.set(userId, { ...session, username: newUsername });
 
-      // Actualizar historial si ya existe (opcional, solo si querés que los mensajes antiguos reflejen el nuevo nombre)
-      if (chatHistory[userId]) {
-        chatHistory[userId] = chatHistory[userId].map(msg => ({
-          ...msg,
-          username: newUsername
-        }));
-      }
-
-      saveChatHistory();
-
-      // Enviar lista de usuarios actualizada a todos
-      const users = Array.from(userSessions.entries())
-        .filter(([id, session]) => session.socket)
-        .map(([id, session]) => ({ userId: id, username: session.username }));
-
-      io.emit('user list', users);
-      console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
+    // (Opcional) Si querés actualizar el historial también:
+    if (chatHistory[userId]) {
+      chatHistory[userId] = chatHistory[userId].map(msg => ({
+        ...msg,
+        username: newUsername
+      }));
     }
-  });
+
+    saveChatHistory();
+
+    const users = Array.from(userSessions.entries())
+      .filter(([id, session]) => session.socket)
+      .map(([id, session]) => ({ userId: id, username: session.username }));
+
+    io.emit('user list', users);
+    console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
+  }
 });
+
+// ✅ Mantené esto dentro del mismo "io.on('connection')"
+socket.on('admin connected', () => {
+  socket.join('admins');
+  const users = Array.from(userSessions.entries())
+    .filter(([id, session]) => id && session.username)
+    .map(([id, session]) => ({ userId: id, username: session.username }));
+  socket.emit('user list', users);
+});
+
 
   socket.on('admin connected', () => {
     socket.join('admins');
