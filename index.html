@@ -805,16 +805,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ✅ Cuando el servidor confirma la sesión, guardamos datos
 socket.on('session', (data) => {
-  console.log('✅ Sesión recibida del servidor:', data);
+  console.log('Sesión recibida:', data);
   userId = data.userId;
   currentUser = data.username;
-
   setCookie("chatUserId", userId, 30);
-  setCookie("chatUser", data.username, 30);
-
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("chatHeader").style.display = "flex";
   showActionButtons();
+
+  // ✅ Pedimos el historial al servidor apenas se inicia la sesión
+  socket.emit('request chat history', { userId });
 });
 
       // ✅ Al reconectar, pedimos el historial si tenemos el userId
