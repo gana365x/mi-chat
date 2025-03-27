@@ -910,6 +910,68 @@ if (lastUserId && lastUsername) {
   document.getElementById('currentUser').textContent = lastUsername;
   socket.emit('request chat history', { userId: lastUserId });
 }
+    
+    let originalUserName = '';  // Para almacenar el nombre original del usuario
+
+// Función para activar el modo de edición del nombre
+function editName() {
+  const currentUserSpan = document.getElementById("currentUser");
+  const editButton = document.getElementById("editNameButton");
+  const saveButton = document.getElementById("saveNameButton");
+  const cancelButton = document.getElementById("cancelEditButton");
+
+  // Guardar el nombre original
+  originalUserName = currentUserSpan.textContent.trim();
+  
+  // Cambiar el nombre a un campo de texto para editarlo
+  currentUserSpan.innerHTML = `<input type="text" id="newUserName" value="${originalUserName}" />`;
+
+  // Mostrar los botones de guardar y cancelar
+  saveButton.style.display = 'inline-block';
+  cancelButton.style.display = 'inline-block';
+  editButton.style.display = 'none';
+}
+
+// Función para guardar el nuevo nombre
+function saveName() {
+  const newUserName = document.getElementById("newUserName").value.trim();
+  const currentUserSpan = document.getElementById("currentUser");
+  const editButton = document.getElementById("editNameButton");
+  const saveButton = document.getElementById("saveNameButton");
+  const cancelButton = document.getElementById("cancelEditButton");
+
+  if (newUserName !== '') {
+    // Actualizar el nombre en la interfaz
+    currentUserSpan.textContent = newUserName;
+
+    // Hacer una llamada al servidor (si es necesario) para actualizar el nombre en el backend
+    // Aquí podrías emitir un evento de socket.io si es necesario
+    socket.emit('update user name', { userId, newUserName });
+
+    // Ocultar los botones de guardar y cancelar, mostrar el de editar
+    saveButton.style.display = 'none';
+    cancelButton.style.display = 'none';
+    editButton.style.display = 'inline-block';
+  } else {
+    alert("El nombre no puede estar vacío");
+  }
+}
+
+// Función para cancelar la edición y restaurar el nombre original
+function cancelEdit() {
+  const currentUserSpan = document.getElementById("currentUser");
+  const editButton = document.getElementById("editNameButton");
+  const saveButton = document.getElementById("saveNameButton");
+  const cancelButton = document.getElementById("cancelEditButton");
+
+  // Restaurar el nombre original
+  currentUserSpan.textContent = originalUserName;
+
+  // Ocultar los botones de guardar y cancelar, mostrar el de editar
+  saveButton.style.display = 'none';
+  cancelButton.style.display = 'none';
+  editButton.style.display = 'inline-block';
+}
    
   </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
