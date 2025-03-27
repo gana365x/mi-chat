@@ -532,6 +532,9 @@ checkBtn.onclick = () => {
   const newName = input.value.trim();
   if (newName && newName !== user.username) {
     updateUsername(user.userId, newName);
+    if (user.userId === selectedUserId) {
+      document.getElementById('currentUser').textContent = newName;
+    }
   }
   resetEditUI();
 };
