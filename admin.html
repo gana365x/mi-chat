@@ -419,85 +419,49 @@ li.user-read {
     const localChatHistory = {};
 
     socket.on('user list', (users) => {
-  console.log('Lista de usuarios recibida:', users);
-  const userList = document.getElementById('userList');
-  userList.innerHTML = '';
-  users.forEach(user => {
-    if (!user.userId) return;
+      console.log('Lista de usuarios recibida:', users);
+      const userList = document.getElementById('userList');
+      userList.innerHTML = '';
+      users.forEach(user => {
+        if (!user.userId) {
+          console.error('Usuario sin userId:', user);
+          return;
+        }
+        const li = document.createElement('li');
+li.classList.add('user-item');
+li.dataset.userId = user.userId;
 
-    const li = document.createElement('li');
-    li.dataset.userId = user.userId;
+const nameDisplay = document.createElement('span');
+nameDisplay.className = 'username-display';
+nameDisplay.textContent = user.username;
 
-    // Crear contenedor editable
-    const container = document.createElement('div');
-    container.classList.add('username-container');
+const editIcon = document.createElement('button');
+editIcon.innerHTML = '✏️';
+editIcon.className = 'edit-btn';
 
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.value = user.username;
-    nameInput.classList.add('username-text');
-    nameInput.readOnly = true;
+const input = document.createElement('input');
+input.type = 'text';
+input.value = user.username;
+input.className = 'edit-input';
+input.style.display = 'none';
 
-    const buttons = document.createElement('div');
-    buttons.classList.add('username-buttons');
-    buttons.style.display = 'none';
+const checkBtn = document.createElement('button');
+checkBtn.innerHTML = '✅';
+checkBtn.className = 'confirm-btn';
+checkBtn.style.display = 'none';
 
-    const editBtn = document.createElement('button');
-    editBtn.innerHTML = '✏️';
-    editBtn.onclick = (e) => {
-      e.stopPropagation();
-      nameInput.readOnly = false;
-      nameInput.focus();
-      buttons.style.display = 'flex';
-      container.classList.add('editing');
-    };
+const cancelBtn = document.createElement('button');
+cancelBtn.innerHTML = '❌';
+cancelBtn.className = 'cancel-btn';
+cancelBtn.style.display = 'none';
 
-    const saveBtn = document.createElement('button');
-    saveBtn.innerHTML = '✅';
-    saveBtn.onclick = (e) => {
-      e.stopPropagation();
-      updateUsername(user.userId, nameInput.value);
-      nameInput.readOnly = true;
-      buttons.style.display = 'none';
-      container.classList.remove('editing');
-    };
-
-    const cancelBtn = document.createElement('button');
-    cancelBtn.innerHTML = '❌';
-    cancelBtn.onclick = (e) => {
-      e.stopPropagation();
-      nameInput.value = user.username;
-      nameInput.readOnly = true;
-      buttons.style.display = 'none';
-      container.classList.remove('editing');
-    };
-
-    buttons.appendChild(saveBtn);
-    buttons.appendChild(cancelBtn);
-
-    container.appendChild(nameInput);
-    container.appendChild(buttons);
-    container.appendChild(editBtn);
-
-    li.appendChild(container);
-    li.onclick = () => selectUser(user.userId, nameInput.value);
-
-    // Marcar como activo o cerrado
-    if (user.userId === selectedUserId) {
-      li.classList.add('active');
-    } else {
-      const wasRead = sessionStorage.getItem(`chatRead_${user.userId}`);
-      if (wasRead === 'true') {
-        li.classList.add('user-read');
-      } else {
-        li.classList.add('user-unread');
-      }
-    }
-
-    userList.appendChild(li);
-    socket.emit('request chat history', { userId: user.userId });
-  });
-});
+editIcon.onclick = () => {
+  nameDisplay.style.display = 'none';
+  input.style.display = 'inline-block';
+  checkBtn.style.display = 'inline-block';
+  cancelBtn.style.display = 'inline-block';
+  editIcon.style.display = 'none';
+};
 
 checkBtn.onclick = () => {
   const newName = input.value.trim();
