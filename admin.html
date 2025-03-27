@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Agentes - GANA365</title>
+  <!-- Agregar Font Awesome para los iconos -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
     body {
-  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  background-color: #121212;
-  color: #fff;
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
       margin: 0;
       padding: 20px;
       display: flex;
@@ -66,8 +68,8 @@
     }
 
     .chat-area {
-  flex: 1;
-  background: #1e1e1e;
+      flex: 1;
+      background: #1e1e1e;
       border-radius: 10px;
       padding: 20px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -136,7 +138,7 @@
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
       white-space: pre-wrap;
       align-self: flex-start;
-      color: #111; /* ✅ Esto hace que el texto sea negro dentro del mensaje */
+      color: #111;
     }
 
     .message.bot {
@@ -236,235 +238,265 @@
     }
 
     .bot-message-line {
-  display: block;
-  line-height: 0.1;        /* Menor espacio entre líneas */
-  font-size: 13px;         /* Letra más chica */
-  color: #222;             /* Más legible */
-  font-family: 'Segoe UI', sans-serif;
-}
+      display: block;
+      line-height: 0.1;
+      font-size: 13px;
+      color: #222;
+      font-family: 'Segoe UI', sans-serif;
+    }
 
     .bot-message-line {
-  font-size: 13px;
-  line-height: 1.3;
-  margin: 2px 0;
-}
+      font-size: 13px;
+      line-height: 1.3;
+      margin: 2px 0;
+    }
 
-.bot-message-block {
-  padding: 5px;
-}
+    .bot-message-block {
+      padding: 5px;
+    }
+
     .user-item {
-  padding: 10px;
-  background: #333;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  font-size: 16px;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
-}
+      padding: 10px;
+      background: #333;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      font-size: 16px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+    }
 
-.username-display {
-  flex-grow: 1;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 15px;
-  color: white;
-}
+    .username-display {
+      flex-grow: 1;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 15px;
+      color: white;
+    }
 
-.edit-input {
-  flex-grow: 1;
-  padding: 5px 8px;
-  border-radius: 5px;
-  border: none;
-  font-size: 15px;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #fff;
-  color: #111;
-}
+    .edit-input {
+      flex-grow: 1;
+      padding: 5px 8px;
+      border-radius: 5px;
+      border: none;
+      font-size: 15px;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff;
+      color: #111;
+    }
 
-.edit-btn,
-.confirm-btn,
-.cancel-btn {
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 16px;
-  transition: transform 0.2s;
-}
+    .edit-btn,
+    .confirm-btn,
+    .cancel-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
 
-.edit-btn:hover,
-.confirm-btn:hover,
-.cancel-btn:hover {
-  transform: scale(1.2);
-}
+    .edit-btn:hover,
+    .confirm-btn:hover,
+    .cancel-btn:hover {
+      transform: scale(1.2);
+    }
 
-.user-list li.active {
-  background: #FF3B00 !important;
-}
+    .user-list li.active {
+      background: #FF3B00 !important;
+    }
 
     .username-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
 
-.username-text {
-  flex: 1;
-  color: white;
-  font-weight: 500;
-  font-family: 'Segoe UI', sans-serif;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 15px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  transition: border 0.3s;
-}
+    .username-text {
+      flex: 1;
+      color: white;
+      font-weight: 500;
+      font-family: 'Segoe UI', sans-serif;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      transition: border 0.3s;
+    }
 
-.username-container.editing .username-text {
-  background: #111;
-  border: 1px solid #FF3B00;
-  color: white;
-}
+    .username-container.editing .username-text {
+      background: #111;
+      border: 1px solid #FF3B00;
+      color: white;
+    }
 
-.username-buttons {
-  display: flex;
-  gap: 5px;
-}
+    .username-buttons {
+      display: flex;
+      gap: 5px;
+    }
 
-.username-buttons button {
-  background: none;
-  border: none;
-  color: #FF3B00;
-  font-size: 16px;
-  cursor: pointer;
-  transition: color 0.3s;
-}
+    .username-buttons button {
+      background: none;
+      border: none;
+      color: #FF3B00;
+      font-size: 16px;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
 
-.username-buttons button:hover {
-  color: white;
-}
+    .username-buttons button:hover {
+      color: white;
+    }
 
-li.user-unread {
-  border: 2px solid #FF3B00;
-  border-radius: 6px;
-}
+    li.user-unread {
+      border: 2px solid #FF3B00;
+      border-radius: 6px;
+    }
 
-li.user-read {
-  opacity: 0.6;
-}
+    li.user-read {
+      opacity: 0.6;
+    }
 
-.user-list input {
-  background-color: #222;
-  color: white;
-  border: 1px solid #444;
-  padding: 6px 10px;
-  border-radius: 5px;
-  font-size: 14px;
-  font-family: 'Segoe UI', sans-serif;
-}
+    .user-list input {
+      background-color: #222;
+      color: white;
+      border: 1px solid #444;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: 'Segoe UI', sans-serif;
+    }
     
-.user-item {
-  background: #333;
-  color: white;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  justify-content: space-between;
-  transition: background 0.3s, opacity 0.3s;
-  position: relative;
-  border-left: 4px solid transparent;
-}
+    .user-item {
+      background: #333;
+      color: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: space-between;
+      transition: background 0.3s, opacity 0.3s;
+      position: relative;
+      border-left: 4px solid transparent;
+    }
 
-.user-item:hover {
-  background: #444;
-}
+    .user-item:hover {
+      background: #444;
+    }
 
-.user-item.active {
-  background: #FF3B00;
-  color: white;
-}
+    .user-item.active {
+      background: #FF3B00;
+      color: white;
+    }
 
-.user-item.unread {
-  border-left: 4px solid #FF3B00;
-}
+    .user-item.unread {
+      border-left: 4px solid #FF3B00;
+    }
 
-.user-item.closed {
-  opacity: 0.5;
-}
+    .user-item.closed {
+      opacity: 0.5;
+    }
 
-.username-display {
-  flex-grow: 1;
-  font-weight: bold;
-  font-size: 14px;
-  color: white;
-}
+    .username-display {
+      flex-grow: 1;
+      font-weight: bold;
+      font-size: 14px;
+      color: white;
+    }
 
-.edit-input {
-  flex-grow: 1;
-  padding: 4px 8px;
-  font-size: 14px;
-  border-radius: 4px;
-  border: none;
-}
+    .edit-input {
+      flex-grow: 1;
+      padding: 4px 8px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: none;
+    }
 
-.edit-btn,
-.confirm-btn,
-.cancel-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
+    .edit-btn,
+    .confirm-btn,
+    .cancel-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
 
-.edit-btn:hover,
-.confirm-btn:hover,
-.cancel-btn:hover {
-  transform: scale(1.2);
-  color: #FF3B00;
-}
+    .edit-btn:hover,
+    .confirm-btn:hover,
+    .cancel-btn:hover {
+      transform: scale(1.2);
+      color: #FF3B00;
+    }
+
     .user-actions-popup {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  background: #222;
-  border: 1px solid #FF3B00;
-  padding: 6px 10px;
-  border-radius: 8px;
-  display: none;
-  flex-direction: row;
-  gap: 10px;
-  z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      background: #222;
+      border: 1px solid #FF3B00;
+      padding: 6px 10px;
+      border-radius: 8px;
+      display: none;
+      flex-direction: row;
+      gap: 10px;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
 
-.user-actions-popup button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
+    .user-actions-popup button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-.user-actions-popup button:hover {
-  color: #FF3B00;
-}
+    .user-actions-popup button:hover {
+      color: #FF3B00;
+    }
 
-.confirm-delete {
-  display: flex;
-  gap: 10px;
-}
+    .confirm-delete {
+      display: flex;
+      gap: 10px;
+    }
 
+    /* CSS para los botones de edición */
+    .edit-name {
+      display: inline-block;
+      margin-left: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #FF3B00;
+    }
+
+    .edit-name i {
+      transition: transform 0.2s ease;
+    }
+
+    .edit-name i:hover {
+      transform: scale(1.2);
+    }
+
+    /* Mostrar botones solo al hacer hover en el chat-header */
+    .chat-header:hover .edit-name {
+      display: inline-block;
+    }
+
+    #currentUser input {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 80%;
+    }
   </style>
 </head>
 <body>
@@ -475,21 +507,26 @@ li.user-read {
     </div>
 
     <div class="chat-area" id="chatArea">
-  <div class="chat-header">
-    <h2 id="chatUser">Chat con: 
-      <span id="currentUser">[Nombre del Usuario]</span>
-      <button id="editNameButton" onclick="editName()">✏️ Editar Nombre</button>
-      <button id="saveNameButton" onclick="saveName()" style="display:none;">Guardar</button>
-      <button id="cancelEditButton" onclick="cancelEdit()" style="display:none;">Cancelar</button>
-    </h2>
-    <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
+      <div class="chat-header">
+        <h2 id="chatUser">Chat con: <span id="currentUser">[Nombre del Usuario]</span></h2>
+        <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
+        <div id="editNameButton" class="edit-name">
+          <i class="fas fa-pencil-alt" onclick="editName()"></i>
+        </div>
+        <div id="saveNameButton" class="edit-name" style="display: none;">
+          <i class="fas fa-check" onclick="saveName()"></i>
+        </div>
+        <div id="cancelEditButton" class="edit-name" style="display: none;">
+          <i class="fas fa-times" onclick="cancelEdit()"></i>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input">
+        <input type="text" id="agentMessage" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendAgentMessage()">
+        <button onclick="sendAgentMessage()">Enviar</button>
+      </div>
+    </div>
   </div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input">
-    <input type="text" id="agentMessage" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendAgentMessage()">
-    <button onclick="sendAgentMessage()">Enviar</button>
-  </div>
-</div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -498,16 +535,17 @@ li.user-read {
     socket.on('connect', () => {
       console.log('Conectado al servidor de Socket.IO');
     });
-    function updateUsername(userId, newUsername) {
-  console.log('Actualizando nombre de usuario para', userId, 'a', newUsername);
-  socket.emit('update username', { userId, newUsername });
 
-  if (userId === selectedUserId) {
-    selectedUsername = newUsername;
-    document.getElementById('currentUser').textContent = newUsername;
-    sessionStorage.setItem('lastUsername', newUsername);
-  }
-}
+    function updateUsername(userId, newUsername) {
+      console.log('Actualizando nombre de usuario para', userId, 'a', newUsername);
+      socket.emit('update username', { userId, newUsername });
+
+      if (userId === selectedUserId) {
+        selectedUsername = newUsername;
+        document.getElementById('currentUser').textContent = newUsername;
+        sessionStorage.setItem('lastUsername', newUsername);
+      }
+    }
     
     socket.on('connect_error', (error) => {
       console.error('Error de conexión a Socket.IO:', error);
@@ -531,127 +569,108 @@ li.user-read {
           return;
         }
         const li = document.createElement('li');
-li.classList.add('user-item');
-li.dataset.userId = user.userId;
+        li.classList.add('user-item');
+        li.dataset.userId = user.userId;
 
-const nameDisplay = document.createElement('span');
-nameDisplay.className = 'username-display';
-nameDisplay.textContent = user.username;
+        const nameDisplay = document.createElement('span');
+        nameDisplay.className = 'username-display';
+        nameDisplay.id = 'inboxUserName-' + user.userId; // ID único para el inbox
+        nameDisplay.textContent = user.username;
 
-const input = document.createElement('input');
-input.type = 'text';
-input.value = user.username;
-input.className = 'edit-input';
-input.style.display = 'none';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = user.username;
+        input.className = 'edit-input';
+        input.style.display = 'none';
 
-const checkBtn = document.createElement('button');
-checkBtn.innerHTML = '✅';
-checkBtn.className = 'confirm-btn';
-checkBtn.style.display = 'none';
+        const checkBtn = document.createElement('button');
+        checkBtn.innerHTML = '✅';
+        checkBtn.className = 'confirm-btn';
+        checkBtn.style.display = 'none';
 
-const cancelBtn = document.createElement('button');
-cancelBtn.innerHTML = '❌';
-cancelBtn.className = 'cancel-btn';
-cancelBtn.style.display = 'none';
+        const cancelBtn = document.createElement('button');
+        cancelBtn.innerHTML = '❌';
+        cancelBtn.className = 'cancel-btn';
+        cancelBtn.style.display = 'none';
 
-const editIcon = document.createElement('button');
-editIcon.innerHTML = '✏️';
-editIcon.className = 'edit-btn';
+        const editIcon = document.createElement('button');
+        editIcon.innerHTML = '✏️';
+        editIcon.className = 'edit-btn';
 
-const deleteIcon = document.createElement('button');
-deleteIcon.innerHTML = '🗑';
-deleteIcon.className = 'delete-btn';
+        const deleteIcon = document.createElement('button');
+        deleteIcon.innerHTML = '🗑';
+        deleteIcon.className = 'delete-btn';
 
-const actionsPopup = document.createElement('div');
-actionsPopup.className = 'user-actions-popup';
-actionsPopup.appendChild(editIcon);
-actionsPopup.appendChild(deleteIcon);
+        const actionsPopup = document.createElement('div');
+        actionsPopup.className = 'user-actions-popup';
+        actionsPopup.appendChild(editIcon);
+        actionsPopup.appendChild(deleteIcon);
 
-// acciones del lápiz y basurita
-editIcon.onclick = () => {
-  nameDisplay.style.display = 'none';
-  input.style.display = 'inline-block';
-  checkBtn.style.display = 'inline-block';
-  cancelBtn.style.display = 'inline-block';
-  actionsPopup.style.display = 'none';
-};
+        editIcon.onclick = () => {
+          nameDisplay.style.display = 'none';
+          input.style.display = 'inline-block';
+          checkBtn.style.display = 'inline-block';
+          cancelBtn.style.display = 'inline-block';
+          actionsPopup.style.display = 'none';
+        };
 
-checkBtn.onclick = () => {
-  const newName = input.value.trim();
-  if (newName && newName !== user.username) {
-    updateUsername(user.userId, newName);
-    if (user.userId === selectedUserId) {
-      document.getElementById('currentUser').textContent = newName;
-    }
-  }
-  resetEditUI();
-};
+        checkBtn.onclick = () => {
+          const newName = input.value.trim();
+          if (newName && newName !== user.username) {
+            updateUsername(user.userId, newName);
+            if (user.userId === selectedUserId) {
+              document.getElementById('currentUser').textContent = newName;
+            }
+          }
+          resetEditUI();
+        };
 
-cancelBtn.onclick = () => {
-  input.value = user.username;
-  resetEditUI();
-};
+        cancelBtn.onclick = () => {
+          input.value = user.username;
+          resetEditUI();
+        };
 
-deleteIcon.onclick = () => {
-  actionsPopup.innerHTML = `
-    <div class="confirm-delete">
-      <button class="confirm-btn">✅</button>
-      <button class="cancel-btn">❌</button>
-    </div>
-  `;
-  actionsPopup.querySelector('.confirm-btn').onclick = () => {
-    userList.removeChild(li);
-    // 🔜 emit al backend si querés eliminar el usuario permanentemente
-  };
-  actionsPopup.querySelector('.cancel-btn').onclick = () => {
-    actionsPopup.innerHTML = '';
-    actionsPopup.appendChild(editIcon);
-    actionsPopup.appendChild(deleteIcon);
-  };
-};
+        deleteIcon.onclick = () => {
+          actionsPopup.innerHTML = `
+            <div class="confirm-delete">
+              <button class="confirm-btn">✅</button>
+              <button class="cancel-btn">❌</button>
+            </div>
+          `;
+          actionsPopup.querySelector('.confirm-btn').onclick = () => {
+            userList.removeChild(li);
+          };
+          actionsPopup.querySelector('.cancel-btn').onclick = () => {
+            actionsPopup.innerHTML = '';
+            actionsPopup.appendChild(editIcon);
+            actionsPopup.appendChild(deleteIcon);
+          };
+        };
 
-function resetEditUI() {
-  nameDisplay.style.display = 'inline-block';
-  input.style.display = 'none';
-  checkBtn.style.display = 'none';
-  cancelBtn.style.display = 'none';
-  editIcon.style.display = 'inline-block';
-}
+        function resetEditUI() {
+          nameDisplay.style.display = 'inline-block';
+          input.style.display = 'none';
+          checkBtn.style.display = 'none';
+          cancelBtn.style.display = 'none';
+          editIcon.style.display = 'inline-block';
+        }
 
-li.appendChild(nameDisplay);
-li.appendChild(input);
-li.appendChild(checkBtn);
-li.appendChild(cancelBtn);
-li.appendChild(actionsPopup);
-
-li.addEventListener('mouseenter', () => {
-  actionsPopup.style.display = 'flex';
-});
-li.addEventListener('mouseleave', () => {
-  actionsPopup.style.display = 'none';
-});
-
-li.onclick = () => selectUser(user.userId, user.username);
-userList.appendChild(li);
-socket.emit('request chat history', { userId: user.userId });
-
-li.appendChild(nameDisplay);
-li.appendChild(input);
-li.appendChild(editIcon);
-li.appendChild(checkBtn);
-li.appendChild(cancelBtn);
-userList.appendChild(li);
+        li.appendChild(nameDisplay);
+        li.appendChild(input);
+        li.appendChild(checkBtn);
+        li.appendChild(cancelBtn);
+        li.appendChild(actionsPopup);
 
         li.addEventListener('mouseenter', () => {
-  actionsPopup.style.display = 'flex';
-});
+          actionsPopup.style.display = 'flex';
+        });
+        li.addEventListener('mouseleave', () => {
+          actionsPopup.style.display = 'none';
+        });
 
-li.addEventListener('mouseleave', () => {
-  actionsPopup.style.display = 'none';
-});
-
-
-socket.emit('request chat history', { userId: user.userId });
+        li.onclick = () => selectUser(user.userId, user.username);
+        userList.appendChild(li);
+        socket.emit('request chat history', { userId: user.userId });
       });
     });
 
@@ -664,14 +683,14 @@ socket.emit('request chat history', { userId: user.userId });
         li.classList.remove('active');
         if (li.dataset.userId === userId) {
           li.classList.add('active');
-        sessionStorage.setItem('lastUserId', userId);
-        sessionStorage.setItem('lastUsername', username);
+          sessionStorage.setItem('lastUserId', userId);
+          sessionStorage.setItem('lastUsername', username);
         }
       }
       const chatArea = document.getElementById('chatArea');
       chatArea.classList.add('active');
       document.getElementById('currentUser').textContent = username;
-      document.getElementById('chatMessages').innerHTML = ''; // Limpiar los mensajes anteriores
+      document.getElementById('chatMessages').innerHTML = '';
       displayLocalMessages(userId);
       if (userId) {
         socket.emit('request chat history', { userId });
@@ -681,69 +700,57 @@ socket.emit('request chat history', { userId: user.userId });
     }
 
     function displayLocalMessages(userId) {
-  console.log('Mostrando mensajes locales para userId:', userId);
-  const chatMessages = document.getElementById('chatMessages');
-  chatMessages.innerHTML = ''; // Limpiar mensajes anteriores
+      console.log('Mostrando mensajes locales para userId:', userId);
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML = '';
 
-  const messages = localChatHistory[userId] || [];
+      const messages = localChatHistory[userId] || [];
 
-  if (messages.length > 0) {
-    messages.forEach(msg => {
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message');
+      if (messages.length > 0) {
+        messages.forEach(msg => {
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('message');
 
-      if (msg.sender === 'Bot') {
-        messageDiv.classList.add('bot');
-      } else if (msg.sender === 'Agent') {
-        messageDiv.classList.add('agent');
+          if (msg.sender === 'Bot') {
+            messageDiv.classList.add('bot');
+          } else if (msg.sender === 'Agent') {
+            messageDiv.classList.add('agent');
+          } else {
+            messageDiv.classList.add('user');
+          }
+
+          if (msg.image) {
+            messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
+            const img = document.createElement('img');
+            img.src = msg.image;
+            img.onclick = () => openImageInNewWindow(msg.image);
+            messageDiv.appendChild(img);
+          } else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
+            messageDiv.innerHTML = `
+              <div class="bot-message-block">
+                <div class="bot-message-line"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</div>
+                <div class="bot-message-line">👉 👉 👉</div>
+                <div class="bot-message-line"><strong>USUARIO:</strong> ________</div>
+                <div class="bot-message-line"><strong>MONTO A RETIRAR:</strong> ________</div>
+                <div class="bot-message-line"><strong>NOMBRE DE CTA BANCARIA:</strong> ________</div>
+                <div class="bot-message-line"><strong>CBU:</strong> ________</div>
+                <div class="bot-message-line"><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</div>
+              </div>
+            `;
+          } else {
+            const formatted = msg.message ? msg.message.replace(/\n/g, "<br>") : '';
+            messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${formatted}`;
+          }
+
+          chatMessages.appendChild(messageDiv);
+        });
       } else {
-        messageDiv.classList.add('user');
+        console.log('No hay mensajes locales para este usuario:', userId);
+        chatMessages.innerHTML = '<p>No hay mensajes previos.</p>';
       }
 
-      if (msg.image) {
-  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
-  const img = document.createElement('img');
-  img.src = msg.image;
-  img.onclick = () => openImageInNewWindow(msg.image);
-  messageDiv.appendChild(img);
-} else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
-  messageDiv.innerHTML = `
-    <div class="bot-message-block">
-      <div class="bot-message-line"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</div>
-      <div class="bot-message-line">👉 👉 👉</div>
-      <div class="bot-message-line"><strong>USUARIO:</strong> ________</div>
-      <div class="bot-message-line"><strong>MONTO A RETIRAR:</strong> ________</div>
-      <div class="bot-message-line"><strong>NOMBRE DE CTA BANCARIA:</strong> ________</div>
-      <div class="bot-message-line"><strong>CBU:</strong> ________</div>
-      <div class="bot-message-line"><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</div>
-    </div>
-  `;
-} else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
-  messageDiv.innerHTML = `
-    <div style="font-size: 12px; line-height: 1.2; padding: 4px 6px; font-family: 'Segoe UI', sans-serif;">
-      <p style="margin: 0;"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</p>
-      <p style="margin: 2px 0;">👉 👉 👉</p>
-      <p style="margin: 0;"><strong>USUARIO:</strong> ________</p>
-      <p style="margin: 0;"><strong>MONTO A RETIRAR:</strong> ________</p>
-      <p style="margin: 0;"><strong>NOMBRE DE CTA BANCARIA:</strong> ________</p>
-      <p style="margin: 0;"><strong>CBU:</strong> ________</p>
-      <p style="margin: 0;"><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</p>
-    </div>
-  `;
-} else {
-  const formatted = msg.message ? msg.message.replace(/\n/g, "<br>") : '';
-  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${formatted}`;
-}
-
-chatMessages.appendChild(messageDiv);
-    });
-  } else {
-    console.log('No hay mensajes locales para este usuario:', userId);
-    chatMessages.innerHTML = '<p>No hay mensajes previos.</p>';
-  }
-
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
           
     socket.on('chat history', (data) => {
       console.log('Historial de chat recibido:', data);
@@ -764,13 +771,11 @@ chatMessages.appendChild(messageDiv);
         console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
         return;
       }
-      // Solo agregar el mensaje al historial del usuario correspondiente
       if (!localChatHistory[data.userId]) {
         localChatHistory[data.userId] = [];
       }
       localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
       console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-      // Solo mostrar el mensaje si el userId coincide con el usuario seleccionado
       if (data.userId === selectedUserId) {
         console.log('Mostrando mensaje para el usuario seleccionado:', data);
         const chatMessages = document.getElementById('chatMessages');
@@ -783,41 +788,36 @@ chatMessages.appendChild(messageDiv);
         } else {
           messageDiv.classList.add('user');
         }
-        // Si el mensaje es el de "Cargar Fichas" del bot, aplicamos formato especial
         if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
-  messageDiv.innerHTML = `
-    <span class="bot-message-line">1- <strong>Usar</strong> cuenta personal.</span><br><br>
-    <span class="bot-message-line">2- <strong>Enviar</strong> comprobante visible.</span><br><br>
-    <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANCE SRL</strong></span><br><br>
-    <span class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</span><br><br>
-    <span class="bot-message-line"><strong>ALIAS:</strong> leprance</span>
-  `;
-} else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
-  messageDiv.innerHTML = `
-    <div style="font-size: 12px; line-height: 1.2;">
-      <p><strong>PARA RETIRAR COMPLETAR</strong></p>
-      <p><strong>DATOS:</strong></p>
-      <p>Utilizar tu propia cuenta bancaria</p>
-      <p>👇👇👇</p>
-      <p><strong>USUARIO:</strong></p>
-      <p><strong>MONTO A RETIRAR:</strong></p>
-      <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
-      <p><strong>CBU:</strong></p>
-      <p><strong>COMPROBANTE DE TU ÚLTIMA CARGA:</strong></p>
-    </div>
-  `;
-} else {
-  // para el resto de los mensajes normales
-  const formatted = data.message.replace(/\n/g, "<br>");
-  messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
-}
+          messageDiv.innerHTML = `
+            <span class="bot-message-line">1- <strong>Usar</strong> cuenta personal.</span><br><br>
+            <span class="bot-message-line">2- <strong>Enviar</strong> comprobante visible.</span><br><br>
+            <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANCE SRL</strong></span><br><br>
+            <span class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</span><br><br>
+            <span class="bot-message-line"><strong>ALIAS:</strong> leprance</span>
+          `;
+        } else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
+          messageDiv.innerHTML = `
+            <div style="font-size: 12px; line-height: 1.2;">
+              <p><strong>PARA RETIRAR COMPLETAR</strong></p>
+              <p><strong>DATOS:</strong></p>
+              <p>Utilizar tu propia cuenta bancaria</p>
+              <p>👇👇👇</p>
+              <p><strong>USUARIO:</strong></p>
+              <p><strong>MONTO A RETIRAR:</strong></p>
+              <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
+              <p><strong>CBU:</strong></p>
+              <p><strong>COMPROBANTE DE TU ÚLTIMA CARGA:</strong></p>
+            </div>
+          `;
+        } else {
+          const formatted = data.message.replace(/\n/g, "<br>");
+          messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
+        }
 
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-      } else {
-  const formatted = data.message ? data.message.replace(/\n/g, "<br>") : '';
-  messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
-}
+      }
     });
 
     socket.on('admin image', (data) => {
@@ -826,13 +826,11 @@ chatMessages.appendChild(messageDiv);
         console.error('Imagen recibida inválida, falta userId, sender o image:', data);
         return;
       }
-      // Solo agregar la imagen al historial del usuario correspondiente
       if (!localChatHistory[data.userId]) {
         localChatHistory[data.userId] = [];
       }
       localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
       console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-      // Solo mostrar la imagen si el userId coincide con el usuario seleccionado
       if (data.userId === selectedUserId) {
         console.log('Mostrando imagen para el usuario seleccionado:', data);
         const chatMessages = document.getElementById('chatMessages');
@@ -901,78 +899,88 @@ chatMessages.appendChild(messageDiv);
 
     socket.emit('admin connected');
     const lastUserId = sessionStorage.getItem('lastUserId');
-const lastUsername = sessionStorage.getItem('lastUsername');
-if (lastUserId && lastUsername) {
-  selectedUserId = lastUserId;
-  selectedUsername = lastUsername;
-  const chatArea = document.getElementById('chatArea');
-  chatArea.classList.add('active');
-  document.getElementById('currentUser').textContent = lastUsername;
-  socket.emit('request chat history', { userId: lastUserId });
-}
-    
-    let originalUserName = '';  // Para almacenar el nombre original del usuario
+    const lastUsername = sessionStorage.getItem('lastUsername');
+    if (lastUserId && lastUsername) {
+      selectedUserId = lastUserId;
+      selectedUsername = lastUsername;
+      const chatArea = document.getElementById('chatArea');
+      chatArea.classList.add('active');
+      document.getElementById('currentUser').textContent = lastUsername;
+      socket.emit('request chat history', { userId: lastUserId });
+    }
 
-// Función para activar el modo de edición del nombre
-function editName() {
-  const currentUserSpan = document.getElementById("currentUser");
-  const editButton = document.getElementById("editNameButton");
-  const saveButton = document.getElementById("saveNameButton");
-  const cancelButton = document.getElementById("cancelEditButton");
+    let originalUserName = '';  // Para almacenar el nombre original
 
-  // Guardar el nombre original
-  originalUserName = currentUserSpan.textContent.trim();
-  
-  // Cambiar el nombre a un campo de texto para editarlo
-  currentUserSpan.innerHTML = `<input type="text" id="newUserName" value="${originalUserName}" />`;
+    // Función para activar el modo de edición del nombre
+    function editName() {
+      const currentUserSpan = document.getElementById("currentUser");
+      const editButton = document.getElementById("editNameButton");
+      const saveButton = document.getElementById("saveNameButton");
+      const cancelButton = document.getElementById("cancelEditButton");
 
-  // Mostrar los botones de guardar y cancelar
-  saveButton.style.display = 'inline-block';
-  cancelButton.style.display = 'inline-block';
-  editButton.style.display = 'none';
-}
+      // Guardar el nombre original
+      originalUserName = currentUserSpan.textContent.trim();
+      
+      // Cambiar el nombre a un campo de texto para editarlo
+      currentUserSpan.innerHTML = `<input type="text" id="newUserName" value="${originalUserName}" />`;
 
-// Función para guardar el nuevo nombre
-function saveName() {
-  const newUserName = document.getElementById("newUserName").value.trim();
-  const currentUserSpan = document.getElementById("currentUser");
-  const editButton = document.getElementById("editNameButton");
-  const saveButton = document.getElementById("saveNameButton");
-  const cancelButton = document.getElementById("cancelEditButton");
+      // Mostrar los botones de guardar y cancelar
+      saveButton.style.display = 'inline-block';
+      cancelButton.style.display = 'inline-block';
+      editButton.style.display = 'none';
+    }
 
-  if (newUserName !== '') {
-    // Actualizar el nombre en la interfaz
-    currentUserSpan.textContent = newUserName;
+    // Función para guardar el nuevo nombre
+    function saveName() {
+      const newUserName = document.getElementById("newUserName").value.trim();
+      const currentUserSpan = document.getElementById("currentUser");
+      const editButton = document.getElementById("editNameButton");
+      const saveButton = document.getElementById("saveNameButton");
+      const cancelButton = document.getElementById("cancelEditButton");
 
-    // Hacer una llamada al servidor (si es necesario) para actualizar el nombre en el backend
-    // Aquí podrías emitir un evento de socket.io si es necesario
-    socket.emit('update user name', { userId, newUserName });
+      if (newUserName !== '') {
+        // Actualizar el nombre en la interfaz
+        currentUserSpan.textContent = newUserName;
 
-    // Ocultar los botones de guardar y cancelar, mostrar el de editar
-    saveButton.style.display = 'none';
-    cancelButton.style.display = 'none';
-    editButton.style.display = 'inline-block';
-  } else {
-    alert("El nombre no puede estar vacío");
-  }
-}
+        // Emitir el cambio al servidor para actualizarlo en el inbox
+        socket.emit('update user name', { userId: selectedUserId, newUserName });
 
-// Función para cancelar la edición y restaurar el nombre original
-function cancelEdit() {
-  const currentUserSpan = document.getElementById("currentUser");
-  const editButton = document.getElementById("editNameButton");
-  const saveButton = document.getElementById("saveNameButton");
-  const cancelButton = document.getElementById("cancelEditButton");
+        // Ocultar los botones de guardar y cancelar, mostrar el de editar
+        saveButton.style.display = 'none';
+        cancelButton.style.display = 'none';
+        editButton.style.display = 'inline-block';
+      } else {
+        alert("El nombre no puede estar vacío");
+      }
+    }
 
-  // Restaurar el nombre original
-  currentUserSpan.textContent = originalUserName;
+    // Función para cancelar la edición y restaurar el nombre original
+    function cancelEdit() {
+      const currentUserSpan = document.getElementById("currentUser");
+      const editButton = document.getElementById("editNameButton");
+      const saveButton = document.getElementById("saveNameButton");
+      const cancelButton = document.getElementById("cancelEditButton");
 
-  // Ocultar los botones de guardar y cancelar, mostrar el de editar
-  saveButton.style.display = 'none';
-  cancelButton.style.display = 'none';
-  editButton.style.display = 'inline-block';
-}
-   
+      // Restaurar el nombre original
+      currentUserSpan.textContent = originalUserName;
+
+      // Ocultar los botones de guardar y cancelar, mostrar el de editar
+      saveButton.style.display = 'none';
+      cancelButton.style.display = 'none';
+      editButton.style.display = 'inline-block';
+    }
+
+    // Recibir el cambio de nombre en el inbox
+    socket.on('update user name', (data) => {
+      if (data.userId === selectedUserId) {
+        // Actualizar el nombre en el inbox también
+        const inboxUserName = document.getElementById('inboxUserName-' + data.userId);
+        if (inboxUserName) {
+          inboxUserName.textContent = data.newUserName;
+        }
+      }
+    });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
 </html>
