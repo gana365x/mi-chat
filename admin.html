@@ -302,6 +302,70 @@
   background: #FF3B00 !important;
 }
 
+    .username-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.username-text {
+  flex: 1;
+  color: white;
+  font-weight: 500;
+  font-family: 'Segoe UI', sans-serif;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: border 0.3s;
+}
+
+.username-container.editing .username-text {
+  background: #111;
+  border: 1px solid #FF3B00;
+  color: white;
+}
+
+.username-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.username-buttons button {
+  background: none;
+  border: none;
+  color: #FF3B00;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.username-buttons button:hover {
+  color: white;
+}
+
+li.user-unread {
+  border: 2px solid #FF3B00;
+  border-radius: 6px;
+}
+
+li.user-read {
+  opacity: 0.6;
+}
+
+.user-list input {
+  background-color: #222;
+  color: white;
+  border: 1px solid #444;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
   </style>
 </head>
 <body>
