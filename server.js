@@ -86,6 +86,12 @@ socket.on('update username', ({ userId, newUsername }) => {
 
     saveChatHistory();
 
+    // 🔁 ✅ NUEVO: Notificamos al usuario para que actualice su cookie
+    const userSocket = session.socket;
+    if (userSocket) {
+      userSocket.emit('update username cookie', { newUsername });
+    }
+
     const users = Array.from(userSessions.entries())
       .filter(([id, session]) => session.socket)
       .map(([id, session]) => ({ userId: id, username: session.username }));
