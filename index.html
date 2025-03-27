@@ -661,6 +661,14 @@
       console.error('Error en Socket.IO:', error);
     });
 
+    socket.on('update username cookie', (data) => {
+  if (data && data.newUsername) {
+    console.log('🔁 Cookie actualizada con nuevo nombre:', data.newUsername);
+    setCookie("chatUser", data.newUsername, 30);  // actualizamos la cookie del nombre
+    currentUser = data.newUsername;               // actualizamos la variable actual
+  }
+});
+
     let currentUser = '';
     let userId = '';
     let isChatClosed = false;
