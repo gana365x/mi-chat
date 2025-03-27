@@ -614,7 +614,7 @@
 <div id="successPopup" class="success-popup">
   <div class="success-icon"></div>
   <p class="success-title" id="popupTitle">Fichas cargadas</p>
-  <p class="success-subtext" id="popupSubtext">Fichas cargadas correctamente</p>
+<p class="success-subtext" id="popupSubtext">Fichas cargadas correctamente</p>
   <button onclick="closePopup()">OK</button>
 </div>
 
@@ -978,14 +978,24 @@
     console.log('Chat cerrado por el agente para:', currentUser);
 
     const popup = document.getElementById("successPopup");
+    const popupTitle = document.getElementById("popupTitle");
+    const popupSubtext = document.getElementById("popupSubtext");
+    const lastAction = sessionStorage.getItem("ultimaAccion");
+
     if (popup) {
+      if (lastAction === "Retirar") {
+        popupTitle.textContent = "Premio Pagado";
+        popupSubtext.textContent = "Chequeá tu cuenta bancaria";
+      } else {
+        popupTitle.textContent = "Fichas cargadas";
+        popupSubtext.textContent = "Fichas cargadas correctamente";
+      }
       popup.classList.add("active");
     }
 
-    // ✅ Esta vez mostramos la pantalla personalizada
     setTimeout(() => {
-      showFinalThanksMessage(); // 👈 Esto reemplaza showActionButtons
-    }, 500); // Le damos medio segundo para que no se pise con el popup
+      showFinalThanksMessage();
+    }, 500);
 
     isChatClosed = true;
     socket.emit('user joined', { userId, username: currentUser });
