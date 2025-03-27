@@ -340,46 +340,57 @@
     }
 
     function displayLocalMessages(userId) {
-      console.log('Mostrando mensajes locales para userId:', userId);
-      const chatMessages = document.getElementById('chatMessages');
-      chatMessages.innerHTML = ''; // Asegurarse de limpiar los mensajes anteriores
-      const messages = localChatHistory[userId] || [];
-      if (messages.length > 0) {
-        messages.forEach(msg => {
-          console.log('Mostrando mensaje local:', msg);
-          const messageDiv = document.createElement('div');
-          messageDiv.classList.add('message');
-          if (msg.sender === 'Bot') {
-            messageDiv.classList.add('bot');
-          } else if (msg.sender === 'Agent') {
-            messageDiv.classList.add('agent');
-          } else {
-            messageDiv.classList.add('user');
-          }
-         if (msg.image) {
-  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
-  const img = document.createElement('img');
-  img.src = msg.image;
-  img.onclick = () => openImageInNewWindow(msg.image);
-  messageDiv.appendChild(img);
-} else if (msg.sender === 'Bot' && msg.message.includes('Usar cuenta personal')) {
-  messageDiv.innerHTML = `
-    <div class="bot-message-block">
-      <div class="bot-message-line"><strong>1- Usar</strong> cuenta personal.</div>
-      <div class="bot-message-line"><strong>2- Enviar</strong> comprobante visible.</div>
-      <div class="bot-message-line" style="margin-top: 8px;"><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></div>
-      <div class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</div>
-      <div class="bot-message-line"><strong>ALIAS:</strong> leprance</div>
-    </div>
-  `;
-} else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
-  messageDiv.innerHTML = msg.message;
-} else {
-  const formatted = msg.message ? msg.message.replace(/\n/g, "<br>") : '';
-  messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${formatted}`;
-}
+  console.log('Mostrando mensajes locales para userId:', userId);
+  const chatMessages = document.getElementById('chatMessages');
+  chatMessages.innerHTML = ''; // Limpiar mensajes anteriores
 
-chatMessages.appendChild(messageDiv);
+  const messages = localChatHistory[userId] || [];
+
+  if (messages.length > 0) {
+    messages.forEach(msg => {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+
+      if (msg.sender === 'Bot') {
+        messageDiv.classList.add('bot');
+      } else if (msg.sender === 'Agent') {
+        messageDiv.classList.add('agent');
+      } else {
+        messageDiv.classList.add('user');
+      }
+
+      if (msg.image) {
+        messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
+        const img = document.createElement('img');
+        img.src = msg.image;
+        img.onclick = () => openImageInNewWindow(msg.image);
+        messageDiv.appendChild(img);
+      } else if (msg.sender === 'Bot' && msg.message.includes('Usar cuenta personal')) {
+        messageDiv.innerHTML = `
+          <div class="bot-message-block">
+            <div class="bot-message-line"><strong>1- Usar</strong> cuenta personal.</div>
+            <div class="bot-message-line"><strong>2- Enviar</strong> comprobante visible.</div>
+            <div class="bot-message-line" style="margin-top: 8px;"><strong>TITULAR CTA BANCARIA LEPRANSE SRL</strong></div>
+            <div class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</div>
+            <div class="bot-message-line"><strong>ALIAS:</strong> leprance</div>
+          </div>
+        `;
+      } else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
+        messageDiv.innerHTML = msg.message; // Ya viene como HTML
+      } else {
+        const formatted = msg.message ? msg.message.replace(/\n/g, "<br>") : '';
+        messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${formatted}`;
+      }
+
+      chatMessages.appendChild(messageDiv);
+    });
+  } else {
+    console.log('No hay mensajes locales para este usuario:', userId);
+    chatMessages.innerHTML = '<p>No hay mensajes previos.</p>';
+  }
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
           
     socket.on('chat history', (data) => {
       console.log('Historial de chat recibido:', data);
