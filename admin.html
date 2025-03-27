@@ -90,7 +90,6 @@
       border-bottom: 2px solid #FF3B00;
       padding-bottom: 10px;
       margin-bottom: 20px;
-      position: relative; /* Para posicionar el popup */
     }
 
     .chat-header h2 {
@@ -470,37 +469,28 @@
       gap: 10px;
     }
 
-    /* CSS para el popup en el chat-header */
-    .popup-buttons {
-      display: none;
-      position: absolute;
-      top: 10px;
-      right: 100px; /* Ajustado para que esté antes del botón Cerrar Chat */
-      z-index: 999;
-      background-color: #333;
-      padding: 5px;
-      border-radius: 5px;
-      transition: opacity 0.3s ease-in-out;
-    }
-
-    .chat-header:hover .popup-buttons {
-      display: block;
-    }
-
-    .edit-button, .delete-button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 16px;
-      margin: 0 5px;
+    /* CSS para los botones de edición */
+    .edit-name {
+      display: inline-block;
+      margin-left: 10px;
       cursor: pointer;
-    }
-
-    .edit-button:hover, .delete-button:hover {
+      font-size: 18px;
       color: #FF3B00;
     }
 
-    /* Estilos previos para el input de edición */
+    .edit-name i {
+      transition: transform 0.2s ease;
+    }
+
+    .edit-name i:hover {
+      transform: scale(1.2);
+    }
+
+    /* Mostrar botones solo al hacer hover en el chat-header */
+    .chat-header:hover .edit-name {
+      display: inline-block;
+    }
+
     #currentUser input {
       padding: 5px;
       border: 1px solid #ccc;
@@ -519,12 +509,16 @@
     <div class="chat-area" id="chatArea">
       <div class="chat-header">
         <h2 id="chatUser">Chat con: <span id="currentUser">[Nombre del Usuario]</span></h2>
-        <!-- Popup con los botones de editar y eliminar -->
-        <div class="popup-buttons" id="popupButtons">
-          <button class="edit-button" onclick="editName()">✏️</button>
-          <button class="delete-button" onclick="deleteUser()">❌</button>
-        </div>
         <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
+        <div id="editNameButton" class="edit-name">
+          <i class="fas fa-pencil-alt" onclick="editName()"></i>
+        </div>
+        <div id="saveNameButton" class="edit-name" style="display: none;">
+          <i class="fas fa-check" onclick="saveName()"></i>
+        </div>
+        <div id="cancelEditButton" class="edit-name" style="display: none;">
+          <i class="fas fa-times" onclick="cancelEdit()"></i>
+        </div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input">
@@ -580,7 +574,7 @@
 
         const nameDisplay = document.createElement('span');
         nameDisplay.className = 'username-display';
-        nameDisplay.id = 'inboxUserName-' + user.userId;
+        nameDisplay.id = 'inboxUserName-' + user.userId; // ID único para el inbox
         nameDisplay.textContent = user.username;
 
         const input = document.createElement('input');
@@ -920,41 +914,66 @@
     // Función para activar el modo de edición del nombre
     function editName() {
       const currentUserSpan = document.getElementById("currentUser");
+      const editButton = document.getElementById("editNameButton");
+      const saveButton = document.getElementById("saveNameButton");
+      const cancelButton = document.getElementById("cancelEditButton");
+
+      // Guardar el nombre original
       originalUserName = currentUserSpan.textContent.trim();
+      
+      // Cambiar el nombre a un campo de texto para editarlo
       currentUserSpan.innerHTML = `<input type="text" id="newUserName" value="${originalUserName}" />`;
+
+      // Mostrar los botones de guardar y cancelar
+      saveButton.style.display = 'inline-block';
+      cancelButton.style.display = 'inline-block';
+      editButton.style.display = 'none';
     }
 
-    // Función para guardar el nuevo nombre (se activa desde el inbox o manualmente)
+    // Función para guardar el nuevo nombre
     function saveName() {
       const newUserName = document.getElementById("newUserName").value.trim();
       const currentUserSpan = document.getElementById("currentUser");
+      const editButton = document.getElementById("editNameButton");
+      const saveButton = document.getElementById("saveNameButton");
+      const cancelButton = document.getElementById("cancelEditButton");
 
       if (newUserName !== '') {
+        // Actualizar el nombre en la interfaz
         currentUserSpan.textContent = newUserName;
+
+        // Emitir el cambio al servidor para actualizarlo en el inbox
         socket.emit('update user name', { userId: selectedUserId, newUserName });
+
+        // Ocultar los botones de guardar y cancelar, mostrar el de editar
+        saveButton.style.display = 'none';
+        cancelButton.style.display = 'none';
+        editButton.style.display = 'inline-block';
       } else {
         alert("El nombre no puede estar vacío");
       }
     }
 
-    // Función para eliminar al usuario
-    function deleteUser() {
-      if (confirm("¿Estás seguro de que quieres eliminar a este usuario?")) {
-        if (selectedUserId) {
-          socket.emit('delete user', { userId: selectedUserId });
-          document.getElementById('chatArea').classList.remove('active');
-          const userList = document.getElementById('userList');
-          const userItem = userList.querySelector(`[data-user-id="${selectedUserId}"]`);
-          if (userItem) userList.removeChild(userItem);
-          selectedUserId = null;
-          selectedUsername = null;
-        }
-      }
+    // Función para cancelar la edición y restaurar el nombre original
+    function cancelEdit() {
+      const currentUserSpan = document.getElementById("currentUser");
+      const editButton = document.getElementById("editNameButton");
+      const saveButton = document.getElementById("saveNameButton");
+      const cancelButton = document.getElementById("cancelEditButton");
+
+      // Restaurar el nombre original
+      currentUserSpan.textContent = originalUserName;
+
+      // Ocultar los botones de guardar y cancelar, mostrar el de editar
+      saveButton.style.display = 'none';
+      cancelButton.style.display = 'none';
+      editButton.style.display = 'inline-block';
     }
 
     // Recibir el cambio de nombre en el inbox
     socket.on('update user name', (data) => {
       if (data.userId === selectedUserId) {
+        // Actualizar el nombre en el inbox también
         const inboxUserName = document.getElementById('inboxUserName-' + data.userId);
         if (inboxUserName) {
           inboxUserName.textContent = data.newUserName;
