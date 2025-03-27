@@ -253,12 +253,15 @@ socket.on('admin connected', () => {
         const users = Array.from(userSessions.entries())
           .filter(([userId, session]) => userId && session.username)
           .map(([id, session]) => ({ userId: id, username: session.username }));
-        io.emit('user list', users);
+                io.emit('user list', users);
         break;
       }
     }
-  });
+  }); // cierre del socket.on('update username', ...)
 
+}); // 👈 cierre del io.on('connection', socket => { ...
+
+// Esto va después:
 app.use(express.static(__dirname));
 
 server.listen(PORT, () => {
