@@ -541,6 +541,28 @@ const deleteIcon = document.createElement('button');
 deleteIcon.innerHTML = '🗑';
 deleteIcon.className = 'delete-btn';
 
+        deleteIcon.onclick = () => {
+  actionsPopup.innerHTML = `
+    <div class="confirm-delete">
+      <button class="confirm-btn">✅</button>
+      <button class="cancel-btn">❌</button>
+    </div>
+  `;
+
+  // Acción cuando confirmás eliminar
+  actionsPopup.querySelector('.confirm-btn').onclick = () => {
+    userList.removeChild(li); // ✅ Lo saca visualmente de la lista
+    // 👉 Si querés eliminarlo también del backend, después te agrego el socket.emit aquí
+  };
+
+  // Acción cuando cancelás
+  actionsPopup.querySelector('.cancel-btn').onclick = () => {
+    actionsPopup.innerHTML = ''; // 🔄 Limpiamos
+    actionsPopup.appendChild(editIcon);
+    actionsPopup.appendChild(deleteIcon);
+  };
+};
+
 actionsPopup.appendChild(editIcon);
 actionsPopup.appendChild(deleteIcon);
 li.appendChild(actionsPopup);
@@ -574,7 +596,9 @@ editIcon.onclick = () => {
   input.style.display = 'inline-block';
   checkBtn.style.display = 'inline-block';
   cancelBtn.style.display = 'inline-block';
-  editIcon.style.display = 'none';
+
+  // Ocultamos los íconos flotantes
+  actionsPopup.style.display = 'none';
 };
 
 checkBtn.onclick = () => {
