@@ -45,28 +45,55 @@ function saveChatHistory() {
 // 🚀 Manejo de conexiones
 io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
-  let userId = data.userId;
-  const username = data.username;
-  if (!username) return;
+    let userId = data.userId;
+    const username = data.username;
+    if (!username) return;
 
-  if (!userId) {
-    userId = uuidv4();
-  }
+    if (!userId) {
+      userId = uuidv4();
+    }
 
-  // ✅ Siempre actualizamos el socket del usuario
-  userSessions.set(userId, { username, socket });
+    // ✅ Siempre actualizamos el socket del usuario
+    userSessions.set(userId, { username, socket });
 
-  // ✅ Enviamos la sesión al cliente (esto guarda el userId en cookie)
-  socket.emit('session', { userId, username });
+    // ✅ Enviamos la sesión al cliente (esto guarda el userId en cookie)
+    socket.emit('session', { userId, username });
 
-  // ✅ Si no hay historial previo, lo iniciamos
-  if (!chatHistory[userId]) chatHistory[userId] = [];
+    // ✅ Si no hay historial previo, lo iniciamos
+    if (!chatHistory[userId]) chatHistory[userId] = [];
 
-  // ✅ Actualizamos la lista de usuarios conectados
-  const users = Array.from(userSessions.entries())
-    .filter(([id, session]) => session.socket) // sólo usuarios con socket activo
-    .map(([id, session]) => ({ userId: id, username: session.username }));
-  io.emit('user list', users);
+    // ✅ Actualizamos la lista de usuarios conectados
+    const users = Array.from(userSessions.entries())
+      .filter(([id, session]) => session.socket) // sólo usuarios con socket activo
+      .map(([id, session]) => ({ userId: id, username: session.username }));
+    io.emit('user list', users);
+  });
+
+  // 🆕 NUEVO: Permitir que el admin actualice el nombre de usuario
+  socket.on('update username', ({ userId, newUsername }) => {
+    if (userSessions.has(userId)) {
+      const session = userSessions.get(userId);
+      userSessions.set(userId, { ...session, username: newUsername });
+
+      // Actualizar historial si ya existe (opcional, solo si querés que los mensajes antiguos reflejen el nuevo nombre)
+      if (chatHistory[userId]) {
+        chatHistory[userId] = chatHistory[userId].map(msg => ({
+          ...msg,
+          username: newUsername
+        }));
+      }
+
+      saveChatHistory();
+
+      // Enviar lista de usuarios actualizada a todos
+      const users = Array.from(userSessions.entries())
+        .filter(([id, session]) => session.socket)
+        .map(([id, session]) => ({ userId: id, username: session.username }));
+
+      io.emit('user list', users);
+      console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
+    }
+  });
 });
 
   socket.on('admin connected', () => {
