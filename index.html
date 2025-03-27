@@ -772,77 +772,22 @@ if (errorPopup && overlay) {
         return;
       }
 
-     // ✅ Función que se ejecuta al iniciar sesión manualmente
-function login(username) {
-  console.log('Login ejecutado. Usuario:', username);
-  currentUser = username;
-
-  // Guardamos el nombre y el ID (si existiera)
-  setCookie("chatUser", username, 30);
-  const storedUserId = getCookie("chatUserId");
-
-  socket.emit('user joined', { userId: storedUserId, username });
-}
-
-// ✅ Si ya hay sesión guardada, saltamos el login automáticamente
-window.addEventListener('DOMContentLoaded', () => {
-  const savedUsername = getCookie("chatUser");
-  const savedUserId = getCookie("chatUserId");
-
-  if (savedUsername && savedUserId) {
-    console.log('⏪ Restaurando sesión anterior...');
-    currentUser = savedUsername;
-    userId = savedUserId;
-
-    socket.emit('user joined', { userId: savedUserId, username: savedUsername });
-
-    // Ocultamos el formulario y mostramos el chat directo
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("chatHeader").style.display = "flex";
-    showActionButtons();
-  }
-});
-
-// ✅ Cuando el servidor confirma la sesión, guardamos datos
-socket.on('session', (data) => {
-  console.log('✅ Sesión recibida del servidor:', data);
-  userId = data.userId;
-  currentUser = data.username;
-
-  setCookie("chatUserId", userId, 30);
-  setCookie("chatUser", data.username, 30);
-
-  document.getElementById("loginForm").style.display = "none";
-  document.getElementById("chatHeader").style.display = "flex";
-  showActionButtons();
-});
-
-      // ✅ Al reconectar, pedimos el historial si tenemos el userId
-socket.on('connect', () => {
-  const savedUserId = getCookie("chatUserId");
-
-  if (savedUserId) {
-    console.log("🔄 Reconectando y pidiendo historial...");
-    socket.emit('request chat history', { userId: savedUserId });
-  }
-});
-
-// ✅ Cuando recibimos el historial, lo mostramos
-socket.on('chat history', (data) => {
-  if (!data || !data.userId || !data.messages) return;
-
-  console.log("📜 Historial recibido:", data);
-
-  const chatBox = document.getElementById("chatBox"); // cambialo si tu contenedor se llama distinto
-  chatBox.innerHTML = ""; // limpiamos chat anterior
-
-  data.messages.forEach(msg => {
-    if (msg.message || msg.image) {
-      // Usá tu función existente para mostrar mensajes
-      appendMessage(msg.sender, msg.message, msg.image);
+      console.log('Login ejecutado. Usuario:', username);
+      currentUser = username;
+      setCookie("chatUser", username, 30);
+      const storedUserId = getCookie("chatUserId");
+      socket.emit('user joined', { userId: storedUserId, username });
     }
-  });
-});
+
+    socket.on('session', (data) => {
+      console.log('Sesión recibida:', data);
+      userId = data.userId;
+      currentUser = data.username;
+      setCookie("chatUserId", userId, 30);
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("chatHeader").style.display = "flex";
+      showActionButtons();
+    });
 
     function closeErrorPopup() {
   console.log('Cerrando popup de error');
@@ -953,41 +898,16 @@ socket.on('chat history', (data) => {
   setTimeout(scrollToBottom, 0);
 }
 
-    function appendMessage(sender, message, image) {
-  const chatBox = document.getElementById("chatBox"); // Cambiar si usás otro ID
-  const msgDiv = document.createElement("div");
-  msgDiv.classList.add("message");
+    function sendMessage() {
+      const messageInput = document.getElementById("messageInput");
+      const message = messageInput.value.trim();
 
-  if (sender === "Bot") msgDiv.classList.add("bot");
-  else if (sender === "Agent") msgDiv.classList.add("agent");
-  else msgDiv.classList.add("user");
-
-  if (image) {
-    msgDiv.innerHTML = `<strong>${sender}:</strong><br>`;
-    const img = document.createElement("img");
-    img.src = image;
-    img.style.maxWidth = "150px";
-    img.style.borderRadius = "8px";
-    img.style.marginTop = "5px";
-    msgDiv.appendChild(img);
-  } else {
-    msgDiv.innerHTML = `<strong>${sender}:</strong><br>${(message || "").replace(/\n/g, "<br>")}`;
-  }
-
-  chatBox.appendChild(msgDiv);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function sendMessage() {
-  const messageInput = document.getElementById("messageInput");
-  const message = messageInput.value.trim();
-
-  if (message) {
-    console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'UserId:', userId);
-    socket.emit('chat message', { userId, sender: currentUser, message });
-    messageInput.value = '';
-  }
-}
+      if (message) {
+        console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'UserId:', userId);
+        socket.emit('chat message', { userId, sender: currentUser, message });
+        messageInput.value = '';
+      }
+    }
 
     socket.on('chat message', (data) => {
   if (ignoreNextMessage && data.sender === currentUser && data.userId === userId) {
