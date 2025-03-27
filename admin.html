@@ -432,6 +432,38 @@ li.user-read {
   transform: scale(1.2);
   color: #FF3B00;
 }
+    .user-actions-popup {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: #222;
+  border: 1px solid #FF3B00;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: row;
+  gap: 10px;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.user-actions-popup button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.user-actions-popup button:hover {
+  color: #FF3B00;
+}
+
+.confirm-delete {
+  display: flex;
+  gap: 10px;
+}
 
   </style>
 </head>
@@ -497,6 +529,21 @@ li.user-read {
         const li = document.createElement('li');
 li.classList.add('user-item');
 li.dataset.userId = user.userId;
+        
+        const actionsPopup = document.createElement('div');
+actionsPopup.className = 'user-actions-popup';
+
+const editIcon = document.createElement('button');
+editIcon.innerHTML = '✏️';
+editIcon.className = 'edit-btn';
+
+const deleteIcon = document.createElement('button');
+deleteIcon.innerHTML = '🗑';
+deleteIcon.className = 'delete-btn';
+
+actionsPopup.appendChild(editIcon);
+actionsPopup.appendChild(deleteIcon);
+li.appendChild(actionsPopup);
 
 const nameDisplay = document.createElement('span');
 nameDisplay.className = 'username-display';
@@ -562,6 +609,15 @@ li.appendChild(editIcon);
 li.appendChild(checkBtn);
 li.appendChild(cancelBtn);
 userList.appendChild(li);
+
+        li.addEventListener('mouseenter', () => {
+  actionsPopup.style.display = 'flex';
+});
+
+li.addEventListener('mouseleave', () => {
+  actionsPopup.style.display = 'none';
+});
+
 
 socket.emit('request chat history', { userId: user.userId });
       });
