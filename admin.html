@@ -529,14 +529,17 @@ li.user-read {
         const li = document.createElement('li');
 li.classList.add('user-item');
 li.dataset.userId = user.userId;
-        
-        const actionsPopup = document.createElement('div');
-actionsPopup.className = 'user-actions-popup';
 
+const actionsPopup = document.createElement('div');
+actionsPopup.className = 'user-actions-popup';
 
 const deleteIcon = document.createElement('button');
 deleteIcon.innerHTML = '🗑';
 deleteIcon.className = 'delete-btn';
+
+// ❌ Acá está el problema:
+actionsPopup.appendChild(editIcon); // ⚠️ Todavía no existe
+actionsPopup.appendChild(deleteIcon);
 
         deleteIcon.onclick = () => {
   actionsPopup.innerHTML = `
@@ -555,8 +558,7 @@ deleteIcon.className = 'delete-btn';
   // Acción cuando cancelás
   actionsPopup.querySelector('.cancel-btn').onclick = () => {
     actionsPopup.innerHTML = ''; // 🔄 Limpiamos
-    actionsPopup.appendChild(editIcon);
-    actionsPopup.appendChild(deleteIcon);
+    
   };
 };
 
@@ -571,6 +573,10 @@ nameDisplay.textContent = user.username;
 const editIcon = document.createElement('button');
 editIcon.innerHTML = '✏️';
 editIcon.className = 'edit-btn';
+        
+actionsPopup.appendChild(editIcon);
+actionsPopup.appendChild(deleteIcon);
+
 
 const input = document.createElement('input');
 input.type = 'text';
