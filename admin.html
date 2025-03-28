@@ -33,6 +33,7 @@
       box-sizing: border-box;
       overflow-y: auto;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      position: relative; /* Para posicionar el popup */
     }
 
     .inbox h2 {
@@ -607,13 +608,16 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
-      <div style="padding: 10px; background: #121212; display: flex; justify-content: space-between; align-items: center;">
-        <strong style="color: white;">INBOX</strong>
-        <select id="chatFilter" onchange="renderUserList()" style="background: #1e1e1e; color: white; border: none; padding: 5px 10px; border-radius: 5px;">
-          <option value="todos">Todos</option>
-          <option value="activos">Activos</option>
-          <option value="cerrados">Cerrados</option>
-        </select>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
+        <h2 style="color: white; margin: 0;">INBOX</h2>
+        <button id="filterBtn" onclick="toggleFilterPopup()" style="background: none; border: none; cursor: pointer;">
+          <i class="fas fa-filter" style="color: white; font-size: 20px;"></i>
+        </button>
+      </div>
+      <div id="filterPopup" style="display:none; position:absolute; top: 50px; left: 20px; background:#222; border:1px solid #444; border-radius:10px; padding:10px; z-index:1000;">
+        <label style="display:block; margin-bottom:5px;"><input type="radio" name="filter" value="all" checked onchange="applyFilter()"> Todos</label>
+        <label style="display:block; margin-bottom:5px;"><input type="radio" name="filter" value="active" onchange="applyFilter()"> Activos</label>
+        <label style="display:block;"><input type="radio" name="filter" value="closed" onchange="applyFilter()"> Cerrados</label>
       </div>
       <ul class="user-list" id="userList"></ul>
     </div>
@@ -661,6 +665,18 @@
     let selectedUserId = null;
     let selectedUsername = null;
     const localChatHistory = {};
+    let currentFilter = "all";
+
+    function toggleFilterPopup() {
+      const popup = document.getElementById('filterPopup');
+      popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function applyFilter() {
+      const selected = document.querySelector('input[name="filter"]:checked').value;
+      currentFilter = selected;
+      renderUserList();
+    }
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -721,7 +737,6 @@
 
     function renderUserList() {
       const listContainer = document.getElementById("userList");
-      const filter = document.getElementById("chatFilter").value;
       const users = window.chatUsers || [];
 
       listContainer.innerHTML = "";
@@ -730,33 +745,34 @@
         const isClosed = user.isClosed;
 
         if (
-          (filter === "activos" && isClosed) ||
-          (filter === "cerrados" && !isClosed)
-        ) return; // Skip si no cumple el filtro
+          currentFilter === "all" ||
+          (currentFilter === "active" && !isClosed) ||
+          (currentFilter === "closed" && isClosed)
+        ) {
+          const chatDiv = document.createElement('div');
+          chatDiv.classList.add('chat-item');
+          chatDiv.classList.add(user.isClosed ? 'user-offline' : 'user-online');
+          if (user.isClosed) {
+            chatDiv.classList.add('closed-chat');
+          }
+          chatDiv.dataset.userId = user.userId;
 
-        const chatDiv = document.createElement('div');
-        chatDiv.classList.add('chat-item');
-        chatDiv.classList.add(user.isClosed ? 'user-offline' : 'user-online');
-        if (user.isClosed) {
-          chatDiv.classList.add('closed-chat');
-        }
-        chatDiv.dataset.userId = user.userId;
-
-        chatDiv.innerHTML = `
-          <div class="chat-left">
-            <span class="username">${user.username}</span>
-            <div class="badges">
-              ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="finalizeChat('${user.userId}')">Finalizar</button>`}
+          chatDiv.innerHTML = `
+            <div class="chat-left">
+              <span class="username">${user.username}</span>
+              <div class="badges">
+                ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="finalizeChat('${user.userId}')">Finalizar</button>`}
+              </div>
             </div>
-          </div>
-          <div class="hora">${formatTime(user.lastMessageTime)}</div>
-        `;
+            <div class="hora">${formatTime(user.lastMessageTime)}</div>
+          `;
 
-        chatDiv.onclick = (e) => {
-          if (e.target.classList.contains('finalizar')) return;
-          selectUser(user.userId, user.username);
-        };
-        listContainer.appendChild(chatDiv);
+          chatDiv.onclick = (e) => {
+            if (e.target.classList.contains('finalizar')) return;
+            selectUser(user.userId, user.username);
+          };
+          listContainer.appendChild(chatDiv);
+        }
       });
     }
 
