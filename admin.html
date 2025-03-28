@@ -372,7 +372,6 @@
       color: #FF3B00;
     }
 
-    /* 🆕 Estilo opcional para el botón "Finalizar" */
     .user-item button.close-chat {
       background: #FF3B00;
       color: white;
@@ -401,6 +400,8 @@
   <div class="container">
     <div class="sidebar">
       <h2>INBOX</h2>
+      <!-- 🆕 Botón "Desconectar" añadido -->
+      <button onclick="logoutAdmin()" style="margin-bottom: 20px; background: #333; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Desconectar</button>
       <ul class="user-list" id="userList"></ul>
     </div>
 
@@ -414,7 +415,6 @@
           <button id="editBtn" onclick="editName()">✏️</button>
           <button id="saveBtn" onclick="saveName()" style="display:none;">✅</button>
           <button id="cancelBtn" onclick="cancelEdit()" style="display:none;">❌</button>
-          <!-- Botón "Cerrar Chat" eliminado -->
         </div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
@@ -460,6 +460,7 @@
       })
       .then(data => {
         if (data.success) {
+          localStorage.setItem("adminLoggedIn", "true"); // ✅ Guardamos estado
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".container").style.display = "flex";
           socket.emit('admin connected');
@@ -473,8 +474,18 @@
       });
     }
 
+    // 🆕 Revisar si ya está logueado al cargar
     document.addEventListener("DOMContentLoaded", () => {
-      document.querySelector(".container").style.display = "none";
+      const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+      if (isLoggedIn) {
+        // Si está logueado, mostrar directamente el panel
+        document.getElementById("loginScreen").style.display = "none";
+        document.querySelector(".container").style.display = "flex";
+        socket.emit('admin connected');
+      } else {
+        document.getElementById("loginScreen").style.display = "flex";
+        document.querySelector(".container").style.display = "none";
+      }
     });
 
     socket.on('user list', (users) => {
@@ -504,7 +515,6 @@
         li.appendChild(nameDisplay);
         li.appendChild(timeSpan);
 
-        // Botón Finalizar (sólo si no está cerrado)
         const finalizeBtn = document.createElement('button');
         finalizeBtn.textContent = 'Finalizar';
         finalizeBtn.className = 'close-chat';
@@ -764,7 +774,6 @@
       }
     }
 
-    // 🆕 Nueva función para finalizar el chat
     function finalizeChat(userId) {
       if (userId) {
         console.log('Finalizando chat para el usuario:', userId);
@@ -784,6 +793,12 @@
           selectedUsername = null;
         }
       }
+    }
+
+    // 🆕 Nueva función para desconectar al agente
+    function logoutAdmin() {
+      localStorage.removeItem("adminLoggedIn");
+      location.reload(); // Recarga y vuelve al login
     }
 
     const lastUserId = sessionStorage.getItem('lastUserId');
