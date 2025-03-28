@@ -28,26 +28,12 @@
       width: 250px;
       background: #1a1a1a;
       color: white;
-      padding: 0; /* Ajustado para que el header ocupe todo */
+      padding: 0;
       border-radius: 10px;
       box-sizing: border-box;
       overflow-y: auto;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       position: relative;
-    }
-
-    .inbox-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 15px;
-      background: #1a1a1a;
-    }
-
-    .inbox h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: bold;
     }
 
     .user-list {
@@ -549,6 +535,26 @@
       opacity: 0.4;
     }
 
+    .filter-option {
+      padding: 10px 18px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .filter-option:hover {
+      border-left: 4px solid orange;
+      background-color: #2c2c2c;
+      padding-left: 14px;
+    }
+
+    .filter-option.selected {
+      border-left: 4px solid orange;
+      background-color: #2c2c2c;
+      padding-left: 14px;
+    }
+
     @media (min-width: 768px) {
       .admin-container {
         display: flex;
@@ -593,41 +599,6 @@
   </style>
 </head>
 <body>
-  <!-- Botón flotante de filtro -->
-  <button id="filterTrigger" onclick="toggleFilterPopup()" style="
-    position: fixed;
-    top: 20px;
-    left: 100px;
-    background: none;
-    border: none;
-    z-index: 2000;
-    cursor: pointer;">
-    <i class="fas fa-filter" style="color: white; font-size: 24px;"></i>
-  </button>
-
-  <!-- Popup flotante -->
-  <div id="filterPopup" style="
-    position: fixed;
-    top: 60px;
-    left: 80px;
-    background: #1f1f1f;
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 12px 18px;
-    z-index: 3000;
-    display: none;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);">
-    <label style="display:block; margin-bottom:10px; color: white;">
-      <input type="radio" name="filter" value="all" checked onchange="applyFilter()"> Todos
-    </label>
-    <label style="display:block; margin-bottom:10px; color: white;">
-      <input type="radio" name="filter" value="active" onchange="applyFilter()"> Activos
-    </label>
-    <label style="display:block; color: white;">
-      <input type="radio" name="filter" value="closed" onchange="applyFilter()"> Cerrados
-    </label>
-  </div>
-
   <div id="menuWrapper" style="display: none;">
     <div class="top-menu">
       <div class="hamburger" onclick="toggleMenu()">
@@ -650,8 +621,29 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
-      <div class="inbox-header">
-        <h2 style="color: white;">INBOX</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;">
+        <span style="font-weight: bold; font-size: 16px;">INBOX</span>
+        <button id="filterTrigger" onclick="toggleFilterPopup()" style="background: none; border: none; cursor: pointer;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="white" width="20" height="20" viewBox="0 0 24 24">
+            <path d="M3 4h18v2H3V4zm4 7h10v2H7v-2zm6 7h-4v2h4v-2z"/>
+          </svg>
+        </button>
+      </div>
+      <div id="filterPopup" style="
+        position: absolute;
+        top: 50px;
+        right: 10px;
+        background: #1f1f1f;
+        border-radius: 10px;
+        border: 1px solid #333;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        display: none;
+        z-index: 9999;
+        overflow: hidden;
+      ">
+        <div class="filter-option" data-value="all">Todos</div>
+        <div class="filter-option" data-value="active">Activos</div>
+        <div class="filter-option" data-value="closed">Cerrados</div>
       </div>
       <ul class="user-list" id="userList"></ul>
     </div>
@@ -1124,19 +1116,28 @@
     function toggleFilterPopup() {
       const popup = document.getElementById("filterPopup");
       popup.style.display = popup.style.display === "block" ? "none" : "block";
+
+      document.querySelectorAll('.filter-option').forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.dataset.value === currentFilter) {
+          opt.classList.add('selected');
+        }
+      });
     }
 
-    function applyFilter() {
-      const selected = document.querySelector('input[name="filter"]:checked').value;
-      currentFilter = selected;
+    function applyFilter(value) {
+      currentFilter = value;
       document.getElementById("filterPopup").style.display = "none";
       renderUserList();
     }
 
-    document.addEventListener("click", function (e) {
+    document.querySelectorAll('.filter-option').forEach(opt => {
+      opt.addEventListener('click', () => applyFilter(opt.dataset.value));
+    });
+
+    document.addEventListener("click", (e) => {
       const popup = document.getElementById("filterPopup");
       const trigger = document.getElementById("filterTrigger");
-
       if (!popup.contains(e.target) && !trigger.contains(e.target)) {
         popup.style.display = "none";
       }
