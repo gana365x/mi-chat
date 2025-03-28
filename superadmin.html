@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Agente - Gestión de Accesos</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #FF3B00;
+    }
+    .login-box, .main-box {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      margin: 40px auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background-color: #FF3B00;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #d63100;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+    }
+    .delete-btn {
+      background: #aa0000;
+      border: none;
+      padding: 5px 10px;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #cc0000;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box" id="loginBox">
+    <h1>Super Agente</h1>
+    <input type="text" id="superUsername" placeholder="Usuario">
+    <input type="password" id="superPassword" placeholder="Contraseña">
+    <button onclick="loginSuperAdmin()">Ingresar</button>
+    <p id="loginError" style="color: red; display: none;">Credenciales inválidas</p>
+  </div>
+
+  <div class="main-box" id="mainBox" style="display:none">
+    <h2>Crear nuevo agente</h2>
+    <input type="text" id="newUsername" placeholder="Nuevo usuario">
+    <input type="password" id="newPassword" placeholder="Contraseña">
+    <button onclick="createAgent()">Crear</button>
+    <p id="createError" style="color: red; display: none;"></p>
+    <h2>Agentes registrados</h2>
+    <table>
+      <thead>
+        <tr><th>Usuario</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="agentsTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function loginSuperAdmin() {
+      const username = document.getElementById('superUsername').value.trim();
+      const password = document.getElementById('superPassword').value.trim();
+
+      fetch('/superadmin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        if (data.success) {
+          document.getElementById('loginBox').style.display = 'none';
+          document.getElementById('mainBox').style.display = 'block';
+          loadAgents();
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(() => {
+        document.getElementById('loginError').style.display = 'block';
+      });
+    }
+
+    function loadAgents() {
+      fetch('/agents')
+        .then(res => res.json())
+        .then(agents => {
+          const table = document.getElementById('agentsTable');
+          table.innerHTML = '';
+          agents.forEach(agent => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${agent.username}</td><td><button class="delete-btn" onclick="deleteAgent('${agent.username}')">Eliminar</button></td>`;
+            table.appendChild(row);
+          });
+        });
+    }
+
+    function createAgent() {
+      const username = document.getElementById('newUsername').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+
+      fetch('/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+      })
+      .then(() => {
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('createError').style.display = 'none';
+        loadAgents();
+      })
+      .catch(err => {
+        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+        document.getElementById('createError').style.display = 'block';
+      });
+    }
+
+    function deleteAgent(username) {
+      fetch(`/agents/${username}`, {
+        method: 'DELETE'
+      })
+      .then(() => loadAgents());
+    }
+  </script>
+</body>
+</html>
