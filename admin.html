@@ -386,62 +386,66 @@
       background: #d63100;
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #1a1a1a;
-      padding: 10px 20px;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      border-bottom: 2px solid #FF3B00;
+    /* 🆕 Nuevos estilos para el menú hamburguesa */
+    .top-menu {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      z-index: 10000;
     }
 
-    .topbar .left button,
-    .topbar .right button {
-      background: none;
-      border: none;
+    .hamburger {
+      font-size: 22px;
       color: white;
-      font-size: 20px;
       cursor: pointer;
-      margin-left: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      transition: background 0.2s ease;
     }
 
-    .topbar .center {
-      flex-grow: 1;
-      text-align: center;
-      font-weight: 600;
-      font-size: 15px;
-      color: #bbb;
+    .hamburger:hover {
+      background: #333;
     }
 
     .popup-menu {
       display: none;
       position: absolute;
-      top: 50px;
-      left: 20px;
+      top: 38px;
+      right: 0;
+      background: #1f1f1f;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      z-index: 10001;
+    }
+
+    .popup-menu div {
+      padding: 10px;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .popup-menu div:hover {
       background: #333;
       border-radius: 8px;
-      padding: 10px;
-      z-index: 999;
     }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="left">
-      <button id="menuToggle" onclick="toggleMenu()">☰</button>
+  <!-- 🆕 Nuevo menú hamburguesa reemplazando la barra superior -->
+  <div class="top-menu">
+    <div class="hamburger" onclick="toggleMenu()">
+      <i class="fas fa-bars"></i>
     </div>
-    <div class="center" id="agentDisplay">Agente</div>
-    <div class="right">
-      <button onclick="goToConfig()" title="Configuración"><i class="fas fa-cog"></i></button>
-      <button onclick="logoutAdmin()" title="Desconectar"><i class="fas fa-power-off"></i></button>
+    <div class="popup-menu" id="popupMenu">
+      <div onclick="goToConfig()"><i class="fas fa-cog"></i></div>
+      <div onclick="logoutAdmin()"><i class="fas fa-power-off"></i></div>
     </div>
-  </div>
-
-  <div id="popupMenu" class="popup-menu">
-    <!-- Espacio para opciones futuras en el popup -->
   </div>
 
   <div id="loginScreen" style="position: absolute; top:0; left:0; width:100vw; height:100vh; background:#121212; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
@@ -527,7 +531,6 @@
       });
     }
 
-    // 🆕 Nueva función para obtener el displayName
     async function getDisplayName(username) {
       const response = await fetch('/get-agent-displayname?username=' + encodeURIComponent(username));
       const data = await response.json();
@@ -538,7 +541,6 @@
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
       const username = localStorage.getItem("adminUser") || "Agente";
 
-      // 🆕 Usar getDisplayName para mostrar el nombre
       getDisplayName(username).then(displayName => {
         document.getElementById("agentDisplay").textContent = "Conectado: " + displayName;
       });
@@ -862,11 +864,6 @@
       }
     }
 
-    function toggleMenu() {
-      const menu = document.getElementById("popupMenu");
-      menu.style.display = (menu.style.display === "block") ? "none" : "block";
-    }
-
     function logoutAdmin() {
       localStorage.removeItem("adminLoggedIn");
       localStorage.removeItem("adminUser");
@@ -874,7 +871,7 @@
     }
 
     function goToConfig() {
-      window.location.href = "config.html";
+      window.location.href = "/config.html";
     }
 
     const lastUserId = sessionStorage.getItem('lastUserId');
@@ -935,6 +932,21 @@
       document.getElementById("saveBtn").style.display = "none";
       document.getElementById("cancelBtn").style.display = "none";
     }
+
+    // 🆕 Script de toggle para el nuevo menú
+    function toggleMenu() {
+      const popup = document.getElementById("popupMenu");
+      popup.style.display = (popup.style.display === "block") ? "none" : "block";
+    }
+
+    // Cierra el menú si haces clic afuera
+    document.addEventListener("click", function (e) {
+      const popup = document.getElementById("popupMenu");
+      const menu = document.querySelector(".hamburger");
+      if (!popup.contains(e.target) && !menu.contains(e.target)) {
+        popup.style.display = "none";
+      }
+    });
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
