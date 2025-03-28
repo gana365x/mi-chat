@@ -828,10 +828,19 @@
 
   <div id="chatPopup" class="chat-popup">
     <div class="popup-header">
-      <span id="popupUser">Usuario</span>
-      <div class="popup-controls">
-        <button onclick="closePopup()">✖</button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="popupUser">Usuario</span>
+        <button id="editNameBtn" onclick="toggleNameEdit()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+          ✏️
+        </button>
       </div>
+      <div class="popup-controls">
+        <button onclick="closePopup()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">⨉</button>
+      </div>
+    </div>
+    <div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center;">
+      <input id="newPopupName" type="text" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: none; width: 70%;" />
+      <button onclick="confirmPopupNameChange()" style="padding: 6px 10px; margin-left: 6px; border: none; border-radius: 6px; background: #FF3B00; color: white;">Guardar</button>
     </div>
     <div id="popupMessages" class="popup-messages"></div>
     <div class="popup-input">
@@ -913,7 +922,6 @@
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
       const agentUser = localStorage.getItem("adminUser");
 
-      // Cargar el nombre visible del agente
       if (agentUser) {
         fetch(`/get-agent-displayname?username=${agentUser}`)
           .then(res => res.json())
@@ -1378,6 +1386,27 @@
         });
         closeFinalizePopup();
       }
+    }
+
+    function toggleNameEdit() {
+      document.getElementById("editNameContainer").style.display = "block";
+    }
+
+    function confirmPopupNameChange() {
+      const newName = document.getElementById("newPopupName").value.trim();
+      if (!newName) return;
+
+      document.getElementById("popupUser").textContent = newName;
+      socket.emit("update username", { userId: selectedUserId, newUsername: newName });
+
+      if (selectedUserId) {
+        selectedUsername = newName;
+        document.getElementById("chatHeader").textContent = newName;
+        const chatItem = document.querySelector(`div[data-user-id="${selectedUserId}"] .username`);
+        if (chatItem) chatItem.textContent = newName;
+      }
+
+      document.getElementById("editNameContainer").style.display = "none";
     }
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
