@@ -405,6 +405,26 @@ app.post('/update-agent-name', (req, res) => {
   res.status(200).json({ success: true });
 });
 
+app.post('/update-agent-password', (req, res) => {
+  const { username, newPassword } = req.body;
+
+  if (!username || !newPassword || newPassword.length < 4 || newPassword.length > 16) {
+    return res.status(400).json({ success: false, message: 'Contraseña inválida' });
+  }
+
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const index = agents.findIndex(agent => agent.username === username);
+
+  if (index === -1) {
+    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+  }
+
+  agents[index].password = newPassword;
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+
+  return res.status(200).json({ success: true });
+});
+
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
