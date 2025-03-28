@@ -57,7 +57,7 @@ function getActiveChatsSorted() {
     const history = chatHistory[userId] || [];
 
     // Solo mostrar usuarios que enviaron mensajes
-    const hasMessages = history.some(msg => msg.sender !== 'Bot');
+    const hasMessages = history.some(msg => msg.sender !== 'Bot' && msg.sender !== 'System');
     if (!hasMessages) continue;
 
     // Obtenemos el timestamp del último mensaje
@@ -261,6 +261,16 @@ io.on('connection', (socket) => {
       const session = userSessions.get(data.userId);
       userSessions.set(data.userId, { ...session, socket: null });
     }
+
+    // 🧠 Paso 1: Marcar en el historial que el chat fue cerrado
+    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
+    chatHistory[data.userId].push({
+      sender: 'System',
+      message: 'Chat cerrado',
+      timestamp: new Date().toISOString(),
+      status: 'closed'
+    });
+    saveChatHistory();
 
     io.emit('user list', getActiveChatsSorted());
   });
