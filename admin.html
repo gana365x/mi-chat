@@ -527,11 +527,21 @@
       });
     }
 
+    // 🆕 Nueva función para obtener el displayName
+    async function getDisplayName(username) {
+      const response = await fetch('/get-agent-displayname?username=' + encodeURIComponent(username));
+      const data = await response.json();
+      return data.displayName || username;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
       const username = localStorage.getItem("adminUser") || "Agente";
 
-      document.getElementById("agentDisplay").textContent = "Conectado: " + username;
+      // 🆕 Usar getDisplayName para mostrar el nombre
+      getDisplayName(username).then(displayName => {
+        document.getElementById("agentDisplay").textContent = "Conectado: " + displayName;
+      });
 
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
@@ -863,7 +873,6 @@
       location.reload();
     }
 
-    // 🆕 Función actualizada
     function goToConfig() {
       window.location.href = "config.html";
     }
