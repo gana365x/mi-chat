@@ -386,7 +386,6 @@
       background: #d63100;
     }
 
-    /* 🆕 Estilos para la nueva barra superior */
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -430,7 +429,6 @@
   </style>
 </head>
 <body>
-  <!-- 🆕 Nueva barra superior añadida -->
   <div class="topbar">
     <div class="left">
       <button id="menuToggle" onclick="toggleMenu()">☰</button>
@@ -854,7 +852,6 @@
       }
     }
 
-    // 🆕 Nuevas funciones para la barra superior
     function toggleMenu() {
       const menu = document.getElementById("popupMenu");
       menu.style.display = (menu.style.display === "block") ? "none" : "block";
@@ -866,8 +863,9 @@
       location.reload();
     }
 
+    // 🆕 Función actualizada
     function goToConfig() {
-      alert("⚙️ Esta función se activará en la Parte 2 (configuración)");
+      window.location.href = "config.html";
     }
 
     const lastUserId = sessionStorage.getItem('lastUserId');
