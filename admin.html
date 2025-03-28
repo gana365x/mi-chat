@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- ✅ Bonus para iPhone/Safari -->
   <title>Panel de Agentes - GANA365</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
@@ -434,17 +434,18 @@
       border-radius: 8px;
     }
 
+    /* ✅ Paso 1: Asegurar flex y altura completa en chat-popup */
     .chat-popup {
-      display: none;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
-      height: 100vh;
       background: #1f1f1f;
       z-index: 10001;
-      flex-direction: column;
-      overflow: hidden;
       border-radius: 0;
       transform: translateY(100%);
       transition: transform 0.3s ease;
@@ -476,22 +477,26 @@
       cursor: pointer;
     }
 
+    /* ✅ Paso 3: Ajustar área de mensajes para no solaparse */
     .popup-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
+      padding: 12px;
       background: #121212;
+      margin-bottom: 10px; /* Deja lugar al input */
       display: flex;
       flex-direction: column;
     }
 
+    /* ✅ Paso 2: Hacer que el input quede fijo abajo */
     .popup-input {
       position: sticky;
       bottom: 0;
-      display: flex;
-      padding: 10px;
       background: #222;
+      display: flex;
       gap: 10px;
+      padding: 10px;
+      z-index: 10;
       box-sizing: border-box;
     }
 
@@ -503,6 +508,7 @@
       font-size: 14px;
       background: #fff;
       color: #000;
+      -webkit-appearance: none; /* ✅ Bonus para iPhone/Safari */
     }
 
     .popup-input button {
@@ -513,9 +519,9 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
+      -webkit-appearance: none; /* ✅ Bonus para iPhone/Safari */
     }
 
-    /* ✅ Paso 2: Estilo WhatsApp con timestamps */
     .bubble {
       max-width: 75%;
       padding: 10px 14px;
@@ -557,6 +563,11 @@
       color: #555;
       align-self: flex-end;
       margin-top: 4px;
+    }
+
+    /* ✅ Bonus: Compatibilidad con iPhone/Safari */
+    input, button, textarea {
+      -webkit-appearance: none;
     }
   </style>
 </head>
@@ -865,7 +876,6 @@
       displayPopupMessages(userId);
     }
 
-    // ✅ Paso 1: Actualización de displayPopupMessages con timestamps
     function displayPopupMessages(userId) {
       const container = document.getElementById("popupMessages");
       container.innerHTML = '';
