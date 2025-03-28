@@ -25,7 +25,7 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 const userSessions = new Map();
 const chatHistory = {};
-const adminSubscriptions = new Map(); // 🧠 Agregado esto
+const adminSubscriptions = new Map();
 
 // 📥 Cargar historial desde archivo
 if (fs.existsSync(historyFilePath)) {
@@ -69,13 +69,11 @@ io.on('connection', (socket) => {
     io.emit('user list', users);
   });
 
-  // 🆕 NUEVO: Permitir que el admin actualice el nombre de usuario
   socket.on('update username', ({ userId, newUsername }) => {
     if (userSessions.has(userId)) {
       const session = userSessions.get(userId);
       userSessions.set(userId, { ...session, username: newUsername });
 
-      // (Opcional) Si querés actualizar el historial también:
       if (chatHistory[userId]) {
         chatHistory[userId] = chatHistory[userId].map(msg => ({
           ...msg,
@@ -85,7 +83,6 @@ io.on('connection', (socket) => {
 
       saveChatHistory();
 
-      // 🔁 ✅ NUEVO: Notificamos al usuario para que actualice su cookie
       const userSocket = session.socket;
       if (userSocket) {
         userSocket.emit('update username cookie', { newUsername });
@@ -100,7 +97,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // ✅ Mantené esto dentro del mismo "io.on('connection')"
   socket.on('admin connected', () => {
     socket.join('admins');
     const users = Array.from(userSessions.entries())
@@ -115,7 +111,7 @@ io.on('connection', (socket) => {
     const messageData = { userId: data.userId, sender: data.sender, message: data.message };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
-    saveChatHistory(); // ✅ Guardar en disco
+    saveChatHistory();
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -252,17 +248,16 @@ io.on('connection', (socket) => {
         break;
       }
     }
-  }); // cierre del socket.on('update username', ...)
-}); // 👈 cierre del io.on('connection', socket => { ...
+  });
+});
 
-// Esto va después:
 app.use(express.static(__dirname));
 
-// 🆕 Nueva ruta de login para admin
-app.use(express.json()); // Necesario para leer JSON en POST
+// Ruta de login para admin
+app.use(express.json());
 
 const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'gana365'; // Podés cambiar esto si querés
+const ADMIN_PASSWORD = 'gana365';
 
 app.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
@@ -272,6 +267,55 @@ app.post('/admin-login', (req, res) => {
   } else {
     return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
   }
+});
+
+// --- SUPER ADMIN LOGIN ---
+const agentsFilePath = path.join(__dirname, 'agents.json');
+const superAdminUser = 'superadmin';
+const superAdminPass = 'gana365super';
+
+app.use(express.json());
+
+// Crear archivo inicial si no existe
+if (!fs.existsSync(agentsFilePath)) {
+  fs.writeFileSync(agentsFilePath, JSON.stringify([]));
+}
+
+// Ruta de login del superadmin
+app.post('/superadmin-login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === superAdminUser && password === superAdminPass) {
+    res.status(200).json({ success: true });
+  } else {
+    res.status(401).json({ success: false });
+  }
+});
+
+// Obtener lista de agentes
+app.get('/agents', (req, res) => {
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  res.json(agents);
+});
+
+// Crear nuevo agente
+app.post('/agents', (req, res) => {
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const { username, password } = req.body;
+  if (agents.find(a => a.username === username)) {
+    return res.status(400).json({ success: false, message: 'Ya existe ese usuario' });
+  }
+  agents.push({ username, password });
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+  res.status(200).json({ success: true });
+});
+
+// Eliminar un agente
+app.delete('/agents/:username', (req, res) => {
+  let agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const { username } = req.params;
+  agents = agents.filter(a => a.username !== username);
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+  res.status(200).json({ success: true });
 });
 
 server.listen(PORT, () => {
