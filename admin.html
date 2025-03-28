@@ -48,66 +48,76 @@
       margin: 0;
     }
 
-    .user-item {
-      background-color: #000;
-      color: #fff;
-      border-left: 4px solid transparent;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.3s ease;
+    .chat-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: #1a1a1a;
+      padding: 8px 12px;
+      margin: 6px 10px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      color: white;
+      font-size: 14px;
+      position: relative;
+      gap: 10px;
     }
 
-    .user-item:hover {
+    .chat-item:hover {
       background: #444;
     }
 
-    .user-item.active {
-      background-color: #000;
-      border-left: 4px solid #fff;
-      color: #fff;
+    .chat-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
     }
 
-    .username-display {
-      flex-grow: 1;
+    .username {
       font-weight: bold;
-      font-size: 14px;
+      max-width: 100px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .badge.cerrado {
+      background: #0da8c6;
       color: white;
     }
 
-    .user-item button.finalizar-btn {
-      background: #FF3B00;
+    .badge.finalizar {
+      background: #ff3b00;
       color: white;
       border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
-      font-size: 12px;
     }
 
-    .user-item button.finalizar-btn:hover {
+    .badge.finalizar:hover {
       background: #d63100;
     }
 
-    .cerrado-badge {
-      background-color: #00BFFF;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 10px;
-      font-weight: bold;
+    .hora {
       font-size: 12px;
-    }
-
-    .chat-timestamp {
-      color: white !important;
-      font-size: 12px;
+      color: #ccc;
       margin-left: auto;
+      white-space: nowrap;
     }
 
     .chat-area {
@@ -517,7 +527,6 @@
       -webkit-appearance: none;
     }
 
-    /* Desktop (versión estilo WhatsApp Web) */
     @media (min-width: 769px) {
       .container {
         flex-direction: row;
@@ -539,7 +548,6 @@
       }
     }
 
-    /* Mobile (mantiene popup como ahora) */
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -688,41 +696,25 @@
       userList.innerHTML = '';
 
       users.forEach(user => {
-        const userDiv = document.createElement('li');
-        userDiv.classList.add('user-item');
-        userDiv.dataset.userId = user.userId;
+        const chatDiv = document.createElement('div');
+        chatDiv.classList.add('chat-item');
+        chatDiv.dataset.userId = user.userId;
 
-        const nameDisplay = document.createElement('span');
-        nameDisplay.className = 'username-display';
-        nameDisplay.id = 'inboxUserName-' + user.userId;
-        nameDisplay.textContent = user.username;
+        chatDiv.innerHTML = `
+          <div class="chat-left">
+            <span class="username">${user.username}</span>
+            <div class="badges">
+              ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="finalizeChat('${user.userId}')">Finalizar</button>`}
+            </div>
+          </div>
+          <div class="hora">${new Date(user.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        `;
 
-        userDiv.appendChild(nameDisplay);
-
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'chat-timestamp';
-        timeSpan.textContent = new Date(user.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        userDiv.appendChild(timeSpan);
-
-        if (user.isClosed) {
-          const cerradoBadge = document.createElement('span');
-          cerradoBadge.className = 'cerrado-badge';
-          cerradoBadge.textContent = 'Cerrado';
-          userDiv.appendChild(cerradoBadge);
-          userDiv.style.opacity = 0.4;
-        } else {
-          const closeBtn = document.createElement('button');
-          closeBtn.textContent = 'Finalizar';
-          closeBtn.classList.add('finalizar-btn');
-          closeBtn.onclick = (e) => {
-            e.stopPropagation();
-            finalizeChat(user.userId);
-          };
-          userDiv.appendChild(closeBtn);
-        }
-
-        userDiv.onclick = () => selectUser(user.userId, user.username);
-        userList.appendChild(userDiv);
+        chatDiv.onclick = (e) => {
+          if (e.target.classList.contains('finalizar')) return;
+          selectUser(user.userId, user.username);
+        };
+        userList.appendChild(chatDiv);
 
         socket.emit('request chat history', { userId: user.userId });
       });
@@ -744,10 +736,10 @@
       selectedUserId = userId;
       selectedUsername = username;
       const userList = document.getElementById('userList').children;
-      for (let li of userList) {
-        li.classList.remove('active');
-        if (li.dataset.userId === userId) {
-          li.classList.add('active');
+      for (let div of userList) {
+        div.classList.remove('active');
+        if (div.dataset.userId === userId) {
+          div.classList.add('active');
           sessionStorage.setItem('lastUserId', userId);
           sessionStorage.setItem('lastUsername', username);
         }
@@ -759,7 +751,7 @@
         document.getElementById("chatPopup").classList.add("show");
       } else {
         document.getElementById("chatArea").classList.add("active");
-        document.getElementById("chatHeader").textContent = username; // Actualizamos el encabezado
+        document.getElementById("chatHeader").textContent = username;
       }
 
       displayPopupMessages(userId);
@@ -879,8 +871,8 @@
       }
       localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
 
-      const chatElement = document.querySelector(`li[data-user-id="${data.userId}"]`);
-      const wasClosed = chatElement && chatElement.querySelector('.cerrado-badge');
+      const chatElement = document.querySelector(`div[data-user-id="${data.userId}"]`);
+      const wasClosed = chatElement && chatElement.querySelector('.cerrado');
 
       if (wasClosed) {
         showFinalizarButton(data.userId);
@@ -892,21 +884,21 @@
     });
 
     function showFinalizarButton(userId) {
-      const chatElement = document.querySelector(`li[data-user-id="${userId}"]`);
+      const chatElement = document.querySelector(`div[data-user-id="${userId}"]`);
       if (chatElement) {
-        const cerradoBadge = chatElement.querySelector('.cerrado-badge');
+        const cerradoBadge = chatElement.querySelector('.cerrado');
         if (cerradoBadge) {
           cerradoBadge.remove();
         }
         chatElement.style.opacity = 1;
         const closeBtn = document.createElement('button');
         closeBtn.textContent = 'Finalizar';
-        closeBtn.classList.add('finalizar-btn');
+        closeBtn.classList.add('badge', 'finalizar');
         closeBtn.onclick = (e) => {
           e.stopPropagation();
           finalizeChat(userId);
         };
-        chatElement.appendChild(closeBtn);
+        chatElement.querySelector('.badges').appendChild(closeBtn);
       }
     }
 
@@ -961,17 +953,17 @@
         const agentUsername = localStorage.getItem("adminUser");
         socket.emit('close chat', { userId, agentUsername });
 
-        const li = document.querySelector(`li[data-user-id="${userId}"]`);
-        if (li) {
-          li.classList.remove('active');
-          li.style.opacity = 0.4;
-          const btn = li.querySelector('button.finalizar-btn');
+        const chatElement = document.querySelector(`div[data-user-id="${userId}"]`);
+        if (chatElement) {
+          chatElement.classList.remove('active');
+          chatElement.style.opacity = 0.4;
+          const btn = chatElement.querySelector('.finalizar');
           if (btn) {
             btn.remove();
             const cerradoBadge = document.createElement('span');
-            cerradoBadge.className = 'cerrado-badge';
+            cerradoBadge.className = 'badge cerrado';
             cerradoBadge.textContent = 'Cerrado';
-            li.appendChild(cerradoBadge);
+            chatElement.querySelector('.badges').appendChild(cerradoBadge);
           }
         }
 
