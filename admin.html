@@ -550,6 +550,9 @@
       color: white;
       font-weight: bold;
       font-size: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .hamburger-btn {
@@ -681,7 +684,9 @@
     <div class="inbox" id="userListContainer">
       <!-- 🌐 Topbar unificado -->
       <div class="topbar">
-        <span class="topbar-title">INBOX</span>
+        <span class="topbar-title">
+          <span style="margin-right: 5px;">📥</span> Bandeja de entrada
+        </span>
         <button class="hamburger-btn" onclick="toggleMenuPopup()">
           ☰
         </button>
@@ -773,7 +778,7 @@
           localStorage.setItem("adminUser", username);
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".admin-container").style.display = "flex";
-          document.getElementById("menuWrapper").style.display = "block";
+          document.getElementById("menuWrapper").style.display = "none";
           socket.emit('admin connected');
         } else {
           throw new Error("Credenciales inválidas");
@@ -798,7 +803,7 @@
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
         document.querySelector(".admin-container").style.display = "flex";
-        document.getElementById("menuWrapper").style.display = "none"; // Ocultado porque usamos la nueva topbar
+        document.getElementById("menuWrapper").style.display = "none";
         socket.emit('admin connected');
       } else {
         document.getElementById("loginScreen").style.display = "flex";
@@ -808,7 +813,7 @@
 
     socket.on('user list', (users) => {
       console.log('Lista de usuarios recibida:', users);
-      window.chatUsers = users; // Guardamos lista global
+      window.chatUsers = users;
       renderUserList();
     });
 
@@ -1179,7 +1184,6 @@
       const popup = document.getElementById("menuPopup");
       popup.classList.toggle("active");
 
-      // Ocultar filtro si está abierto
       document.getElementById("filterPopup").classList.remove("active");
     }
 
@@ -1187,7 +1191,6 @@
       const popup = document.getElementById("filterPopup");
       popup.classList.toggle("active");
 
-      // Marcar seleccionado
       document.querySelectorAll('.filter-option').forEach(opt => {
         opt.classList.remove('selected');
         if (opt.dataset.value === currentFilter) {
@@ -1195,7 +1198,6 @@
         }
       });
 
-      // Cerrar el menú hamburguesa
       document.getElementById("menuPopup").classList.remove("active");
     }
 
