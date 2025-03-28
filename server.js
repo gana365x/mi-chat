@@ -50,31 +50,22 @@ function incrementPerformance(agentUsername) {
   fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
 }
 
-function getActiveChatsSorted() {
-  const activeUsers = [];
-
-  for (let [userId, session] of userSessions.entries()) {
-    const history = chatHistory[userId] || [];
-
-    // Solo mostrar usuarios que enviaron mensajes
-    const hasMessages = history.some(msg => msg.sender !== 'Bot' && msg.sender !== 'System');
-    if (!hasMessages) continue;
-
-    // Obtenemos el timestamp del último mensaje
-    const lastMessageTime = history.length > 0 ? new Date(history[history.length - 1].timestamp || Date.now()) : new Date();
-
-    activeUsers.push({
-      userId,
-      username: session.username,
-      lastMessageTime,
-      isClosed: !session.socket // Si no tiene socket activo, está cerrado
+// 🔁 PASO 2: Nueva función para listar todos los chats con historial
+function getAllChatsSorted() {
+  const users = Object.entries(chatHistory)
+    .map(([userId, messages]) => {
+      const username = userSessions.get(userId)?.username || 'Usuario';
+      const lastMessageTime = messages.length > 0 ? new Date(messages[messages.length - 1].timestamp || 0) : new Date();
+      const isClosed = !userSessions.get(userId)?.socket; // Indica si el usuario está desconectado
+      return { userId, username, lastMessageTime, isClosed };
+    })
+    .sort((a, b) => {
+      const dateA = new Date(chatHistory[a.userId][0]?.timestamp || 0);
+      const dateB = new Date(chatHistory[b.userId][0]?.timestamp || 0);
+      return dateB - dateA; // Más reciente primero
     });
-  }
 
-  // Ordenar del más nuevo al más viejo
-  activeUsers.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
-
-  return activeUsers;
+  return users;
 }
 
 io.on('connection', (socket) => {
@@ -90,9 +81,20 @@ io.on('connection', (socket) => {
     userSessions.set(userId, { username, socket });
     socket.emit('session', { userId, username });
 
-    if (!chatHistory[userId]) chatHistory[userId] = [];
+    // 🔁 PASO 1: Guardar fecha de inicio del chat
+    if (!chatHistory[userId]) {
+      chatHistory[userId] = [];
+      const dateMessage = {
+        userId,
+        sender: 'system',
+        message: `📅 Chat iniciado el ${new Date().toLocaleDateString()}`,
+        timestamp: new Date().toISOString()
+      };
+      chatHistory[userId].push(dateMessage);
+      saveChatHistory();
+    }
 
-    io.emit('user list', getActiveChatsSorted());
+    io.emit('user list', getAllChatsSorted());
   });
 
   socket.on('update username', ({ userId, newUsername }) => {
@@ -114,14 +116,14 @@ io.on('connection', (socket) => {
         userSocket.emit('update username cookie', { newUsername });
       }
 
-      io.emit('user list', getActiveChatsSorted());
+      io.emit('user list', getAllChatsSorted());
       console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
     }
   });
 
   socket.on('admin connected', () => {
     socket.join('admins');
-    socket.emit('user list', getActiveChatsSorted());
+    socket.emit('user list', getAllChatsSorted());
   });
 
   socket.on('chat message', (data) => {
@@ -184,7 +186,7 @@ io.on('connection', (socket) => {
       }
     }
 
-    io.emit('user list', getActiveChatsSorted());
+    io.emit('user list', getAllChatsSorted());
   });
 
   socket.on('image', (data) => {
@@ -218,7 +220,7 @@ io.on('connection', (socket) => {
       }
     }
 
-    io.emit('user list', getActiveChatsSorted());
+    io.emit('user list', getAllChatsSorted());
   });
 
   socket.on('agent message', (data) => {
@@ -237,7 +239,7 @@ io.on('connection', (socket) => {
       }
     }
 
-    io.emit('user list', getActiveChatsSorted());
+    io.emit('user list', getAllChatsSorted());
   });
 
   socket.on('request chat history', (data) => {
@@ -262,7 +264,6 @@ io.on('connection', (socket) => {
       userSessions.set(data.userId, { ...session, socket: null });
     }
 
-    // 🧠 Paso 1: Marcar en el historial que el chat fue cerrado
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push({
       sender: 'System',
@@ -272,7 +273,7 @@ io.on('connection', (socket) => {
     });
     saveChatHistory();
 
-    io.emit('user list', getActiveChatsSorted());
+    io.emit('user list', getAllChatsSorted());
   });
 
   socket.on('disconnect', () => {
@@ -280,7 +281,7 @@ io.on('connection', (socket) => {
     for (let [userId, session] of userSessions.entries()) {
       if (session.socket?.id === socket.id) {
         userSessions.set(userId, { ...session, socket: null });
-        io.emit('user list', getActiveChatsSorted());
+        io.emit('user list', getAllChatsSorted());
         break;
       }
     }
