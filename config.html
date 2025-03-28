@@ -82,6 +82,7 @@
 
     .password-wrapper {
       position: relative;
+      margin-bottom: 10px; /* Espacio entre los inputs de contraseña */
     }
 
     .password-wrapper i {
@@ -150,7 +151,6 @@
       <label for="newName">Cambiar nombre visible</label>
       <input type="text" id="newName" placeholder="Nuevo nombre visible" />
       <button onclick="changeName()">Guardar Nombre</button>
-      <span id="nameStatus" style="margin-left: 10px;"></span>
       <div id="nameMsg"></div>
     </div>
 
@@ -158,7 +158,11 @@
       <label for="newPassword">Cambiar contraseña</label>
       <div class="password-wrapper">
         <input type="password" id="newPassword" placeholder="Nueva contraseña" />
-        <i class="fa-solid fa-eye" onclick="togglePassword()"></i>
+        <i class="fa-solid fa-eye" onclick="togglePassword('newPassword')"></i>
+      </div>
+      <div class="password-wrapper">
+        <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" />
+        <i class="fa-solid fa-eye" onclick="togglePassword('confirmPassword')"></i>
       </div>
       <button onclick="changePassword()">Guardar Contraseña</button>
       <div id="passMsg"></div>
@@ -171,12 +175,10 @@
     function changeName() {
       const newName = document.getElementById("newName").value.trim();
       const nameMsg = document.getElementById("nameMsg");
-      const statusIcon = document.getElementById("nameStatus");
 
       if (!newName) {
-        nameMsg.textContent = "El nombre no puede estar vacío.";
+        nameMsg.innerHTML = "El nombre no puede estar vacío ❌";
         nameMsg.className = "error";
-        statusIcon.textContent = "❌";
         return;
       }
 
@@ -188,29 +190,33 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          nameMsg.textContent = "Nombre actualizado correctamente.";
+          nameMsg.innerHTML = "Nombre actualizado correctamente ✅";
           nameMsg.className = "success";
-          statusIcon.textContent = "✅";
         } else {
-          nameMsg.textContent = "Error al actualizar el nombre.";
+          nameMsg.innerHTML = "Error al actualizar el nombre ❌";
           nameMsg.className = "error";
-          statusIcon.textContent = "❌";
         }
       })
       .catch(err => {
-        nameMsg.textContent = "Error al conectar con el servidor.";
+        nameMsg.innerHTML = "Error al conectar con el servidor ❌";
         nameMsg.className = "error";
-        statusIcon.textContent = "❌";
         console.error("Error en la solicitud:", err);
       });
     }
 
     function changePassword() {
       const newPass = document.getElementById("newPassword").value.trim();
+      const confirmPass = document.getElementById("confirmPassword").value.trim();
       const passMsg = document.getElementById("passMsg");
 
       if (!newPass || newPass.length < 4) {
-        passMsg.textContent = "Contraseña muy corta.";
+        passMsg.innerHTML = "Contraseña muy corta ❌";
+        passMsg.className = "error";
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        passMsg.innerHTML = "Las contraseñas no coinciden ❌";
         passMsg.className = "error";
         return;
       }
@@ -223,17 +229,22 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          passMsg.textContent = "Contraseña actualizada.";
+          passMsg.innerHTML = "Contraseña actualizada ✅";
           passMsg.className = "success";
         } else {
-          passMsg.textContent = "Error al actualizar contraseña.";
+          passMsg.innerHTML = "Error al actualizar contraseña ❌";
           passMsg.className = "error";
         }
+      })
+      .catch(err => {
+        passMsg.innerHTML = "Error al conectar con el servidor ❌";
+        passMsg.className = "error";
+        console.error("Error en la solicitud:", err);
       });
     }
 
-    function togglePassword() {
-      const input = document.getElementById("newPassword");
+    function togglePassword(id) {
+      const input = document.getElementById(id);
       const icon = input.nextElementSibling;
       if (input.type === "password") {
         input.type = "text";
