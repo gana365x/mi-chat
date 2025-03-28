@@ -194,7 +194,7 @@ io.on('connection', (socket) => {
       chatHistory[data.userId].push(retiroMsg);
       saveChatHistory();
       io.emit('user list', getAllChatsSorted());
-      if (userSocket) userSocket.emit('chat message', retimsg);
+      if (userSocket) userSocket.emit('chat message', retiroMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
           io.to(adminSocketId).emit('admin message', retiroMsg);
@@ -282,9 +282,29 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push({
       sender: 'System',
       message: 'Chat cerrado',
-      timestamp: '2000-01-01T00:00:00.000Z', // fecha antigua que no afecta el orden
+      timestamp: '2000-01-01T00:00:00.000Z',
       status: 'closed'
     });
+
+    const systemMsg = {
+      userId: data.userId,
+      sender: 'System',
+      message: 'Chat cerrado',
+      timestamp: '2000-01-01T00:00:00.000Z',
+      status: 'closed'
+    };
+
+    // Emitir al usuario
+    if (userSocket) {
+      userSocket.emit('chat message', systemMsg);
+    }
+
+    // Emitir al agente que estaba suscripto
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
+        io.to(adminSocketId).emit('admin message', systemMsg);
+      }
+    }
 
     if (chatHistory[data.userId]) {
       chatHistory[data.userId].activeSession = false;
