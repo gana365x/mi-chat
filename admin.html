@@ -28,18 +28,25 @@
       width: 250px;
       background: #1a1a1a;
       color: white;
-      padding: 20px;
+      padding: 0; /* Ajustado para que el header ocupe todo */
       border-radius: 10px;
       box-sizing: border-box;
       overflow-y: auto;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      position: relative; /* Para posicionar el popup */
+      position: relative;
+    }
+
+    .inbox-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background: #1a1a1a;
     }
 
     .inbox h2 {
-      margin-top: 0;
+      margin: 0;
       font-size: 20px;
-      margin-bottom: 20px;
       font-weight: bold;
     }
 
@@ -586,6 +593,41 @@
   </style>
 </head>
 <body>
+  <!-- Botón flotante de filtro -->
+  <button id="filterTrigger" onclick="toggleFilterPopup()" style="
+    position: fixed;
+    top: 20px;
+    left: 100px;
+    background: none;
+    border: none;
+    z-index: 2000;
+    cursor: pointer;">
+    <i class="fas fa-filter" style="color: white; font-size: 24px;"></i>
+  </button>
+
+  <!-- Popup flotante -->
+  <div id="filterPopup" style="
+    position: fixed;
+    top: 60px;
+    left: 80px;
+    background: #1f1f1f;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 12px 18px;
+    z-index: 3000;
+    display: none;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);">
+    <label style="display:block; margin-bottom:10px; color: white;">
+      <input type="radio" name="filter" value="all" checked onchange="applyFilter()"> Todos
+    </label>
+    <label style="display:block; margin-bottom:10px; color: white;">
+      <input type="radio" name="filter" value="active" onchange="applyFilter()"> Activos
+    </label>
+    <label style="display:block; color: white;">
+      <input type="radio" name="filter" value="closed" onchange="applyFilter()"> Cerrados
+    </label>
+  </div>
+
   <div id="menuWrapper" style="display: none;">
     <div class="top-menu">
       <div class="hamburger" onclick="toggleMenu()">
@@ -608,16 +650,8 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
-        <h2 style="color: white; margin: 0;">INBOX</h2>
-        <button id="filterBtn" onclick="toggleFilterPopup()" style="background: none; border: none; cursor: pointer;">
-          <i class="fas fa-filter" style="color: white; font-size: 20px;"></i>
-        </button>
-      </div>
-      <div id="filterPopup" style="display:none; position:absolute; top: 50px; left: 20px; background:#222; border:1px solid #444; border-radius:10px; padding:10px; z-index:1000;">
-        <label style="display:block; margin-bottom:5px;"><input type="radio" name="filter" value="all" checked onchange="applyFilter()"> Todos</label>
-        <label style="display:block; margin-bottom:5px;"><input type="radio" name="filter" value="active" onchange="applyFilter()"> Activos</label>
-        <label style="display:block;"><input type="radio" name="filter" value="closed" onchange="applyFilter()"> Cerrados</label>
+      <div class="inbox-header">
+        <h2 style="color: white;">INBOX</h2>
       </div>
       <ul class="user-list" id="userList"></ul>
     </div>
@@ -666,17 +700,6 @@
     let selectedUsername = null;
     const localChatHistory = {};
     let currentFilter = "all";
-
-    function toggleFilterPopup() {
-      const popup = document.getElementById('filterPopup');
-      popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function applyFilter() {
-      const selected = document.querySelector('input[name="filter"]:checked').value;
-      currentFilter = selected;
-      renderUserList();
-    }
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -1097,6 +1120,27 @@
       document.getElementById("saveBtn").style.display = "none";
       document.getElementById("cancelBtn").style.display = "none";
     }
+
+    function toggleFilterPopup() {
+      const popup = document.getElementById("filterPopup");
+      popup.style.display = popup.style.display === "block" ? "none" : "block";
+    }
+
+    function applyFilter() {
+      const selected = document.querySelector('input[name="filter"]:checked').value;
+      currentFilter = selected;
+      document.getElementById("filterPopup").style.display = "none";
+      renderUserList();
+    }
+
+    document.addEventListener("click", function (e) {
+      const popup = document.getElementById("filterPopup");
+      const trigger = document.getElementById("filterTrigger");
+
+      if (!popup.contains(e.target) && !trigger.contains(e.target)) {
+        popup.style.display = "none";
+      }
+    });
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
