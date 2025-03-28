@@ -434,52 +434,64 @@
       border-radius: 8px;
     }
 
+    /* ✅ Paso 1: Actualización del CSS del chat-popup */
     .chat-popup {
       display: none;
       position: fixed;
-      top: 5%;
-      left: 5%;
-      width: 90%;
-      height: 90%;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: #1f1f1f;
-      border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
       z-index: 10001;
       flex-direction: column;
       overflow: hidden;
+      border-radius: 0;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .chat-popup.show {
+      transform: translateY(0);
     }
 
     .popup-header {
       background: #FF3B00;
       color: white;
-      padding: 12px;
-      font-size: 18px;
+      padding: 12px 16px;
+      font-size: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
+    .popup-header #popupUser {
+      font-weight: bold;
+    }
+
     .popup-controls button {
-      background: transparent;
+      background: none;
       border: none;
-      font-size: 20px;
+      font-size: 22px;
       color: white;
       cursor: pointer;
     }
 
     .popup-messages {
       flex: 1;
-      padding: 15px;
       overflow-y: auto;
+      padding: 12px;
       background: #121212;
-      color: white;
     }
 
     .popup-input {
+      position: sticky;
+      bottom: 0;
       display: flex;
       padding: 10px;
       background: #222;
       gap: 10px;
+      box-sizing: border-box;
     }
 
     .popup-input input {
@@ -500,16 +512,6 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
-    }
-
-    @media (max-width: 768px) {
-      .chat-popup {
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-      }
     }
   </style>
 </head>
@@ -543,6 +545,7 @@
     <div class="chat-area" id="chatArea" style="display: none !important;"></div>
   </div>
 
+  <!-- ✅ Paso 2: Verificación y actualización del chatPopup en HTML -->
   <div id="chatPopup" class="chat-popup">
     <div class="popup-header">
       <span id="popupUser">Usuario</span>
@@ -573,9 +576,7 @@
       console.error('Error en Socket.IO:', error);
     });
 
-    // ✅ Paso 1: Verificación de localChatHistory
     const localChatHistory = {};
-
     let selectedUserId = null;
     let selectedUsername = null;
 
@@ -809,18 +810,17 @@
       }
     });
 
-    // ✅ Paso 5: Asegurar que selectedUserId se setee al abrir el popup
     function selectUser(userId, username) {
       selectedUserId = userId;
       selectedUsername = username;
       document.getElementById("popupUser").textContent = username;
       document.getElementById("chatPopup").style.display = "flex";
+      document.getElementById("chatPopup").classList.add("show"); // ✅ Paso 3: Animación al abrir
 
       socket.emit('request chat history', { userId });
-      displayPopupMessages(userId); // Mostramos si ya hay mensajes
+      displayPopupMessages(userId);
     }
 
-    // ✅ Paso 4: Verificación de displayPopupMessages
     function displayPopupMessages(userId) {
       const container = document.getElementById("popupMessages");
       container.innerHTML = '';
@@ -851,10 +851,12 @@
     }
 
     function closePopup() {
-      document.getElementById("chatPopup").style.display = "none";
+      document.getElementById("chatPopup").classList.remove("show"); // ✅ Paso 3: Animación al cerrar
+      setTimeout(() => {
+        document.getElementById("chatPopup").style.display = "none";
+      }, 300); // Esperar a que termine la animación (0.3s)
     }
 
-    // ✅ Paso 2: Revisión de mensajes entrantes
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
       if (!data.userId || !data.sender || !data.message) {
@@ -867,16 +869,15 @@
       localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
       console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
       if (data.userId === selectedUserId) {
-        displayPopupMessages(data.userId); // Actualizar popup si es el usuario abierto
+        displayPopupMessages(data.userId);
       }
     });
 
-    // ✅ Paso 3: Revisión de chat history
     socket.on('chat history', (data) => {
       console.log('Historial de chat recibido:', data);
       localChatHistory[data.userId] = data.messages || [];
       if (data.userId === selectedUserId) {
-        displayPopupMessages(data.userId); // Actualizar popup si es el usuario abierto
+        displayPopupMessages(data.userId);
       }
     });
   </script>
