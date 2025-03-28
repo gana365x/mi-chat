@@ -371,10 +371,25 @@
       transform: scale(1.2);
       color: #FF3B00;
     }
+
+    /* 🆕 Estilo opcional para el botón "Finalizar" */
+    .user-item button.close-chat {
+      background: #FF3B00;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .user-item button.close-chat:hover {
+      background: #d63100;
+    }
   </style>
 </head>
 <body>
-  <!-- 🆕 Pantalla de login añadida -->
   <div id="loginScreen" style="position: absolute; top:0; left:0; width:100vw; height:100vh; background:#121212; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
     <h2 style="color: white; font-size: 24px;">Login Agente</h2>
     <input id="adminUsername" type="text" placeholder="Usuario" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;">
@@ -399,7 +414,7 @@
           <button id="editBtn" onclick="editName()">✏️</button>
           <button id="saveBtn" onclick="saveName()" style="display:none;">✅</button>
           <button id="cancelBtn" onclick="cancelEdit()" style="display:none;">❌</button>
-          <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
+          <!-- Botón "Cerrar Chat" eliminado -->
         </div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
@@ -430,7 +445,6 @@
     let selectedUsername = null;
     const localChatHistory = {};
 
-    // 🆕 Lógica de validación para el login
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
@@ -448,7 +462,7 @@
         if (data.success) {
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".container").style.display = "flex";
-          socket.emit('admin connected'); // 👈 solo después del login
+          socket.emit('admin connected');
         } else {
           throw new Error("Credenciales incorrectas");
         }
@@ -459,7 +473,6 @@
       });
     }
 
-    // Ocultamos el panel por defecto
     document.addEventListener("DOMContentLoaded", () => {
       document.querySelector(".container").style.display = "none";
     });
@@ -490,6 +503,20 @@
 
         li.appendChild(nameDisplay);
         li.appendChild(timeSpan);
+
+        // Botón Finalizar (sólo si no está cerrado)
+        const finalizeBtn = document.createElement('button');
+        finalizeBtn.textContent = 'Finalizar';
+        finalizeBtn.className = 'close-chat';
+        finalizeBtn.style.marginLeft = '10px';
+        finalizeBtn.onclick = (e) => {
+          e.stopPropagation();
+          finalizeChat(user.userId);
+        };
+
+        if (!li.classList.contains('closed')) {
+          li.appendChild(finalizeBtn);
+        }
 
         li.onclick = () => selectUser(user.userId, user.username);
         userList.appendChild(li);
@@ -737,7 +764,28 @@
       }
     }
 
-    socket.emit('admin connected');
+    // 🆕 Nueva función para finalizar el chat
+    function finalizeChat(userId) {
+      if (userId) {
+        console.log('Finalizando chat para el usuario:', userId);
+        socket.emit('close chat', { userId });
+
+        const li = document.querySelector(`li[data-user-id="${userId}"]`);
+        if (li) {
+          li.classList.remove('active');
+          li.classList.add('closed');
+          const btn = li.querySelector('button.close-chat');
+          if (btn) btn.remove();
+        }
+
+        if (userId === selectedUserId) {
+          document.getElementById('chatArea').classList.remove('active');
+          selectedUserId = null;
+          selectedUsername = null;
+        }
+      }
+    }
+
     const lastUserId = sessionStorage.getItem('lastUserId');
     const lastUsername = sessionStorage.getItem('lastUsername');
     if (lastUserId && lastUsername) {
