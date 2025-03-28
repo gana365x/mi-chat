@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Configuración de Usuario</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: white;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #1f1f1f;
+      color: white;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #FF3B00;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #d63100;
+    }
+
+    .success {
+      color: #4CAF50;
+      margin-top: 10px;
+    }
+
+    .error {
+      color: #f44336;
+      margin-top: 10px;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+      font-size: 14px;
+      color: #aaa;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⚙️ Configuración</h1>
+
+  <div class="form-group">
+    <label for="newName">Cambiar nombre visible</label>
+    <input type="text" id="newName" placeholder="Nuevo nombre visible">
+    <button onclick="changeName()">Guardar Nombre</button>
+    <div id="nameMsg"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="newPassword">Cambiar contraseña</label>
+    <input type="password" id="newPassword" placeholder="Nueva contraseña">
+    <button onclick="changePassword()">Guardar Contraseña</button>
+    <div id="passMsg"></div>
+  </div>
+
+  <a href="admin.html" class="back-link">← Volver al panel</a>
+
+  <script>
+    const agentUser = localStorage.getItem("adminUser");
+
+    function changeName() {
+      const newName = document.getElementById("newName").value.trim();
+      const nameMsg = document.getElementById("nameMsg");
+
+      if (!newName) {
+        nameMsg.textContent = "El nombre no puede estar vacío.";
+        nameMsg.className = "error";
+        return;
+      }
+
+      fetch('/update-agent-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: agentUser, newName })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          nameMsg.textContent = "Nombre actualizado correctamente.";
+          nameMsg.className = "success";
+        } else {
+          nameMsg.textContent = "Error al actualizar el nombre.";
+          nameMsg.className = "error";
+        }
+      });
+    }
+
+    function changePassword() {
+      const newPass = document.getElementById("newPassword").value.trim();
+      const passMsg = document.getElementById("passMsg");
+
+      if (!newPass || newPass.length < 4) {
+        passMsg.textContent = "Contraseña muy corta.";
+        passMsg.className = "error";
+        return;
+      }
+
+      fetch('/update-agent-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: agentUser, newPassword: newPass })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          passMsg.textContent = "Contraseña actualizada.";
+          passMsg.className = "success";
+        } else {
+          passMsg.textContent = "Error al actualizar contraseña.";
+          passMsg.className = "error";
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
