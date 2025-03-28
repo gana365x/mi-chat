@@ -291,6 +291,23 @@ app.post('/superadmin-login', (req, res) => {
   }
 });
 
+// 🆕 Nueva ruta de login para agentes
+app.post('/agent-login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === superAdminUser && password === superAdminPass) {
+    return res.status(200).json({ superadmin: true });
+  }
+
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const match = agents.find(a => a.username === username && a.password === password);
+
+  if (match) {
+    return res.status(200).json({ success: true });
+  }
+
+  return res.status(401).json({ success: false });
+});
+
 // Obtener lista de agentes
 app.get('/agents', (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
