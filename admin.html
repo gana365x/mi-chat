@@ -17,14 +17,14 @@
       box-sizing: border-box;
     }
 
-    .container {
+    .admin-container {
       display: flex;
       width: 100%;
       height: 100%;
       gap: 20px;
     }
 
-    .sidebar {
+    .inbox {
       width: 250px;
       background: #1a1a1a;
       color: white;
@@ -35,7 +35,7 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
-    .sidebar h2 {
+    .inbox h2 {
       margin-top: 0;
       font-size: 20px;
       margin-bottom: 20px;
@@ -120,7 +120,7 @@
       white-space: nowrap;
     }
 
-    .chat-area {
+    .chat-view {
       flex: 1;
       background: #111;
       border-radius: 10px;
@@ -135,7 +135,7 @@
       overflow: hidden;
     }
 
-    .chat-area.active {
+    .chat-view.active {
       display: flex;
     }
 
@@ -527,20 +527,23 @@
       -webkit-appearance: none;
     }
 
-    @media (min-width: 769px) {
-      .container {
-        flex-direction: row;
+    @media (min-width: 768px) {
+      .admin-container {
+        display: flex;
+        height: 100vh;
       }
 
-      .sidebar {
-        display: block;
-        width: 30%;
-        max-width: 320px;
+      .inbox {
+        width: 300px;
+        background: #111;
+        overflow-y: auto;
       }
 
-      .chat-area {
+      .chat-view {
+        flex: 1;
+        background: #181818;
         display: flex !important;
-        width: 70%;
+        flex-direction: column;
       }
 
       .chat-popup {
@@ -548,16 +551,16 @@
       }
     }
 
-    @media (max-width: 768px) {
-      .container {
+    @media (max-width: 767px) {
+      .admin-container {
         flex-direction: column;
       }
 
-      .sidebar {
+      .inbox {
         width: 100%;
       }
 
-      .chat-area {
+      .chat-view {
         display: none !important;
       }
 
@@ -588,16 +591,16 @@
     <p id="loginError" style="color: red; margin-top: 10px; display: none;">Credenciales incorrectas</p>
   </div>
 
-  <div class="container">
-    <div class="sidebar">
+  <div class="admin-container">
+    <div class="inbox" id="userListContainer">
       <h2>INBOX</h2>
       <ul class="user-list" id="userList"></ul>
     </div>
 
-    <div class="chat-area" id="chatArea" style="display: none !important;">
+    <div class="chat-view" id="chatArea" style="display: none !important;">
       <div class="chat-header" id="chatHeader">Nombre del usuario</div>
       <div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
-      <div class="chat-input" id="chatInput">
+      <div class="chat-input" id="chatInputArea">
         <input type="text" id="adminInput" placeholder="Escribir mensaje..." />
         <button onclick="sendAdminMessage()">Enviar</button>
       </div>
@@ -655,7 +658,7 @@
           localStorage.setItem("adminLoggedIn", "true");
           localStorage.setItem("adminUser", username);
           document.getElementById("loginScreen").style.display = "none";
-          document.querySelector(".container").style.display = "flex";
+          document.querySelector(".admin-container").style.display = "flex";
           document.getElementById("menuWrapper").style.display = "block";
           socket.emit('admin connected');
         } else {
@@ -680,12 +683,12 @@
 
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
-        document.querySelector(".container").style.display = "flex";
+        document.querySelector(".admin-container").style.display = "flex";
         document.getElementById("menuWrapper").style.display = "block";
         socket.emit('admin connected');
       } else {
         document.getElementById("loginScreen").style.display = "flex";
-        document.querySelector(".container").style.display = "none";
+        document.querySelector(".admin-container").style.display = "none";
       }
     });
 
@@ -745,25 +748,23 @@
         }
       }
       document.getElementById("popupUser").textContent = username;
+      document.getElementById("chatHeader").textContent = username;
 
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth <= 767) {
         document.getElementById("chatPopup").style.display = "flex";
         document.getElementById("chatPopup").classList.add("show");
       } else {
         document.getElementById("chatArea").classList.add("active");
-        document.getElementById("chatHeader").textContent = username;
       }
 
-      displayPopupMessages(userId);
       socket.emit('request chat history', { userId });
     }
 
-    function displayPopupMessages(userId) {
+    function renderChat(messages) {
       const popupContainer = document.getElementById("popupMessages");
       const chatContainer = document.getElementById("chatMessages");
       popupContainer.innerHTML = '';
       chatContainer.innerHTML = '';
-      const messages = localChatHistory[userId] || [];
 
       messages.forEach(msg => {
         if (msg.sender === 'system' && msg.message.includes('Chat iniciado')) {
@@ -784,28 +785,16 @@
 
           if (msg.sender === "Agent") {
             div.classList.add("agent");
-            div.innerHTML = `
-              <div>${msg.message}</div>
-              <div class="timestamp">✅✅ ${timestamp}</div>
-            `;
+            div.innerHTML = `<div>${msg.message}</div><div class="timestamp">✅✅ ${timestamp}</div>`;
           } else if (msg.sender === "Bot") {
             div.classList.add("bot");
-            div.innerHTML = `
-              <div>${msg.message}</div>
-              <div class="timestamp">🤖 ${timestamp}</div>
-            `;
+            div.innerHTML = `<div>${msg.message}</div><div class="timestamp">🤖 ${timestamp}</div>`;
           } else if (msg.sender === "System") {
             div.classList.add("system");
-            div.innerHTML = `
-              <div>${msg.message}</div>
-              <div class="timestamp">${timestamp}</div>
-            `;
+            div.innerHTML = `<div>${msg.message}</div><div class="timestamp">${timestamp}</div>`;
           } else {
             div.classList.add("user");
-            div.innerHTML = `
-              <div><strong>${msg.sender}:</strong><br>${msg.message}</div>
-              <div class="timestamp">${timestamp}</div>
-            `;
+            div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div><div class="timestamp">${timestamp}</div>`;
           }
 
           popupContainer.appendChild(div.cloneNode(true));
@@ -828,7 +817,7 @@
       localChatHistory[selectedUserId].push({ sender: 'Agent', message: msg });
 
       input.value = '';
-      displayPopupMessages(selectedUserId);
+      renderChat(localChatHistory[selectedUserId]);
     }
 
     function sendAdminMessage() {
@@ -842,7 +831,7 @@
       localChatHistory[selectedUserId].push({ sender: 'Agent', message: msg });
 
       input.value = '';
-      displayPopupMessages(selectedUserId);
+      renderChat(localChatHistory[selectedUserId]);
     }
 
     function closePopup() {
@@ -856,7 +845,10 @@
       console.log('Historial de chat recibido:', data);
       localChatHistory[data.userId] = data.messages || [];
       if (data.userId === selectedUserId) {
-        displayPopupMessages(data.userId);
+        renderChat(data.messages);
+        if (window.innerWidth >= 768) {
+          document.getElementById('chatArea').style.display = 'flex';
+        }
       }
     });
 
@@ -879,7 +871,7 @@
       }
 
       if (data.userId === selectedUserId) {
-        displayPopupMessages(data.userId);
+        renderChat(localChatHistory[data.userId]);
       }
     });
 
