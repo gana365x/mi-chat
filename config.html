@@ -64,7 +64,8 @@
     }
 
     input[type="text"],
-    input[type="password"] {
+    input[type="password"],
+    textarea {
       width: 100%;
       padding: 12px;
       border: none;
@@ -75,14 +76,15 @@
       transition: border 0.2s ease;
     }
 
-    input:focus {
+    input:focus,
+    textarea:focus {
       outline: none;
       border: 1px solid #FF3B00;
     }
 
     .password-wrapper {
       position: relative;
-      margin-bottom: 10px; /* Espacio entre los inputs de contraseña */
+      margin-bottom: 10px;
     }
 
     .password-wrapper i {
@@ -166,6 +168,13 @@
       </div>
       <button onclick="changePassword()">Guardar Contraseña</button>
       <div id="passMsg"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="quickReplies">Respuestas rápidas (una por línea, puedes incluir emoticones)</label>
+      <textarea id="quickReplies" rows="6" style="width: 100%; padding: 10px; border-radius: 8px;"></textarea>
+      <button onclick="saveQuickReplies()">Guardar respuestas rápidas</button>
+      <div id="quickMsg"></div>
     </div>
   </div>
 
@@ -265,6 +274,35 @@
         iconElement.classList.add("fa-eye");
       }
     }
+
+    function loadQuickReplies() {
+      fetch('/quick-replies')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("quickReplies").value = data.join('\n');
+        });
+    }
+
+    function saveQuickReplies() {
+      const lines = document.getElementById("quickReplies").value
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      fetch('/quick-replies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ replies: lines })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const msg = document.getElementById("quickMsg");
+        msg.textContent = data.success ? "Guardado correctamente ✅" : "Error ❌";
+        msg.className = data.success ? "success" : "error";
+      });
+    }
+
+    loadQuickReplies();
   </script>
 
 </body>
