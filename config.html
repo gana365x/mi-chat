@@ -150,6 +150,7 @@
       <label for="newName">Cambiar nombre visible</label>
       <input type="text" id="newName" placeholder="Nuevo nombre visible" />
       <button onclick="changeName()">Guardar Nombre</button>
+      <span id="nameStatus" style="margin-left: 10px;"></span>
       <div id="nameMsg"></div>
     </div>
 
@@ -160,6 +161,7 @@
         <i class="fa-solid fa-eye" onclick="togglePassword()"></i>
       </div>
       <button onclick="changePassword()">Guardar Contraseña</button>
+      <span id="passStatus" style="margin-left: 10px;"></span>
       <div id="passMsg"></div>
     </div>
   </div>
@@ -170,10 +172,12 @@
     function changeName() {
       const newName = document.getElementById("newName").value.trim();
       const nameMsg = document.getElementById("nameMsg");
+      const statusIcon = document.getElementById("nameStatus");
 
       if (!newName) {
         nameMsg.textContent = "El nombre no puede estar vacío.";
         nameMsg.className = "error";
+        statusIcon.textContent = "❌";
         return;
       }
 
@@ -187,20 +191,30 @@
         if (data.success) {
           nameMsg.textContent = "Nombre actualizado correctamente.";
           nameMsg.className = "success";
+          statusIcon.textContent = "✅";
         } else {
           nameMsg.textContent = "Error al actualizar el nombre.";
           nameMsg.className = "error";
+          statusIcon.textContent = "❌";
         }
+      })
+      .catch(err => {
+        nameMsg.textContent = "Error al conectar con el servidor.";
+        nameMsg.className = "error";
+        statusIcon.textContent = "❌";
+        console.error("Error en la solicitud:", err);
       });
     }
 
     function changePassword() {
       const newPass = document.getElementById("newPassword").value.trim();
       const passMsg = document.getElementById("passMsg");
+      const statusIcon = document.getElementById("passStatus");
 
       if (!newPass || newPass.length < 4) {
         passMsg.textContent = "Contraseña muy corta.";
         passMsg.className = "error";
+        statusIcon.textContent = "❌";
         return;
       }
 
@@ -214,10 +228,18 @@
         if (data.success) {
           passMsg.textContent = "Contraseña actualizada.";
           passMsg.className = "success";
+          statusIcon.textContent = "✅";
         } else {
           passMsg.textContent = "Error al actualizar contraseña.";
           passMsg.className = "error";
+          statusIcon.textContent = "❌";
         }
+      })
+      .catch(err => {
+        passMsg.textContent = "Error al conectar con el servidor.";
+        passMsg.className = "error";
+        statusIcon.textContent = "❌";
+        console.error("Error en la solicitud:", err);
       });
     }
 
