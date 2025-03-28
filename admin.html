@@ -276,12 +276,9 @@
     }
 
     .user-item.unread {
-  border: 2px solid #FF3B00;
-  border-radius: 15px;
-  background-color: #2b2b2b;
-  color: white;
-}
-    
+      border-left: 4px solid #FF3B00;
+    }
+
     .user-item.active {
       background: #FF3B00;
       color: white;
@@ -324,67 +321,6 @@
       transform: scale(1.2);
       color: #FF3B00;
     }
-
-    .user-actions-popup {
-      position: absolute;
-      top: 50%;
-      right: 10px;
-      transform: translateY(-50%);
-      background: #222;
-      border: 1px solid #FF3B00;
-      padding: 6px 10px;
-      border-radius: 8px;
-      display: none;
-      flex-direction: row;
-      gap: 10px;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-
-    .user-actions-popup button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .user-actions-popup button:hover {
-      color: #FF3B00;
-    }
-
-    .confirm-delete {
-      display: flex;
-      gap: 10px;
-    }
-
-    /* CSS para los botones de edición */
-    .edit-name {
-      display: inline-block;
-      margin-left: 10px;
-      cursor: pointer;
-      font-size: 18px;
-      color: #FF3B00;
-    }
-
-    .edit-name i {
-      transition: transform 0.2s ease;
-    }
-
-    .edit-name i:hover {
-      transform: scale(1.2);
-    }
-
-    .chat-header:hover .edit-name {
-      display: inline-block;
-    }
-
-    #currentUser input {
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      width: 80%;
-    }
   </style>
 </head>
 <body>
@@ -396,16 +332,16 @@
 
     <div class="chat-area" id="chatArea">
       <div class="chat-header">
-        <h2 id="chatUser">Chat con: <span id="currentUser">[Nombre del Usuario]</span></h2>
-        <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
-        <div id="editNameButton" class="edit-name">
-          <i class="fas fa-pencil-alt" onclick="editName()"></i>
-        </div>
-        <div id="saveNameButton" class="edit-name" style="display: none;">
-          <i class="fas fa-check" onclick="saveName()"></i>
-        </div>
-        <div id="cancelEditButton" class="edit-name" style="display: none;">
-          <i class="fas fa-times" onclick="cancelEdit()"></i>
+        <h2 id="chatUser">
+          Chat con: 
+          <span id="currentUser">[Nombre del Usuario]</span>
+          <input type="text" id="editNameInput" style="display:none; margin-left: 10px;" />
+        </h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button id="editBtn" onclick="editName()" title="Editar">✏️</button>
+          <button id="saveBtn" onclick="saveName()" style="display:none;" title="Guardar">✅</button>
+          <button id="cancelBtn" onclick="cancelEdit()" style="display:none;" title="Cancelar">❌</button>
+          <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
         </div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
@@ -460,97 +396,8 @@
         timeSpan.style.color = '#aaa';
         timeSpan.style.marginLeft = 'auto';
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = user.username;
-        input.className = 'edit-input';
-        input.style.display = 'none';
-
-        const checkBtn = document.createElement('button');
-        checkBtn.innerHTML = '✅';
-        checkBtn.className = 'confirm-btn';
-        checkBtn.style.display = 'none';
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.innerHTML = '❌';
-        cancelBtn.className = 'cancel-btn';
-        cancelBtn.style.display = 'none';
-
-        const editIcon = document.createElement('button');
-        editIcon.innerHTML = '✏️';
-        editIcon.className = 'edit-btn';
-
-        const deleteIcon = document.createElement('button');
-        deleteIcon.innerHTML = '🗑';
-        deleteIcon.className = 'delete-btn';
-
-        const actionsPopup = document.createElement('div');
-        actionsPopup.className = 'user-actions-popup';
-        actionsPopup.appendChild(editIcon);
-        actionsPopup.appendChild(deleteIcon);
-
-        editIcon.onclick = () => {
-          nameDisplay.style.display = 'none';
-          input.style.display = 'inline-block';
-          checkBtn.style.display = 'inline-block';
-          cancelBtn.style.display = 'inline-block';
-          actionsPopup.style.display = 'none';
-        };
-
-        checkBtn.onclick = () => {
-          const newName = input.value.trim();
-          if (newName && newName !== user.username) {
-            updateUsername(user.userId, newName);
-            if (user.userId === selectedUserId) {
-              document.getElementById('currentUser').textContent = newName;
-            }
-          }
-          resetEditUI();
-        };
-
-        cancelBtn.onclick = () => {
-          input.value = user.username;
-          resetEditUI();
-        };
-
-        deleteIcon.onclick = () => {
-          actionsPopup.innerHTML = `
-            <div class="confirm-delete">
-              <button class="confirm-btn">✅</button>
-              <button class="cancel-btn">❌</button>
-            </div>
-          `;
-          actionsPopup.querySelector('.confirm-btn').onclick = () => {
-            userList.removeChild(li);
-          };
-          actionsPopup.querySelector('.cancel-btn').onclick = () => {
-            actionsPopup.innerHTML = '';
-            actionsPopup.appendChild(editIcon);
-            actionsPopup.appendChild(deleteIcon);
-          };
-        };
-
-        function resetEditUI() {
-          nameDisplay.style.display = 'inline-block';
-          input.style.display = 'none';
-          checkBtn.style.display = 'none';
-          cancelBtn.style.display = 'none';
-          editIcon.style.display = 'inline-block';
-        }
-
         li.appendChild(nameDisplay);
         li.appendChild(timeSpan);
-        li.appendChild(input);
-        li.appendChild(checkBtn);
-        li.appendChild(cancelBtn);
-        li.appendChild(actionsPopup);
-
-        li.addEventListener('mouseenter', () => {
-          actionsPopup.style.display = 'flex';
-        });
-        li.addEventListener('mouseleave', () => {
-          actionsPopup.style.display = 'none';
-        });
 
         li.onclick = () => selectUser(user.userId, user.username);
         userList.appendChild(li);
@@ -810,59 +657,53 @@
       socket.emit('request chat history', { userId: lastUserId });
     }
 
-    let originalUserName = '';
+    let originalUserName = "";
 
     function editName() {
       const currentUserSpan = document.getElementById("currentUser");
-      const editButton = document.getElementById("editNameButton");
-      const saveButton = document.getElementById("saveNameButton");
-      const cancelButton = document.getElementById("cancelEditButton");
+      const input = document.getElementById("editNameInput");
+      const editBtn = document.getElementById("editBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
 
-      originalUserName = currentUserSpan.textContent.trim();
-      currentUserSpan.innerHTML = `<input type="text" id="newUserName" value="${originalUserName}" />`;
-      saveButton.style.display = 'inline-block';
-      cancelButton.style.display = 'inline-block';
-      editButton.style.display = 'none';
+      originalUserName = currentUserSpan.textContent;
+      input.value = originalUserName;
+      currentUserSpan.style.display = "none";
+      input.style.display = "inline-block";
+      editBtn.style.display = "none";
+      saveBtn.style.display = "inline-block";
+      cancelBtn.style.display = "inline-block";
     }
 
     function saveName() {
-      const newUserName = document.getElementById("newUserName").value.trim();
+      const newName = document.getElementById("editNameInput").value.trim();
       const currentUserSpan = document.getElementById("currentUser");
-      const editButton = document.getElementById("editNameButton");
-      const saveButton = document.getElementById("saveNameButton");
-      const cancelButton = document.getElementById("cancelEditButton");
 
-      if (newUserName !== '') {
-        currentUserSpan.textContent = newUserName;
-        socket.emit('update user name', { userId: selectedUserId, newUserName });
-        saveButton.style.display = 'none';
-        cancelButton.style.display = 'none';
-        editButton.style.display = 'inline-block';
-      } else {
-        alert("El nombre no puede estar vacío");
+      if (newName && selectedUserId) {
+        socket.emit('update username', { userId: selectedUserId, newUsername: newName });
+        currentUserSpan.textContent = newName;
+
+        const inboxName = document.querySelector(`#inboxUserName-${selectedUserId}`);
+        if (inboxName) inboxName.textContent = newName;
       }
+
+      resetEditUI();
     }
 
     function cancelEdit() {
+      const input = document.getElementById("editNameInput");
       const currentUserSpan = document.getElementById("currentUser");
-      const editButton = document.getElementById("editNameButton");
-      const saveButton = document.getElementById("saveNameButton");
-      const cancelButton = document.getElementById("cancelEditButton");
-
       currentUserSpan.textContent = originalUserName;
-      saveButton.style.display = 'none';
-      cancelButton.style.display = 'none';
-      editButton.style.display = 'inline-block';
+      resetEditUI();
     }
 
-    socket.on('update user name', (data) => {
-      if (data.userId === selectedUserId) {
-        const inboxUserName = document.getElementById('inboxUserName-' + data.userId);
-        if (inboxUserName) {
-          inboxUserName.textContent = data.newUserName;
-        }
-      }
-    });
+    function resetEditUI() {
+      document.getElementById("currentUser").style.display = "inline-block";
+      document.getElementById("editNameInput").style.display = "none";
+      document.getElementById("editBtn").style.display = "inline-block";
+      document.getElementById("saveBtn").style.display = "none";
+      document.getElementById("cancelBtn").style.display = "none";
+    }
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
