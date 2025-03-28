@@ -26,7 +26,9 @@ const adminSubscriptions = new Map();
 const historyFilePath = path.join(__dirname, 'chatHistory.json');
 const performanceFile = path.join(__dirname, 'performance.json');
 const agentsFilePath = path.join(__dirname, 'agents.json');
+const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 
+// Inicializar archivos si no existen
 if (fs.existsSync(historyFilePath)) {
   const data = fs.readFileSync(historyFilePath, 'utf-8');
   try {
@@ -42,6 +44,10 @@ if (!fs.existsSync(performanceFile)) {
 
 if (!fs.existsSync(agentsFilePath)) {
   fs.writeFileSync(agentsFilePath, JSON.stringify([]));
+}
+
+if (!fs.existsSync(quickRepliesPath)) {
+  fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 }
 
 function saveChatHistory() {
@@ -294,12 +300,10 @@ io.on('connection', (socket) => {
       status: 'closed'
     };
 
-    // Emitir al usuario
     if (userSocket) {
       userSocket.emit('chat message', systemMsg);
     }
 
-    // Emitir al agente que estaba suscripto
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', systemMsg);
@@ -443,6 +447,21 @@ app.post('/update-agent-password', (req, res) => {
   fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
 
   return res.status(200).json({ success: true });
+});
+
+// Obtener respuestas rápidas
+app.get('/quick-replies', (req, res) => {
+  const replies = JSON.parse(fs.readFileSync(quickRepliesPath));
+  res.json(replies);
+});
+
+// Guardar respuestas rápidas
+app.post('/quick-replies', express.json(), (req, res) => {
+  const { replies } = req.body;
+  if (!Array.isArray(replies)) return res.status(400).json({ success: false });
+
+  fs.writeFileSync(quickRepliesPath, JSON.stringify(replies, null, 2));
+  res.json({ success: true });
 });
 
 server.listen(PORT, () => {
