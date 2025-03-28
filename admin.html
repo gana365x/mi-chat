@@ -95,7 +95,6 @@
       background: #d63100;
     }
 
-    /* ✅ Paso 1: Estilo para "Cerrado" */
     .cerrado-badge {
       background-color: #00BFFF;
       color: white;
@@ -105,7 +104,6 @@
       font-size: 12px;
     }
 
-    /* ✅ Paso 3: Estilo para el timestamp */
     .chat-timestamp {
       color: white !important;
       font-size: 12px;
@@ -489,6 +487,14 @@
       color: #000;
     }
 
+    .bubble.system {
+      background-color: #FFD700; /* Amarillo para mensajes del sistema */
+      align-self: center;
+      margin: 0 auto;
+      border-radius: 12px;
+      color: #000;
+    }
+
     .timestamp {
       font-size: 11px;
       color: #555;
@@ -639,19 +645,17 @@
 
         userDiv.appendChild(nameDisplay);
 
-        // ✅ Paso 3: Agregar timestamp en blanco
         const timeSpan = document.createElement('span');
         timeSpan.className = 'chat-timestamp';
         timeSpan.textContent = new Date(user.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         userDiv.appendChild(timeSpan);
 
-        // ✅ Paso 1: Mostrar "Cerrado" o "Finalizar" según estado
         if (user.isClosed) {
           const cerradoBadge = document.createElement('span');
           cerradoBadge.className = 'cerrado-badge';
           cerradoBadge.textContent = 'Cerrado';
           userDiv.appendChild(cerradoBadge);
-          userDiv.style.opacity = 0.4; // Mantener opacidad para chats cerrados
+          userDiv.style.opacity = 0.4;
         } else {
           const closeBtn = document.createElement('button');
           closeBtn.textContent = 'Finalizar';
@@ -666,7 +670,6 @@
         userDiv.onclick = () => selectUser(user.userId, user.username);
         userList.appendChild(userDiv);
 
-        // Solicitar historial para cada usuario
         socket.emit('request chat history', { userId: user.userId });
       });
     });
@@ -725,6 +728,12 @@
             <div>${msg.message}</div>
             <div class="timestamp">🤖 ${timestamp}</div>
           `;
+        } else if (msg.sender === "System") {
+          div.classList.add("system");
+          div.innerHTML = `
+            <div>${msg.message}</div>
+            <div class="timestamp">${timestamp}</div>
+          `;
         } else {
           div.classList.add("user");
           div.innerHTML = `
@@ -768,6 +777,7 @@
       }
     });
 
+    // 🧠 Paso 2: Manejar nuevos mensajes y reabrir chats cerrados
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
       if (!data.userId || !data.sender || !data.message) {
@@ -778,10 +788,40 @@
         localChatHistory[data.userId] = [];
       }
       localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
+
+      // Verificamos si el chat estaba cerrado
+      const chatElement = document.querySelector(`li[data-user-id="${data.userId}"]`);
+      const wasClosed = chatElement && chatElement.querySelector('.cerrado-badge');
+
+      if (wasClosed) {
+        showFinalizarButton(data.userId);
+      }
+
       if (data.userId === selectedUserId) {
         displayPopupMessages(data.userId);
       }
+
+      // El reordenamiento lo maneja el backend con 'user list', no necesitamos moverlo aquí
     });
+
+    function showFinalizarButton(userId) {
+      const chatElement = document.querySelector(`li[data-user-id="${userId}"]`);
+      if (chatElement) {
+        const cerradoBadge = chatElement.querySelector('.cerrado-badge');
+        if (cerradoBadge) {
+          cerradoBadge.remove();
+        }
+        chatElement.style.opacity = 1; // Restaurar opacidad
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Finalizar';
+        closeBtn.classList.add('finalizar-btn');
+        closeBtn.onclick = (e) => {
+          e.stopPropagation();
+          finalizeChat(userId);
+        };
+        chatElement.appendChild(closeBtn);
+      }
+    }
 
     socket.on('admin image', (data) => {
       console.log('Imagen recibida en tiempo real:', data);
