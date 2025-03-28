@@ -386,13 +386,12 @@
       background: #d63100;
     }
 
-    /* 🆕 Nuevos estilos para el menú hamburguesa */
     .top-menu {
-  position: absolute;
-  top: 15px;
-  left: 20px;  /* 👈 lo cambiamos de right a left */
-  z-index: 10000;
-}
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      z-index: 10000;
+    }
 
     .hamburger {
       font-size: 22px;
@@ -411,7 +410,7 @@
       display: none;
       position: absolute;
       top: 38px;
-      left: 0;
+      right: 0;
       background: #1f1f1f;
       border: 1px solid #444;
       border-radius: 10px;
@@ -434,17 +433,97 @@
       background: #333;
       border-radius: 8px;
     }
+
+    /* 🆕 Estilos para el popup de chat */
+    .chat-popup {
+      display: none;
+      position: fixed;
+      top: 5%;
+      left: 5%;
+      width: 90%;
+      height: 90%;
+      background: #1f1f1f;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+      z-index: 10001;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .popup-header {
+      background: #FF3B00;
+      color: white;
+      padding: 12px;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .popup-controls button {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .popup-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #121212;
+      color: white;
+    }
+
+    .popup-input {
+      display: flex;
+      padding: 10px;
+      background: #222;
+      gap: 10px;
+    }
+
+    .popup-input input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      background: #fff;
+      color: #000;
+    }
+
+    .popup-input button {
+      background: #FF3B00;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .chat-popup {
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- 🆕 Nuevo menú hamburguesa reemplazando la barra superior -->
-  <div class="top-menu">
-    <div class="hamburger" onclick="toggleMenu()">
-      <i class="fas fa-bars"></i>
-    </div>
-    <div class="popup-menu" id="popupMenu">
-      <div onclick="goToConfig()"><i class="fas fa-cog"></i></div>
-      <div onclick="logoutAdmin()"><i class="fas fa-power-off"></i></div>
+  <div id="menuWrapper" style="display: none;">
+    <div class="top-menu">
+      <div class="hamburger" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+      </div>
+      <div class="popup-menu" id="popupMenu">
+        <div onclick="goToConfig()"><i class="fas fa-cog"></i></div>
+        <div onclick="logoutAdmin()"><i class="fas fa-power-off"></i></div>
+      </div>
     </div>
   </div>
 
@@ -462,23 +541,22 @@
       <ul class="user-list" id="userList"></ul>
     </div>
 
-    <div class="chat-area" id="chatArea">
-      <div class="chat-header">
-        <h2 id="chatUser">
-          Chat con: <strong><span id="currentUser">Pedro-55</span></strong>
-          <input type="text" id="editNameInput" style="display:none;" />
-        </h2>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <button id="editBtn" onclick="editName()">✏️</button>
-          <button id="saveBtn" onclick="saveName()" style="display:none;">✅</button>
-          <button id="cancelBtn" onclick="cancelEdit()" style="display:none;">❌</button>
-        </div>
+    <!-- 🆕 Chat area ocultado -->
+    <div class="chat-area" id="chatArea" style="display: none !important;"></div>
+  </div>
+
+  <!-- 🆕 Nuevo popup de chat al final del body -->
+  <div id="chatPopup" class="chat-popup">
+    <div class="popup-header">
+      <span id="popupUser">Usuario</span>
+      <div class="popup-controls">
+        <button onclick="closePopup()">✖</button>
       </div>
-      <div class="chat-messages" id="chatMessages"></div>
-      <div class="chat-input">
-        <input type="text" id="agentMessage" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendAgentMessage()">
-        <button onclick="sendAgentMessage()">Enviar</button>
-      </div>
+    </div>
+    <div id="popupMessages" class="popup-messages"></div>
+    <div class="popup-input">
+      <input type="text" id="popupInput" placeholder="Escribir mensaje..." onkeypress="if(event.key==='Enter') sendPopupMessage()">
+      <button onclick="sendPopupMessage()">Enviar</button>
     </div>
   </div>
 
@@ -520,6 +598,7 @@
           localStorage.setItem("adminUser", username);
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".container").style.display = "flex";
+          document.getElementById("menuWrapper").style.display = "block";
           socket.emit('admin connected');
         } else {
           throw new Error("Credenciales inválidas");
@@ -541,13 +620,10 @@
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
       const username = localStorage.getItem("adminUser") || "Agente";
 
-      getDisplayName(username).then(displayName => {
-        document.getElementById("agentDisplay").textContent = "Conectado: " + displayName;
-      });
-
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
         document.querySelector(".container").style.display = "flex";
+        document.getElementById("menuWrapper").style.display = "block";
         socket.emit('admin connected');
       } else {
         document.getElementById("loginScreen").style.display = "flex";
@@ -609,218 +685,6 @@
         selectedUsername = newUsername;
         document.getElementById('currentUser').textContent = newUsername;
         sessionStorage.setItem('lastUsername', newUsername);
-      }
-    }
-
-    function selectUser(userId, username) {
-      console.log('Usuario seleccionado:', { userId, username });
-      selectedUserId = userId;
-      selectedUsername = username;
-      const userList = document.getElementById('userList').children;
-      for (let li of userList) {
-        li.classList.remove('active', 'unread');
-        if (li.dataset.userId === userId) {
-          li.classList.add('active');
-          li.classList.remove('unread');
-          sessionStorage.setItem('lastUserId', userId);
-          sessionStorage.setItem('lastUsername', username);
-        }
-      }
-      const chatArea = document.getElementById('chatArea');
-      chatArea.classList.add('active');
-      document.getElementById('currentUser').textContent = username;
-      document.getElementById('chatMessages').innerHTML = '';
-      displayLocalMessages(userId);
-      if (userId) {
-        socket.emit('request chat history', { userId });
-      } else {
-        console.error('No se puede solicitar historial, userId está vacío');
-      }
-    }
-
-    function displayLocalMessages(userId) {
-      console.log('Mostrando mensajes locales para userId:', userId);
-      const chatMessages = document.getElementById('chatMessages');
-      chatMessages.innerHTML = '';
-
-      const messages = localChatHistory[userId] || [];
-
-      if (messages.length > 0) {
-        messages.forEach(msg => {
-          const messageDiv = document.createElement('div');
-          messageDiv.classList.add('message');
-
-          if (msg.sender === 'Bot') {
-            messageDiv.classList.add('bot');
-          } else if (msg.sender === 'Agent') {
-            messageDiv.classList.add('agent');
-          } else {
-            messageDiv.classList.add('user');
-          }
-
-          if (msg.image) {
-            messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${msg.message}`;
-            const img = document.createElement('img');
-            img.src = msg.image;
-            img.onclick = () => openImageInNewWindow(msg.image);
-            messageDiv.appendChild(img);
-          } else if (msg.sender === 'Bot' && msg.message.includes('PARA RETIRAR COMPLETAR')) {
-            messageDiv.innerHTML = `
-              <div class="bot-message-block">
-                <div class="bot-message-line"><strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia</div>
-                <div class="bot-message-line">👉 👉 👉</div>
-                <div class="bot-message-line"><strong>USUARIO:</strong> ________</div>
-                <div class="bot-message-line"><strong>MONTO A RETIRAR:</strong> ________</div>
-                <div class="bot-message-line"><strong>NOMBRE DE CTA BANCARIA:</strong> ________</div>
-                <div class="bot-message-line"><strong>CBU:</strong> ________</div>
-                <div class="bot-message-line"><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> ________</div>
-              </div>
-            `;
-          } else {
-            const formatted = msg.message ? msg.message.replace(/\n/g, "<br>") : '';
-            messageDiv.innerHTML = `<strong>${msg.sender}:</strong><br>${formatted}`;
-          }
-
-          chatMessages.appendChild(messageDiv);
-        });
-      } else {
-        console.log('No hay mensajes locales para este usuario:', userId);
-        chatMessages.innerHTML = '<p>No hay mensajes previos.</p>';
-      }
-
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-          
-    socket.on('chat history', (data) => {
-      console.log('Historial de chat recibido:', data);
-      if (data.userId) {
-        localChatHistory[data.userId] = data.messages || [];
-        console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-        if (data.userId === selectedUserId) {
-          displayLocalMessages(data.userId);
-        }
-      } else {
-        console.log('Historial recibido para un usuario no seleccionado:', data.userId);
-      }
-    });
-
-    socket.on('admin message', (data) => {
-      console.log('Mensaje recibido en tiempo real:', data);
-      if (!data.userId || !data.sender || !data.message) {
-        console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
-        return;
-      }
-      if (!localChatHistory[data.userId]) {
-        localChatHistory[data.userId] = [];
-      }
-      localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
-      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-      if (data.userId === selectedUserId) {
-        console.log('Mostrando mensaje para el usuario seleccionado:', data);
-        const chatMessages = document.getElementById('chatMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message');
-        if (data.sender === 'Bot') {
-          messageDiv.classList.add('bot');
-        } else if (data.sender === 'Agent') {
-          messageDiv.classList.add('agent');
-        } else {
-          messageDiv.classList.add('user');
-        }
-        if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
-          messageDiv.innerHTML = `
-            <span class="bot-message-line">1- <strong>Usar</strong> cuenta personal.</span><br><br>
-            <span class="bot-message-line">2- <strong>Enviar</strong> comprobante visible.</span><br><br>
-            <span class="bot-message-line"><strong>TITULAR CTA BANCARIA LEPRANCE SRL</strong></span><br><br>
-            <span class="bot-message-line"><strong>CBU:</strong> 0000156002555796327337</span><br><br>
-            <span class="bot-message-line"><strong>ALIAS:</strong> leprance</span>
-          `;
-        } else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
-          messageDiv.innerHTML = `
-            <div style="font-size: 12px; line-height: 1.2;">
-              <p><strong>PARA RETIRAR COMPLETAR</strong></p>
-              <p><strong>DATOS:</strong></p>
-              <p>Utilizar tu propia cuenta bancaria</p>
-              <p>👇👇👇</p>
-              <p><strong>USUARIO:</strong></p>
-              <p><strong>MONTO A RETIRAR:</strong></p>
-              <p><strong>NOMBRE DE CTA BANCARIA:</strong></p>
-              <p><strong>CBU:</strong></p>
-              <p><strong>COMPROBANTE DE TU ÚLTIMA CARGA:</strong></p>
-            </div>
-          `;
-        } else {
-          const formatted = data.message.replace(/\n/g, "<br>");
-          messageDiv.innerHTML = `<strong>${data.sender}:</strong><br>${formatted}`;
-        }
-
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-    });
-
-    socket.on('admin image', (data) => {
-      console.log('Imagen recibida en tiempo real:', data);
-      if (!data.userId || !data.sender || !data.image) {
-        console.error('Imagen recibida inválida, falta userId, sender o image:', data);
-        return;
-      }
-      if (!localChatHistory[data.userId]) {
-        localChatHistory[data.userId] = [];
-      }
-      localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
-      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
-      if (data.userId === selectedUserId) {
-        console.log('Mostrando imagen para el usuario seleccionado:', data);
-        const chatMessages = document.getElementById('chatMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', 'user');
-        messageDiv.textContent = `${data.sender}:`;
-        const img = document.createElement('img');
-        img.src = data.image;
-        img.onclick = () => openImageInNewWindow(data.image);
-        messageDiv.appendChild(img);
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      } else {
-        console.log('Imagen ignorada, no pertenece al usuario seleccionado:', { receivedUserId: data.userId, selectedUserId });
-      }
-    });
-
-    function openImageInNewWindow(imageSrc) {
-      const newWindow = window.open('', '_blank');
-      newWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Imagen</title>
-          <style>
-            body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
-            img { max-width: 90%; max-height: 90%; }
-          </style>
-        </head>
-        <body>
-          <img src="${imageSrc}" alt="Imagen">
-        </body>
-        </html>
-      `);
-      newWindow.document.close();
-    }
-
-    function sendAgentMessage() {
-      const messageInput = document.getElementById('agentMessage');
-      const message = messageInput.value.trim();
-      if (message && selectedUserId) {
-        console.log('Enviando mensaje del agente:', { userId: selectedUserId, message });
-        socket.emit('agent message', { userId: selectedUserId, message });
-        if (!localChatHistory[selectedUserId]) {
-          localChatHistory[selectedUserId] = [];
-        }
-        localChatHistory[selectedUserId].push({ sender: 'Agent', message });
-        messageInput.value = '';
-        displayLocalMessages(selectedUserId);
-      } else {
-        console.log('No se puede enviar mensaje: mensaje vacío o usuario no seleccionado');
       }
     }
 
@@ -933,13 +797,11 @@
       document.getElementById("cancelBtn").style.display = "none";
     }
 
-    // 🆕 Script de toggle para el nuevo menú
     function toggleMenu() {
       const popup = document.getElementById("popupMenu");
       popup.style.display = (popup.style.display === "block") ? "none" : "block";
     }
 
-    // Cierra el menú si haces clic afuera
     document.addEventListener("click", function (e) {
       const popup = document.getElementById("popupMenu");
       const menu = document.querySelector(".hamburger");
@@ -947,6 +809,52 @@
         popup.style.display = "none";
       }
     });
+
+    // 🆕 Nueva lógica para el popup de chat
+    function selectUser(userId, username) {
+      selectedUserId = userId;
+      selectedUsername = username;
+
+      // Mostrar el popup
+      document.getElementById("popupUser").textContent = username;
+      document.getElementById("chatPopup").style.display = "flex";
+
+      // Mostrar mensajes
+      displayPopupMessages(userId);
+    }
+
+    function displayPopupMessages(userId) {
+      const container = document.getElementById("popupMessages");
+      container.innerHTML = '';
+      const messages = localChatHistory[userId] || [];
+
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.message || ''}`;
+        div.style.margin = "8px 0";
+        container.appendChild(div);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendPopupMessage() {
+      const input = document.getElementById("popupInput");
+      const msg = input.value.trim();
+      if (!msg || !selectedUserId) return;
+
+      socket.emit('agent message', { userId: selectedUserId, message: msg });
+
+      if (!localChatHistory[selectedUserId]) localChatHistory[selectedUserId] = [];
+      localChatHistory[selectedUserId].push({ sender: 'Agent', message: msg });
+
+      input.value = '';
+      displayPopupMessages(selectedUserId);
+    }
+
+    function closePopup() {
+      document.getElementById("chatPopup").style.display = "none";
+    }
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
