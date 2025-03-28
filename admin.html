@@ -434,7 +434,6 @@
       border-radius: 8px;
     }
 
-    /* 🆕 Estilos para el popup de chat */
     .chat-popup {
       display: none;
       position: fixed;
@@ -541,11 +540,9 @@
       <ul class="user-list" id="userList"></ul>
     </div>
 
-    <!-- 🆕 Chat area ocultado -->
     <div class="chat-area" id="chatArea" style="display: none !important;"></div>
   </div>
 
-  <!-- 🆕 Nuevo popup de chat al final del body -->
   <div id="chatPopup" class="chat-popup">
     <div class="popup-header">
       <span id="popupUser">Usuario</span>
@@ -576,9 +573,11 @@
       console.error('Error en Socket.IO:', error);
     });
 
+    // ✅ Paso 1: Verificación de localChatHistory
+    const localChatHistory = {};
+
     let selectedUserId = null;
     let selectedUsername = null;
-    const localChatHistory = {};
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -810,24 +809,23 @@
       }
     });
 
-    // 🆕 Nueva lógica para el popup de chat
+    // ✅ Paso 5: Asegurar que selectedUserId se setee al abrir el popup
     function selectUser(userId, username) {
       selectedUserId = userId;
       selectedUsername = username;
-
-      // Mostrar el popup
       document.getElementById("popupUser").textContent = username;
       document.getElementById("chatPopup").style.display = "flex";
 
-      // Mostrar mensajes
-      displayPopupMessages(userId);
+      socket.emit('request chat history', { userId });
+      displayPopupMessages(userId); // Mostramos si ya hay mensajes
     }
 
+    // ✅ Paso 4: Verificación de displayPopupMessages
     function displayPopupMessages(userId) {
       const container = document.getElementById("popupMessages");
       container.innerHTML = '';
-      const messages = localChatHistory[userId] || [];
 
+      const messages = localChatHistory[userId] || [];
       messages.forEach(msg => {
         const div = document.createElement('div');
         div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.message || ''}`;
@@ -855,6 +853,32 @@
     function closePopup() {
       document.getElementById("chatPopup").style.display = "none";
     }
+
+    // ✅ Paso 2: Revisión de mensajes entrantes
+    socket.on('admin message', (data) => {
+      console.log('Mensaje recibido en tiempo real:', data);
+      if (!data.userId || !data.sender || !data.message) {
+        console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
+        return;
+      }
+      if (!localChatHistory[data.userId]) {
+        localChatHistory[data.userId] = [];
+      }
+      localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
+      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
+      if (data.userId === selectedUserId) {
+        displayPopupMessages(data.userId); // Actualizar popup si es el usuario abierto
+      }
+    });
+
+    // ✅ Paso 3: Revisión de chat history
+    socket.on('chat history', (data) => {
+      console.log('Historial de chat recibido:', data);
+      localChatHistory[data.userId] = data.messages || [];
+      if (data.userId === selectedUserId) {
+        displayPopupMessages(data.userId); // Actualizar popup si es el usuario abierto
+      }
+    });
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
