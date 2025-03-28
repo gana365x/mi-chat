@@ -70,47 +70,37 @@ io.on('connection', (socket) => {
   });
 
   // 🆕 NUEVO: Permitir que el admin actualice el nombre de usuario
-  // 🆕 NUEVO: Permitir que el admin actualice el nombre de usuario
-socket.on('update username', ({ userId, newUsername }) => {
-  if (userSessions.has(userId)) {
-    const session = userSessions.get(userId);
-    userSessions.set(userId, { ...session, username: newUsername });
+  socket.on('update username', ({ userId, newUsername }) => {
+    if (userSessions.has(userId)) {
+      const session = userSessions.get(userId);
+      userSessions.set(userId, { ...session, username: newUsername });
 
-    // (Opcional) Si querés actualizar el historial también:
-    if (chatHistory[userId]) {
-      chatHistory[userId] = chatHistory[userId].map(msg => ({
-        ...msg,
-        username: newUsername
-      }));
+      // (Opcional) Si querés actualizar el historial también:
+      if (chatHistory[userId]) {
+        chatHistory[userId] = chatHistory[userId].map(msg => ({
+          ...msg,
+          username: newUsername
+        }));
+      }
+
+      saveChatHistory();
+
+      // 🔁 ✅ NUEVO: Notificamos al usuario para que actualice su cookie
+      const userSocket = session.socket;
+      if (userSocket) {
+        userSocket.emit('update username cookie', { newUsername });
+      }
+
+      const users = Array.from(userSessions.entries())
+        .filter(([id, session]) => session.socket)
+        .map(([id, session]) => ({ userId: id, username: session.username }));
+
+      io.emit('user list', users);
+      console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
     }
+  });
 
-    saveChatHistory();
-
-    // 🔁 ✅ NUEVO: Notificamos al usuario para que actualice su cookie
-    const userSocket = session.socket;
-    if (userSocket) {
-      userSocket.emit('update username cookie', { newUsername });
-    }
-
-    const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => session.socket)
-      .map(([id, session]) => ({ userId: id, username: session.username }));
-
-    io.emit('user list', users);
-    console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
-  }
-});
-
-// ✅ Mantené esto dentro del mismo "io.on('connection')"
-socket.on('admin connected', () => {
-  socket.join('admins');
-  const users = Array.from(userSessions.entries())
-    .filter(([id, session]) => id && session.username)
-    .map(([id, session]) => ({ userId: id, username: session.username }));
-  socket.emit('user list', users);
-});
-
-
+  // ✅ Mantené esto dentro del mismo "io.on('connection')"
   socket.on('admin connected', () => {
     socket.join('admins');
     const users = Array.from(userSessions.entries())
@@ -166,7 +156,6 @@ socket.on('admin connected', () => {
     <div><strong>CBU:</strong> __________</div>
     <div><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> __________</div>
   </div>`
-
       };
       chatHistory[data.userId].push(retiroMsg);
       saveChatHistory();
@@ -259,16 +248,31 @@ socket.on('admin connected', () => {
         const users = Array.from(userSessions.entries())
           .filter(([userId, session]) => userId && session.username)
           .map(([id, session]) => ({ userId: id, username: session.username }));
-                io.emit('user list', users);
+        io.emit('user list', users);
         break;
       }
     }
   }); // cierre del socket.on('update username', ...)
-
 }); // 👈 cierre del io.on('connection', socket => { ...
 
 // Esto va después:
 app.use(express.static(__dirname));
+
+// 🆕 Nueva ruta de login para admin
+app.use(express.json()); // Necesario para leer JSON en POST
+
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'gana365'; // Podés cambiar esto si querés
+
+app.post('/admin-login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    return res.status(200).json({ success: true });
+  } else {
+    return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+  }
+});
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
