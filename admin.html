@@ -635,6 +635,73 @@
       padding-left: 14px;
     }
 
+    /* Popup de finalización */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-overlay.active {
+      display: flex;
+    }
+
+    .popup-box {
+      background: #1e1e1e;
+      color: white;
+      padding: 25px 30px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+      max-width: 300px;
+      width: 90%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .popup-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .popup-text {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    .popup-actions {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+    }
+
+    .popup-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .popup-btn.confirm {
+      background-color: #34C759;
+      color: white;
+    }
+
+    .popup-btn.cancel {
+      background-color: #FF3B30;
+      color: white;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
     /* Responsive para mobile */
     @media (max-width: 768px) {
       .menu-popup {
@@ -687,7 +754,7 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
-      <!-- 🌐 Topbar unificado -->
+      <!-- 🌐 Topbar unificada -->
       <div class="topbar">
         <span class="topbar-title">
           <span style="margin-right: 5px;">📥</span> Bandeja de entrada
@@ -744,6 +811,17 @@
     </div>
   </div>
 
+  <div id="finalizePopup" class="popup-overlay">
+    <div class="popup-box">
+      <div class="popup-icon">⚠️</div>
+      <p class="popup-text">¿Seguro que querés finalizar el chat?</p>
+      <div class="popup-actions">
+        <button class="popup-btn confirm" onclick="confirmFinalize()">✔</button>
+        <button class="popup-btn cancel" onclick="closeFinalizePopup()">✖</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
@@ -764,6 +842,7 @@
     let selectedUsername = null;
     const localChatHistory = {};
     let currentFilter = "all";
+    let pendingFinalizeUserId = null;
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -848,7 +927,7 @@
             <div class="chat-left">
               <span class="username">${user.username}</span>
               <div class="badges">
-                ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="finalizeChat('${user.userId}')">Finalizar</button>`}
+                ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="showFinalizePopup('${user.userId}')">Finalizar</button>`}
               </div>
             </div>
             <div class="hora">${formatTime(user.lastMessageTime)}</div>
@@ -1033,7 +1112,7 @@
         closeBtn.classList.add('badge', 'finalizar');
         closeBtn.onclick = (e) => {
           e.stopPropagation();
-          finalizeChat(userId);
+          showFinalizePopup(userId);
         };
         chatElement.querySelector('.badges').appendChild(closeBtn);
       }
@@ -1237,6 +1316,26 @@
 
     function logOut() {
       logoutAdmin();
+    }
+
+    function showFinalizePopup(userId) {
+      pendingFinalizeUserId = userId;
+      document.getElementById("finalizePopup").classList.add("active");
+    }
+
+    function closeFinalizePopup() {
+      pendingFinalizeUserId = null;
+      document.getElementById("finalizePopup").classList.remove("active");
+    }
+
+    function confirmFinalize() {
+      if (pendingFinalizeUserId) {
+        socket.emit("close chat", {
+          userId: pendingFinalizeUserId,
+          agentUsername: localStorage.getItem("adminUser")
+        });
+        closeFinalizePopup();
+      }
     }
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
