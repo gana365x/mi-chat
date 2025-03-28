@@ -578,7 +578,6 @@
       display: block;
     }
 
-    /* ✅ Paso 3: Estilo para texto clickeable */
     .copy-text {
       color: #007bff;
       text-decoration: underline;
@@ -636,10 +635,8 @@
     </div>
   </div>
 
-  <!-- Overlay para bloquear fondo cuando se abre el popup -->
   <div id="popupOverlay" class="popup-overlay"></div>
 
-  <!-- Nuevo popup fichas cargadas, fuera del chat flotante -->
   <div id="successPopup" class="success-popup">
     <div class="success-icon"></div>
     <p class="success-title" id="popupTitle">Fichas cargadas</p>
@@ -647,7 +644,6 @@
     <button onclick="closePopup()">OK</button>
   </div>
 
-  <!-- Popup error MOVIDO FUERA del chat flotante -->
   <div id="errorPopup" class="error-popup">
     <div class="error-icon"></div>
     <p>Por favor, complete todos los campos</p>
@@ -927,7 +923,6 @@
       messageDiv.classList.add('message');
       messageDiv.classList.add(data.sender === currentUser ? 'user' : 'bot');
 
-      // ✅ Paso 1: Mensaje especial para "Cargar Fichas" con texto clickeable
       if (data.sender === 'Bot' && data.message.includes('Usar cuenta personal')) {
         messageDiv.innerHTML = `
           <div class="fichas-bancarias">
@@ -939,10 +934,7 @@
             <span class="timestamp">${getCurrentTime()}</span>
           </div>
         `;
-      }
-
-      // Mensaje especial para "Retirar"
-      else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
+      } else if (data.sender === 'Bot' && data.message.includes('PARA RETIRAR COMPLETAR')) {
         messageDiv.innerHTML = `
           <div class="fichas-bancarias">
             <p><strong>PARA RETIRAR COMPLETAR DATOS:</strong></p>
@@ -956,10 +948,7 @@
             <span class="timestamp">${getCurrentTime()}</span>
           </div>
         `;
-      }
-
-      // Todos los demás mensajes
-      else {
+      } else {
         const formattedMessage = data.message.replace(/\n/g, "<br>");
         messageDiv.innerHTML = `${formattedMessage}<span class="timestamp">${getCurrentTime()}</span>`;
       }
@@ -1111,7 +1100,6 @@
       }
     });
 
-    // ✅ Paso 2: Función para copiar al portapapeles
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
         alert(`📋 Copiado`);
