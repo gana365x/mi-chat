@@ -95,6 +95,23 @@
       background: #d63100;
     }
 
+    /* ✅ Paso 1: Estilo para "Cerrado" */
+    .cerrado-badge {
+      background-color: #00BFFF;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    /* ✅ Paso 3: Estilo para el timestamp */
+    .chat-timestamp {
+      color: white !important;
+      font-size: 12px;
+      margin-left: auto;
+    }
+
     .chat-area {
       flex: 1;
       background: #1e1e1e;
@@ -611,7 +628,7 @@
       userList.innerHTML = '';
 
       users.forEach(user => {
-        const userDiv = document.createElement('li'); // Cambié 'div' por 'li' para mantener consistencia con <ul>
+        const userDiv = document.createElement('li');
         userDiv.classList.add('user-item');
         userDiv.dataset.userId = user.userId;
 
@@ -622,18 +639,25 @@
 
         userDiv.appendChild(nameDisplay);
 
-        // Marcar opaco si el chat está cerrado
-        if (user.isClosed) {
-          userDiv.style.opacity = 0.4; // Usamos estilo inline como en tu ejemplo
-        }
+        // ✅ Paso 3: Agregar timestamp en blanco
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'chat-timestamp';
+        timeSpan.textContent = new Date(user.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        userDiv.appendChild(timeSpan);
 
-        // Solo agregar botón "Finalizar" si está activo
-        if (!user.isClosed) {
+        // ✅ Paso 1: Mostrar "Cerrado" o "Finalizar" según estado
+        if (user.isClosed) {
+          const cerradoBadge = document.createElement('span');
+          cerradoBadge.className = 'cerrado-badge';
+          cerradoBadge.textContent = 'Cerrado';
+          userDiv.appendChild(cerradoBadge);
+          userDiv.style.opacity = 0.4; // Mantener opacidad para chats cerrados
+        } else {
           const closeBtn = document.createElement('button');
           closeBtn.textContent = 'Finalizar';
           closeBtn.classList.add('finalizar-btn');
           closeBtn.onclick = (e) => {
-            e.stopPropagation(); // Evitar que el clic en el botón seleccione el usuario
+            e.stopPropagation();
             finalizeChat(user.userId);
           };
           userDiv.appendChild(closeBtn);
@@ -813,9 +837,15 @@
         const li = document.querySelector(`li[data-user-id="${userId}"]`);
         if (li) {
           li.classList.remove('active');
-          li.style.opacity = 0.4; // Ajustamos opacidad directamente
+          li.style.opacity = 0.4;
           const btn = li.querySelector('button.finalizar-btn');
-          if (btn) btn.remove();
+          if (btn) {
+            btn.remove();
+            const cerradoBadge = document.createElement('span');
+            cerradoBadge.className = 'cerrado-badge';
+            cerradoBadge.textContent = 'Cerrado';
+            li.appendChild(cerradoBadge);
+          }
         }
 
         if (userId === selectedUserId) {
@@ -897,6 +927,6 @@
       document.getElementById("cancelBtn").style.display = "none";
     }
   </script>
-  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MzkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
