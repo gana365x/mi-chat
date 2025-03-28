@@ -528,7 +528,6 @@
       opacity: 0.4;
     }
 
-    /* 🌐 Topbar unificada */
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -562,7 +561,6 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    /* 🔽 Popup del menú hamburguesa */
     .menu-popup {
       position: absolute;
       top: 52px;
@@ -597,7 +595,6 @@
       padding-left: 16px;
     }
 
-    /* 🎚️ Filtro */
     .filter-popup {
       position: absolute;
       top: 130px;
@@ -635,7 +632,6 @@
       padding-left: 14px;
     }
 
-    /* Popup de finalización */
     .popup-overlay {
       display: none;
       position: fixed;
@@ -702,7 +698,6 @@
       to   { opacity: 1; transform: scale(1); }
     }
 
-    /* Responsive para mobile */
     @media (max-width: 768px) {
       body, html {
         height: 100vh;
@@ -787,7 +782,6 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
-      <!-- 🌐 Topbar unificada -->
       <div class="topbar">
         <span class="topbar-title">
           <span style="margin-right: 5px;">📥</span> Bandeja de entrada
@@ -797,7 +791,6 @@
         </button>
       </div>
 
-      <!-- 🔽 Popup unificado -->
       <div id="menuPopup" class="menu-popup">
         <div class="menu-option" onclick="openSettings()">
           ⚙️ Configuración
@@ -810,7 +803,6 @@
         </div>
       </div>
 
-      <!-- Filtro (el mismo popup de antes, compartido) -->
       <div id="filterPopup" class="filter-popup">
         <div class="filter-option" data-value="all">Todos</div>
         <div class="filter-option" data-value="active">Activos</div>
@@ -919,20 +911,18 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-      const username = localStorage.getItem("adminUser") || "Agente";
+      const agentUser = localStorage.getItem("adminUser");
 
-      // Consultar el nombre visible del agente
-      if (username) {
-        fetch(`/get-agent-displayname?username=${username}`)
+      // Cargar el nombre visible del agente
+      if (agentUser) {
+        fetch(`/get-agent-displayname?username=${agentUser}`)
           .then(res => res.json())
           .then(data => {
-            const span = document.getElementById("agentDisplayName");
-            span.textContent = data.displayName || username;
+            document.getElementById("agentDisplayName").textContent = data.displayName || agentUser;
           })
           .catch(err => {
             console.error("Error al obtener el nombre visible del agente:", err);
-            const span = document.getElementById("agentDisplayName");
-            span.textContent = username; // Fallback al username si falla
+            document.getElementById("agentDisplayName").textContent = agentUser;
           });
       }
 
