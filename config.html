@@ -1,33 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Configuración de Usuario</title>
+  <meta charset="UTF-8" />
+  <title>⚙️ Configuración</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #121212;
-      color: white;
-      padding: 40px;
+    * {
+      box-sizing: border-box;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #121212;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    .header {
+      background: #1a1a1a;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #FF3B00;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header .back-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .container {
+      padding: 30px 20px;
+      max-width: 500px;
+      margin: 0 auto;
+      height: calc(100% - 65px);
+      overflow-y: auto;
     }
 
     .form-group {
-      margin-bottom: 25px;
+      margin-bottom: 30px;
     }
 
     label {
       display: block;
-      font-size: 14px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      font-size: 15px;
     }
 
-    input {
+    input[type="text"],
+    input[type="password"] {
       width: 100%;
       padding: 12px;
       border: none;
@@ -35,6 +72,25 @@
       background: #1f1f1f;
       color: white;
       font-size: 16px;
+      transition: border 0.2s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border: 1px solid #FF3B00;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-wrapper i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #aaa;
+      cursor: pointer;
     }
 
     button {
@@ -47,64 +103,65 @@
       font-weight: bold;
       color: white;
       cursor: pointer;
-      transition: background 0.3s ease;
-      margin-top: 10px;
+      transition: background 0.3s ease, transform 0.1s ease;
     }
 
     button:hover {
       background: #d63100;
+      transform: scale(1.02);
     }
 
     .success {
       color: #4CAF50;
       margin-top: 10px;
+      font-size: 14px;
     }
 
     .error {
       color: #f44336;
       margin-top: 10px;
+      font-size: 14px;
     }
 
-    .back-button-container {
-      margin-top: 30px;
-      text-align: center;
-    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
 
-    .back-button-container button {
-      background: #555;
-      padding: 12px 24px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-      color: white;
-      cursor: pointer;
-    }
+      .header h1 {
+        font-size: 18px;
+      }
 
-    .back-button-container button:hover {
-      background: #444;
+      button {
+        font-size: 15px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>⚙️ Configuración</h1>
-
-  <div class="form-group">
-    <label for="newName">Cambiar nombre visible</label>
-    <input type="text" id="newName" placeholder="Nuevo nombre visible">
-    <button onclick="changeName()">Guardar Nombre</button>
-    <div id="nameMsg"></div>
+  <div class="header">
+    <h1><i class="fa-solid fa-gear"></i> Configuración</h1>
+    <button class="back-btn" onclick="window.location.href='admin.html'"><i class="fas fa-arrow-left"></i></button>
   </div>
 
-  <div class="form-group">
-    <label for="newPassword">Cambiar contraseña</label>
-    <input type="password" id="newPassword" placeholder="Nueva contraseña">
-    <button onclick="changePassword()">Guardar Contraseña</button>
-    <div id="passMsg"></div>
-  </div>
+  <div class="container">
+    <div class="form-group">
+      <label for="newName">Cambiar nombre visible</label>
+      <input type="text" id="newName" placeholder="Nuevo nombre visible" />
+      <button onclick="changeName()">Guardar Nombre</button>
+      <div id="nameMsg"></div>
+    </div>
 
-  <div class="back-button-container">
-    <button onclick="window.location.href='admin.html'">← Volver al Panel</button>
+    <div class="form-group">
+      <label for="newPassword">Cambiar contraseña</label>
+      <div class="password-wrapper">
+        <input type="password" id="newPassword" placeholder="Nueva contraseña" />
+        <i class="fa-solid fa-eye" onclick="togglePassword()"></i>
+      </div>
+      <button onclick="changePassword()">Guardar Contraseña</button>
+      <div id="passMsg"></div>
+    </div>
   </div>
 
   <script>
@@ -162,6 +219,20 @@
           passMsg.className = "error";
         }
       });
+    }
+
+    function togglePassword() {
+      const input = document.getElementById("newPassword");
+      const icon = input.nextElementSibling;
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
     }
   </script>
 
