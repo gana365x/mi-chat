@@ -385,16 +385,65 @@
     .user-item button.close-chat:hover {
       background: #d63100;
     }
+
+    /* 🆕 Estilos para la nueva barra superior */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #1a1a1a;
+      padding: 10px 20px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-bottom: 2px solid #FF3B00;
+    }
+
+    .topbar .left button,
+    .topbar .right button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .topbar .center {
+      flex-grow: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 15px;
+      color: #bbb;
+    }
+
+    .popup-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 20px;
+      background: #333;
+      border-radius: 8px;
+      padding: 10px;
+      z-index: 999;
+    }
   </style>
 </head>
 <body>
-  <!-- 🆕 Menú hamburguesa y popup añadidos -->
-  <div id="topBar" style="display: flex; justify-content: flex-end; align-items: center; padding: 10px 20px; background: #1a1a1a;">
-    <button id="menuToggle" onclick="toggleMenu()" style="background: none; border: none; font-size: 26px; color: white; cursor: pointer;">☰</button>
+  <!-- 🆕 Nueva barra superior añadida -->
+  <div class="topbar">
+    <div class="left">
+      <button id="menuToggle" onclick="toggleMenu()">☰</button>
+    </div>
+    <div class="center" id="agentDisplay">Agente</div>
+    <div class="right">
+      <button onclick="goToConfig()" title="Configuración"><i class="fas fa-cog"></i></button>
+      <button onclick="logoutAdmin()" title="Desconectar"><i class="fas fa-power-off"></i></button>
+    </div>
   </div>
 
-  <div id="popupMenu" style="display: none; position: absolute; top: 60px; right: 20px; background: #333; border-radius: 8px; padding: 10px; z-index: 999; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
-    <button onclick="logoutAdmin()" style="background: #FF3B00; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">Desconectar</button>
+  <div id="popupMenu" class="popup-menu">
+    <!-- Espacio para opciones futuras en el popup -->
   </div>
 
   <div id="loginScreen" style="position: absolute; top:0; left:0; width:100vw; height:100vh; background:#121212; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
@@ -408,7 +457,6 @@
   <div class="container">
     <div class="sidebar">
       <h2>INBOX</h2>
-      <!-- Botón "Desconectar" eliminado de aquí -->
       <ul class="user-list" id="userList"></ul>
     </div>
 
@@ -467,7 +515,7 @@
           window.location.href = "/superadmin.html";
         } else if (data.success) {
           localStorage.setItem("adminLoggedIn", "true");
-          localStorage.setItem("adminUser", username); // Guardar username
+          localStorage.setItem("adminUser", username);
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".container").style.display = "flex";
           socket.emit('admin connected');
@@ -483,10 +531,14 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+      const username = localStorage.getItem("adminUser") || "Agente";
+
+      document.getElementById("agentDisplay").textContent = "Conectado: " + username;
+
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
         document.querySelector(".container").style.display = "flex";
-        socket.emit('admin connected'); // Emitir al cargar si está logueado
+        socket.emit('admin connected');
       } else {
         document.getElementById("loginScreen").style.display = "flex";
         document.querySelector(".container").style.display = "none";
@@ -496,7 +548,7 @@
     socket.on('user list', (users) => {
       console.log('Lista de usuarios recibida:', users);
       const userList = document.getElementById('userList');
-      userList.innerHTML = ''; // Limpiar lista
+      userList.innerHTML = '';
       [...users].reverse().forEach(user => {
         if (!user.userId) {
           console.error('Usuario sin userId:', user);
@@ -802,16 +854,20 @@
       }
     }
 
-    // 🆕 Funciones para el menú hamburguesa
+    // 🆕 Nuevas funciones para la barra superior
     function toggleMenu() {
       const menu = document.getElementById("popupMenu");
-      menu.style.display = (menu.style.display === "none" || !menu.style.display) ? "block" : "none";
+      menu.style.display = (menu.style.display === "block") ? "none" : "block";
     }
 
     function logoutAdmin() {
       localStorage.removeItem("adminLoggedIn");
       localStorage.removeItem("adminUser");
       location.reload();
+    }
+
+    function goToConfig() {
+      alert("⚙️ Esta función se activará en la Parte 2 (configuración)");
     }
 
     const lastUserId = sessionStorage.getItem('lastUserId');
