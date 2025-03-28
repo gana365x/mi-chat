@@ -307,7 +307,7 @@ io.on('connection', (socket) => {
 });
 
 app.use(express.static(__dirname));
-app.use(express.json());
+app.use(express.json()); // Middleware para parsear JSON en las solicitudes
 
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'gana365';
@@ -396,21 +396,18 @@ app.post('/update-agent-name', (req, res) => {
     return res.status(400).json({ success: false, message: 'Faltan datos' });
   }
 
-  try {
-    const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-    const index = agents.findIndex(a => a.username === username);
+  const agentsFilePath = path.join(__dirname, 'agents.json');
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
 
-    if (index === -1) {
-      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
-
-    agents[index].displayName = newName;
-    fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-    return res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('Error al actualizar el nombre:', err);
-    return res.status(500).json({ success: false, message: 'Error interno' });
+  const index = agents.findIndex(a => a.username === username);
+  if (index === -1) {
+    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
   }
+
+  agents[index].displayName = newName;
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+
+  return res.status(200).json({ success: true });
 });
 
 server.listen(PORT, () => {
