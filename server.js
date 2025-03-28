@@ -25,6 +25,7 @@ const adminSubscriptions = new Map();
 
 const historyFilePath = path.join(__dirname, 'chatHistory.json');
 const performanceFile = path.join(__dirname, 'performance.json');
+const agentsFilePath = path.join(__dirname, 'agents.json');
 
 if (fs.existsSync(historyFilePath)) {
   const data = fs.readFileSync(historyFilePath, 'utf-8');
@@ -37,6 +38,10 @@ if (fs.existsSync(historyFilePath)) {
 
 if (!fs.existsSync(performanceFile)) {
   fs.writeFileSync(performanceFile, JSON.stringify({}));
+}
+
+if (!fs.existsSync(agentsFilePath)) {
+  fs.writeFileSync(agentsFilePath, JSON.stringify([]));
 }
 
 function saveChatHistory() {
@@ -54,12 +59,9 @@ function getAllChatsSorted() {
   const users = Object.entries(chatHistory)
     .map(([userId, messages]) => {
       const username = userSessions.get(userId)?.username || 'Usuario';
-
       const lastMessage = messages[messages.length - 1];
       const lastMessageTime = lastMessage?.timestamp ? new Date(lastMessage.timestamp) : new Date();
-
       const isClosed = messages.some(msg => msg.status === 'closed');
-
       return { userId, username, lastMessageTime, isClosed };
     })
     .sort((a, b) => b.lastMessageTime - a.lastMessageTime);
@@ -91,8 +93,6 @@ io.on('connection', (socket) => {
       chatHistory[userId].push(dateMessage);
       saveChatHistory();
     }
-
-    // io.emit('user list', getAllChatsSorted()); // Comentado para no mostrar al conectar
   });
 
   socket.on('update username', ({ userId, newUsername }) => {
@@ -131,7 +131,6 @@ io.on('connection', (socket) => {
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
 
-    // Si el chat estaba cerrado y vuelve a escribir, lo reactivamos
     if (chatHistory[data.userId]) {
       const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
       if (wasClosed) {
@@ -323,13 +322,8 @@ app.post('/admin-login', (req, res) => {
   }
 });
 
-const agentsFilePath = path.join(__dirname, 'agents.json');
 const superAdminUser = 'superadmin';
 const superAdminPass = 'gana365super';
-
-if (!fs.existsSync(agentsFilePath)) {
-  fs.writeFileSync(agentsFilePath, JSON.stringify([]));
-}
 
 app.post('/superadmin-login', (req, res) => {
   const { username, password } = req.body;
@@ -394,6 +388,27 @@ app.get('/get-agent-displayname', (req, res) => {
   } else {
     res.json({ displayName: username });
   }
+});
+
+// Nueva ruta para actualizar el displayName
+app.post('/update-agent-name', (req, res) => {
+  const { username, newName } = req.body;
+
+  if (!username || !newName) {
+    return res.status(400).json({ success: false, message: 'Faltan datos' });
+  }
+
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const agentIndex = agents.findIndex(a => a.username === username);
+
+  if (agentIndex === -1) {
+    return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+  }
+
+  agents[agentIndex].displayName = newName;
+
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+  return res.json({ success: true });
 });
 
 server.listen(PORT, () => {
