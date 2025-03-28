@@ -23,12 +23,14 @@
       margin: 40px auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
       border-radius: 5px;
       border: none;
+      background: #333;
+      color: white;
     }
     button {
       background-color: #FF3B00;
@@ -75,18 +77,55 @@
   </div>
 
   <div class="main-box" id="mainBox" style="display:none">
-    <h2>Crear nuevo agente</h2>
-    <input type="text" id="newUsername" placeholder="Nuevo usuario">
-    <input type="password" id="newPassword" placeholder="Contraseña">
-    <button onclick="createAgent()">Crear</button>
-    <p id="createError" style="color: red; display: none;"></p>
-    <h2>Agentes registrados</h2>
-    <table>
-      <thead>
-        <tr><th>Usuario</th><th>Acciones</th></tr>
-      </thead>
-      <tbody id="agentsTable"></tbody>
-    </table>
+    <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+      <button onclick="showSection('agents')">👥 Agentes</button>
+      <button onclick="showSection('stats')">📊 Estadísticas</button>
+      <button onclick="showSection('customize')">🎨 Editar</button>
+    </div>
+
+    <!-- Sección de agentes -->
+    <div id="section-agents">
+      <h2>Crear nuevo agente</h2>
+      <input type="text" id="newUsername" placeholder="Nuevo usuario">
+      <input type="password" id="newPassword" placeholder="Contraseña">
+      <button onclick="createAgent()">Crear</button>
+      <p id="createError" style="color: red; display: none;"></p>
+      <h2>Agentes registrados</h2>
+      <table>
+        <thead><tr><th>Usuario</th><th>Acciones</th></tr></thead>
+        <tbody id="agentsTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Sección de estadísticas -->
+    <div id="section-stats" style="display:none;">
+      <h2>📊 Estadísticas</h2>
+      <label>Filtrar por:</label>
+      <select id="filterType">
+        <option value="day">Día</option>
+        <option value="week">Semana</option>
+        <option value="month">Mes</option>
+        <option value="year">Año</option>
+        <option value="hour">Hora</option>
+      </select>
+      <input type="date" id="filterDate" />
+      <button onclick="loadStats()">Buscar</button>
+
+      <div id="statsResults" style="margin-top: 20px;">
+        <p>Chats finalizados por agente: <span id="statChats">0</span></p>
+        <p>Mensajes entrantes: <span id="statMessages">0</span></p>
+        <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
+        <p>Retirar presionado: <span id="statRetiro">0</span></p>
+        <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+      </div>
+    </div>
+
+    <!-- Sección editar (placeholder) -->
+    <div id="section-customize" style="display:none;">
+      <h2>🎨 Personalizar Estilo</h2>
+      <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
+      <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
+    </div>
   </div>
 
   <script>
@@ -107,6 +146,7 @@
         if (data.success) {
           document.getElementById('loginBox').style.display = 'none';
           document.getElementById('mainBox').style.display = 'block';
+          showSection('agents'); // Mostrar sección de agentes por defecto
           loadAgents();
         } else {
           throw new Error();
@@ -161,6 +201,30 @@
         method: 'DELETE'
       })
       .then(() => loadAgents());
+    }
+
+    function showSection(section) {
+      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+    }
+
+    function loadStats() {
+      const type = document.getElementById("filterType").value;
+      const date = document.getElementById("filterDate").value;
+
+      fetch(`/stats?type=${type}&date=${date}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("statChats").textContent = data.chats;
+          document.getElementById("statMessages").textContent = data.messages;
+          document.getElementById("statCargar").textContent = data.cargarFichas;
+          document.getElementById("statRetiro").textContent = data.retiros;
+          document.getElementById("statImagenes").textContent = data.imagenes;
+        })
+        .catch(err => {
+          console.error("Error al cargar estadísticas:", err);
+        });
     }
   </script>
 </body>
