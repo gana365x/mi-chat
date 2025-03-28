@@ -194,7 +194,7 @@ io.on('connection', (socket) => {
       chatHistory[data.userId].push(retiroMsg);
       saveChatHistory();
       io.emit('user list', getAllChatsSorted());
-      if (userSocket) userSocket.emit('chat message', retiroMsg);
+      if (userSocket) userSocket.emit('chat message', retimsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
           io.to(adminSocketId).emit('admin message', retiroMsg);
@@ -282,7 +282,7 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push({
       sender: 'System',
       message: 'Chat cerrado',
-      timestamp: new Date().toISOString(),
+      timestamp: '2000-01-01T00:00:00.000Z', // fecha antigua que no afecta el orden
       status: 'closed'
     });
 
