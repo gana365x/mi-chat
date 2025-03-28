@@ -537,6 +537,10 @@
       border-left: 3px solid white;
     }
 
+    .closed-chat {
+      opacity: 0.4;
+    }
+
     @media (min-width: 768px) {
       .admin-container {
         display: flex;
@@ -712,6 +716,9 @@
         const chatDiv = document.createElement('div');
         chatDiv.classList.add('chat-item');
         chatDiv.classList.add(user.isClosed ? 'user-offline' : 'user-online');
+        if (user.isClosed) {
+          chatDiv.classList.add('closed-chat');
+        }
         chatDiv.dataset.userId = user.userId;
 
         chatDiv.innerHTML = `
@@ -961,6 +968,7 @@
           chatElement.classList.remove('active');
           chatElement.classList.remove('user-online');
           chatElement.classList.add('user-offline');
+          chatElement.classList.add('closed-chat');
           const btn = chatElement.querySelector('.finalizar');
           if (btn) {
             btn.remove();
