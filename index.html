@@ -1114,7 +1114,7 @@
     // ✅ Paso 2: Función para copiar al portapapeles
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
-        alert(`📋 Copiado: ${text}`);
+        alert(`📋 Copiado`);
       }).catch(err => {
         console.error('Error al copiar al portapapeles:', err);
       });
