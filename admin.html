@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Agentes - GANA365</title>
-  <!-- Agregar Font Awesome para los iconos -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
     body {
@@ -444,7 +443,6 @@
     let selectedUsername = null;
     const localChatHistory = {};
 
-    // 🆕 Nueva función submitLogin con validación real
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
@@ -457,11 +455,10 @@
       .then(res => res.json())
       .then(data => {
         if (data.superadmin) {
-          // Redirigir al panel de gestión
           window.location.href = "/superadmin.html";
         } else if (data.success) {
-          // Guardar login y cargar panel
           localStorage.setItem("adminLoggedIn", "true");
+          localStorage.setItem("adminUser", username); // 🆕 Guardar username
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".container").style.display = "flex";
           socket.emit('admin connected');
@@ -759,7 +756,8 @@
     function closeChat() {
       if (selectedUserId) {
         console.log('Cerrando chat para el usuario:', selectedUserId);
-        socket.emit('close chat', { userId: selectedUserId });
+        const agentUsername = localStorage.getItem("adminUser"); // 🆕 Añadido
+        socket.emit('close chat', { userId: selectedUserId, agentUsername }); // 🆕 Modificado
         document.getElementById('chatArea').classList.remove('active');
         const li = document.querySelector(`li[data-user-id="${selectedUserId}"]`);
         if (li) {
@@ -776,7 +774,8 @@
     function finalizeChat(userId) {
       if (userId) {
         console.log('Finalizando chat para el usuario:', userId);
-        socket.emit('close chat', { userId });
+        const agentUsername = localStorage.getItem("adminUser"); // 🆕 Añadido
+        socket.emit('close chat', { userId, agentUsername }); // 🆕 Modificado
 
         const li = document.querySelector(`li[data-user-id="${userId}"]`);
         if (li) {
@@ -796,6 +795,7 @@
 
     function logoutAdmin() {
       localStorage.removeItem("adminLoggedIn");
+      localStorage.removeItem("adminUser"); // 🆕 Limpiar también el username
       location.reload();
     }
 
