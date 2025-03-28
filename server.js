@@ -50,14 +50,13 @@ function incrementPerformance(agentUsername) {
   fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
 }
 
-// 🔁 PASO 2: Nueva función para listar todos los chats con historial
 function getAllChatsSorted() {
   const users = Object.entries(chatHistory)
     .map(([userId, messages]) => {
       const username = userSessions.get(userId)?.username || 'Usuario';
       const lastMessageTime = messages.length > 0 ? new Date(messages[messages.length - 1].timestamp || 0) : new Date();
-      const isClosed = !userSessions.get(userId)?.socket; // Indica si el usuario está desconectado
-      return { userId, username, lastMessageTime, isClosed };
+      const isActive = chatHistory[userId]?.activeSession === true;
+      return { userId, username, lastMessageTime, isClosed: !isActive };
     })
     .sort((a, b) => {
       const dateA = new Date(chatHistory[a.userId][0]?.timestamp || 0);
@@ -81,7 +80,6 @@ io.on('connection', (socket) => {
     userSessions.set(userId, { username, socket });
     socket.emit('session', { userId, username });
 
-    // 🔁 PASO 1: Guardar fecha de inicio del chat
     if (!chatHistory[userId]) {
       chatHistory[userId] = [];
       const dateMessage = {
@@ -132,6 +130,12 @@ io.on('connection', (socket) => {
     const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: new Date().toISOString() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
+
+    if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
+      if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
+      chatHistory[data.userId].activeSession = true;
+    }
+
     saveChatHistory();
 
     const userSocket = userSessions.get(data.userId)?.socket;
@@ -271,6 +275,11 @@ io.on('connection', (socket) => {
       timestamp: new Date().toISOString(),
       status: 'closed'
     });
+
+    if (chatHistory[data.userId]) {
+      chatHistory[data.userId].activeSession = false;
+    }
+
     saveChatHistory();
 
     io.emit('user list', getAllChatsSorted());
