@@ -535,6 +535,86 @@
       opacity: 0.4;
     }
 
+    /* 📱 Topbar en mobile */
+    .top-bar-mobile {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+    }
+
+    .top-btn {
+      background: #1f1f1f;
+      border: 1px solid #333;
+      color: white;
+      padding: 8px 16px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .top-btn:hover {
+      border-color: orange;
+      background: #2c2c2c;
+    }
+
+    /* 🖥️ Inbox Desktop */
+    .inbox-title-desktop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      padding: 14px;
+      font-size: 16px;
+      background: #181818;
+      border-bottom: 1px solid #2c2c2c;
+    }
+
+    #filterBtnDesktop {
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    #filterBtnDesktop:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #filterIcon,
+    #filterIconDesktop {
+      font-size: 18px;
+      transition: color 0.2s ease;
+    }
+
+    .filter-active {
+      color: orange !important;
+    }
+
+    /* 🎚️ Popup filtros */
+    .filter-popup {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background: #1f1f1f;
+      border-radius: 10px;
+      border: 1px solid #333;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      display: none;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 9999;
+      width: 180px;
+    }
+
+    .filter-popup.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .filter-option {
       padding: 10px 18px;
       color: white;
@@ -543,57 +623,27 @@
       transition: all 0.2s ease-in-out;
     }
 
-    .filter-option:hover {
-      border-left: 4px solid orange;
-      background-color: #2c2c2c;
-      padding-left: 14px;
-    }
-
+    .filter-option:hover,
     .filter-option.selected {
       border-left: 4px solid orange;
       background-color: #2c2c2c;
       padding-left: 14px;
     }
 
-    @media (min-width: 768px) {
-      .admin-container {
+    /* 📱 Mobile responsivo */
+    @media (max-width: 768px) {
+      .top-bar-mobile {
         display: flex;
-        height: 100vh;
       }
 
-      .inbox {
-        width: 300px;
-        background: #111;
-        overflow-y: auto;
+      .inbox-title-desktop {
+        display: none;
       }
 
-      .chat-view {
-        flex: 1;
-        background: #181818;
-        display: flex !important;
-        flex-direction: column;
-      }
-
-      .chat-popup {
-        display: none !important;
-      }
-    }
-
-    @media (max-width: 767px) {
-      .admin-container {
-        flex-direction: column;
-      }
-
-      .inbox {
-        width: 100%;
-      }
-
-      .chat-view {
-        display: none !important;
-      }
-
-      .chat-popup {
-        display: flex;
+      .filter-popup {
+        top: 58px;
+        right: 10px;
+        width: 160px;
       }
     }
   </style>
@@ -621,30 +671,30 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;">
-        <span style="font-weight: bold; font-size: 16px;">INBOX</span>
-        <button id="filterTrigger" onclick="toggleFilterPopup()" style="background: none; border: none; cursor: pointer;">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="white" width="20" height="20" viewBox="0 0 24 24">
-            <path d="M3 4h18v2H3V4zm4 7h10v2H7v-2zm6 7h-4v2h4v-2z"/>
-          </svg>
+      <!-- 📱 Topbar solo en mobile -->
+      <div class="top-bar-mobile">
+        <button onclick="openSettings()" class="top-btn">⚙️</button>
+        <button onclick="toggleFilterPopup()" class="top-btn" id="filterBtn">
+          <span id="filterIcon">🎚️</span>
         </button>
+        <button onclick="logOut()" class="top-btn">🔌</button>
       </div>
-      <div id="filterPopup" style="
-        position: absolute;
-        top: 50px;
-        right: 10px;
-        background: #1f1f1f;
-        border-radius: 10px;
-        border: 1px solid #333;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-        display: none;
-        z-index: 9999;
-        overflow: hidden;
-      ">
+
+      <!-- 🖥️ Título INBOX (desktop) con icono al costado derecho -->
+      <div class="inbox-title-desktop">
+        <span>INBOX</span>
+        <span id="filterBtnDesktop" onclick="toggleFilterPopup()" title="Filtrar chats">
+          <span id="filterIconDesktop">🎚️</span>
+        </span>
+      </div>
+
+      <!-- Popup de filtros (compartido entre desktop y mobile) -->
+      <div id="filterPopup" class="filter-popup">
         <div class="filter-option" data-value="all">Todos</div>
         <div class="filter-option" data-value="active">Activos</div>
         <div class="filter-option" data-value="closed">Cerrados</div>
       </div>
+
       <ul class="user-list" id="userList"></ul>
     </div>
 
@@ -1115,7 +1165,7 @@
 
     function toggleFilterPopup() {
       const popup = document.getElementById("filterPopup");
-      popup.style.display = popup.style.display === "block" ? "none" : "block";
+      popup.classList.toggle("active");
 
       document.querySelectorAll('.filter-option').forEach(opt => {
         opt.classList.remove('selected');
@@ -1127,7 +1177,19 @@
 
     function applyFilter(value) {
       currentFilter = value;
-      document.getElementById("filterPopup").style.display = "none";
+      document.getElementById("filterPopup").classList.remove("active");
+
+      const icon = document.getElementById("filterIcon");
+      const iconDesktop = document.getElementById("filterIconDesktop");
+
+      if (value !== "all") {
+        icon.classList.add("filter-active");
+        iconDesktop.classList.add("filter-active");
+      } else {
+        icon.classList.remove("filter-active");
+        iconDesktop.classList.remove("filter-active");
+      }
+
       renderUserList();
     }
 
@@ -1137,11 +1199,20 @@
 
     document.addEventListener("click", (e) => {
       const popup = document.getElementById("filterPopup");
-      const trigger = document.getElementById("filterTrigger");
-      if (!popup.contains(e.target) && !trigger.contains(e.target)) {
-        popup.style.display = "none";
+      const btn = document.getElementById("filterBtn");
+      const btnDesktop = document.getElementById("filterBtnDesktop");
+      if (!popup.contains(e.target) && !btn.contains(e.target) && !btnDesktop.contains(e.target)) {
+        popup.classList.remove("active");
       }
     });
+
+    function openSettings() {
+      window.location.href = "/config.html";
+    }
+
+    function logOut() {
+      logoutAdmin();
+    }
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
