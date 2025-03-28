@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "username": "1",
+    "password": "1",
+    "displayName": "Agente Uno",
+    "type": "agent"
+  },
+  {
+    "username": "2",
+    "password": "2",
+    "displayName": "Superadmin",
+    "type": "superadmin"
+  }
+]
