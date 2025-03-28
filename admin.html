@@ -43,7 +43,7 @@
     }
 
     .user-list {
-      list-style: none;
+     植物: none;
       padding: 0;
       margin: 0;
     }
@@ -513,6 +513,47 @@
     input, button, textarea {
       -webkit-appearance: none;
     }
+
+    /* Desktop (versión estilo WhatsApp Web) */
+    @media (min-width: 769px) {
+      .container {
+        flex-direction: row;
+      }
+
+      .sidebar {
+        display: block;
+        width: 30%;
+        max-width: 320px;
+      }
+
+      .chat-area {
+        display: flex !important;
+        width: 70%;
+      }
+
+      .chat-popup {
+        display: none !important;
+      }
+    }
+
+    /* Mobile (mantiene popup como ahora) */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+      }
+
+      .chat-area {
+        display: none !important;
+      }
+
+      .chat-popup {
+        display: flex;
+      }
+    }
   </style>
 </head>
 <body>
@@ -703,8 +744,16 @@
         }
       }
       document.getElementById("popupUser").textContent = username;
-      document.getElementById("chatPopup").style.display = "flex";
-      document.getElementById("chatPopup").classList.add("show");
+
+      // Ajuste para mobile vs escritorio
+      if (window.innerWidth <= 768) {
+        document.getElementById("chatPopup").style.display = "flex";
+        document.getElementById("chatPopup").classList.add("show");
+      } else {
+        // En escritorio, mostramos el área de chat directo
+        document.getElementById("chatArea").classList.add("active");
+      }
+
       displayPopupMessages(userId);
       socket.emit('request chat history', { userId });
     }
