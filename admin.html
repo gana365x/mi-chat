@@ -11,31 +11,43 @@
       background-color: #121212;
       color: #fff;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       display: flex;
       height: 100vh;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
-    .container {
+    /* 🔹 PASO 3 y 4: Estructura y CSS responsive */
+    .admin-layout {
       display: flex;
+      height: 100vh;
       width: 100%;
-      height: 100%;
-      gap: 20px;
     }
 
-    .sidebar {
-      width: 250px;
+    .inbox {
+      width: 30%;
       background: #1a1a1a;
-      color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-sizing: border-box;
       overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      border-radius: 10px 0 0 10px;
     }
 
-    .sidebar h2 {
+    .chat-panel {
+      width: 70%;
+      background: #1e1e1e;
+      overflow-y: auto;
+      display: none; /* Solo se activa en escritorio */
+      padding: 20px;
+      box-sizing: border-box;
+      border: 2px solid #FF3B00;
+      border-radius: 0 10px 10px 0;
+      flex-direction: column;
+    }
+
+    .inbox h2 {
       margin-top: 0;
       font-size: 20px;
       margin-bottom: 20px;
@@ -108,22 +120,6 @@
       color: white !important;
       font-size: 12px;
       margin-left: auto;
-    }
-
-    .chat-area {
-      flex: 1;
-      background: #1e1e1e;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      display: none;
-      flex-direction: column;
-      box-sizing: border-box;
-      border: 2px solid #FF3B00;
-    }
-
-    .chat-area.active {
-      display: flex;
     }
 
     .chat-header {
@@ -204,6 +200,16 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .chat-placeholder {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 16px;
+      text-align: center;
     }
 
     .message {
@@ -413,7 +419,7 @@
       margin-bottom: 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px; /* Añadido para espaciado entre mensajes */
+      gap: 10px;
     }
 
     .popup-input {
@@ -513,6 +519,27 @@
     input, button, textarea {
       -webkit-appearance: none;
     }
+
+    /* 🔹 PASO 4: CSS responsive */
+    @media (max-width: 768px) {
+      .admin-layout {
+        flex-direction: column;
+      }
+
+      .inbox {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+      }
+
+      .chat-panel {
+        display: none !important;
+      }
+
+      .chat-popup {
+        display: block !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -536,13 +563,30 @@
     <p id="loginError" style="color: red; margin-top: 10px; display: none;">Credenciales incorrectas</p>
   </div>
 
-  <div class="container">
-    <div class="sidebar">
+  <!-- 🔹 PASO 3: Nueva estructura HTML -->
+  <div class="admin-layout">
+    <div class="inbox" id="inboxList">
       <h2>INBOX</h2>
       <ul class="user-list" id="userList"></ul>
     </div>
-
-    <div class="chat-area" id="chatArea" style="display: none !important;"></div>
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-header">
+        <span id="chatUser">Chat con <strong id="currentUser"></strong></span>
+        <div>
+          <button id="editBtn" onclick="editName()">✏️</button>
+          <input id="editNameInput" style="display: none;">
+          <button id="saveBtn" onclick="saveName()" style="display: none;">💾</button>
+          <button id="cancelBtn" onclick="cancelEdit()" style="display: none;">❌</button>
+        </div>
+      </div>
+      <div class="chat-messages" id="desktopMessages">
+        <div class="chat-placeholder" id="chatPlaceholder">Seleccioná un usuario</div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="desktopInput" placeholder="Escribir mensaje..." onkeypress="if(event.key==='Enter') sendDesktopMessage()">
+        <button onclick="sendDesktopMessage()">Enviar</button>
+      </div>
+    </div>
   </div>
 
   <div id="chatPopup" class="chat-popup">
@@ -579,6 +623,11 @@
     let selectedUsername = null;
     const localChatHistory = {};
 
+    // 🔹 PASO 1: Detectar si es móvil o escritorio
+    function isMobile() {
+      return window.innerWidth <= 768;
+    }
+
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
@@ -596,9 +645,16 @@
           localStorage.setItem("adminLoggedIn", "true");
           localStorage.setItem("adminUser", username);
           document.getElementById("loginScreen").style.display = "none";
-          document.querySelector(".container").style.display = "flex";
+          document.querySelector(".admin-layout").style.display = "flex";
           document.getElementById("menuWrapper").style.display = "block";
           socket.emit('admin connected');
+          
+          // ✅ Extra: Cargar último usuario abierto en escritorio
+          const lastUserId = localStorage.getItem('lastUserId');
+          const lastUsername = localStorage.getItem('lastUsername');
+          if (lastUserId && lastUsername && !isMobile()) {
+            openChat(lastUserId, lastUsername);
+          }
         } else {
           throw new Error("Credenciales inválidas");
         }
@@ -621,12 +677,12 @@
 
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
-        document.querySelector(".container").style.display = "flex";
+        document.querySelector(".admin-layout").style.display = "flex";
         document.getElementById("menuWrapper").style.display = "block";
         socket.emit('admin connected');
       } else {
         document.getElementById("loginScreen").style.display = "flex";
-        document.querySelector(".container").style.display = "none";
+        document.querySelector(".admin-layout").style.display = "none";
       }
     });
 
@@ -634,7 +690,6 @@
       console.log('Lista de usuarios recibida:', users);
       const userList = document.getElementById('userList');
 
-      // Limpiar antes de renderizar
       userList.innerHTML = '';
 
       users.forEach(user => {
@@ -659,7 +714,7 @@
           cerradoBadge.className = 'cerrado-badge';
           cerradoBadge.textContent = 'Cerrado';
           userDiv.appendChild(cerradoBadge);
-          userDiv.style.opacity = 0.4; // Mantener chats cerrados visibles pero opacos
+          userDiv.style.opacity = 0.4;
         } else {
           const closeBtn = document.createElement('button');
           closeBtn.textContent = 'Finalizar';
@@ -671,7 +726,7 @@
           userDiv.appendChild(closeBtn);
         }
 
-        userDiv.onclick = () => selectUser(user.userId, user.username);
+        userDiv.onclick = () => openChat(user.userId, user.username);
         userList.appendChild(userDiv);
 
         socket.emit('request chat history', { userId: user.userId });
@@ -685,28 +740,101 @@
       if (userId === selectedUserId) {
         selectedUsername = newUsername;
         document.getElementById('currentUser').textContent = newUsername;
+        if (!isMobile()) document.getElementById('currentUser').textContent = newUsername;
         sessionStorage.setItem('lastUsername', newUsername);
       }
     }
 
-    function selectUser(userId, username) {
-      console.log('Usuario seleccionado:', { userId, username });
+    // 🔹 PASO 2: Mostrar chat según dispositivo
+    function openChat(userId, username) {
       selectedUserId = userId;
       selectedUsername = username;
+
       const userList = document.getElementById('userList').children;
       for (let li of userList) {
         li.classList.remove('active');
         if (li.dataset.userId === userId) {
           li.classList.add('active');
-          sessionStorage.setItem('lastUserId', userId);
-          sessionStorage.setItem('lastUsername', username);
+          localStorage.setItem('lastUserId', userId); // ✅ Extra: Guardar en localStorage
+          localStorage.setItem('lastUsername', username);
         }
       }
-      document.getElementById("popupUser").textContent = username;
-      document.getElementById("chatPopup").style.display = "flex";
-      document.getElementById("chatPopup").classList.add("show");
-      displayPopupMessages(userId);
+
+      if (isMobile()) {
+        document.getElementById('chatPopup').style.display = "flex";
+        document.getElementById('chatPopup').classList.add('show');
+        document.getElementById('popupUser').textContent = username;
+        displayPopupMessages(userId);
+      } else {
+        document.getElementById('chatPanel').style.display = 'flex';
+        document.getElementById('currentUser').textContent = username;
+        loadChatMessages(userId);
+      }
+
       socket.emit('request chat history', { userId });
+    }
+
+    // 🔹 PASO 5: Carga dinámica de mensajes en escritorio
+    function loadChatMessages(userId) {
+      const container = document.getElementById("desktopMessages");
+      container.innerHTML = '';
+      const messages = localChatHistory[userId] || [];
+
+      if (messages.length === 0) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'chat-placeholder';
+        placeholder.textContent = 'No hay mensajes aún';
+        container.appendChild(placeholder);
+        return;
+      }
+
+      messages.forEach(msg => {
+        if (msg.sender === 'system' && msg.message.includes('Chat iniciado')) {
+          const dateTag = document.createElement('div');
+          dateTag.classList.add('bubble', 'system');
+          dateTag.style.textAlign = 'center';
+          dateTag.style.fontSize = '12px';
+          dateTag.style.color = '#999';
+          dateTag.style.margin = '10px 0';
+          dateTag.innerText = msg.message;
+          container.appendChild(dateTag);
+        } else {
+          const div = document.createElement('div');
+          div.classList.add("bubble");
+
+          const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          if (msg.sender === "Agent") {
+            div.classList.add("agent");
+            div.innerHTML = `
+              <div>${msg.message}</div>
+              <div class="timestamp">✅✅ ${timestamp}</div>
+            `;
+          } else if (msg.sender === "Bot") {
+            div.classList.add("bot");
+            div.innerHTML = `
+              <div>${msg.message}</div>
+              <div class="timestamp">🤖 ${timestamp}</div>
+            `;
+          } else if (msg.sender === "System") {
+            div.classList.add("system");
+            div.innerHTML = `
+              <div>${msg.message}</div>
+              <div class="timestamp">${timestamp}</div>
+            `;
+          } else {
+            div.classList.add("user");
+            div.innerHTML = `
+              <div><strong>${msg.sender}:</strong><br>${msg.message}</div>
+              <div class="timestamp">${timestamp}</div>
+            `;
+          }
+
+          container.appendChild(div);
+        }
+      });
+
+      container.scrollTop = container.scrollHeight;
     }
 
     function displayPopupMessages(userId) {
@@ -715,7 +843,6 @@
       const messages = localChatHistory[userId] || [];
 
       messages.forEach(msg => {
-        // 🟦 PASO 3: Mostrar fecha de inicio
         if (msg.sender === 'system' && msg.message.includes('Chat iniciado')) {
           const dateTag = document.createElement('div');
           dateTag.classList.add('bubble', 'system');
@@ -778,6 +905,20 @@
       displayPopupMessages(selectedUserId);
     }
 
+    function sendDesktopMessage() {
+      const input = document.getElementById("desktopInput");
+      const msg = input.value.trim();
+      if (!msg || !selectedUserId) return;
+
+      socket.emit('agent message', { userId: selectedUserId, message: msg });
+
+      if (!localChatHistory[selectedUserId]) localChatHistory[selectedUserId] = [];
+      localChatHistory[selectedUserId].push({ sender: 'Agent', message: msg });
+
+      input.value = '';
+      loadChatMessages(selectedUserId);
+    }
+
     function closePopup() {
       document.getElementById("chatPopup").classList.remove("show");
       setTimeout(() => {
@@ -789,7 +930,11 @@
       console.log('Historial de chat recibido:', data);
       localChatHistory[data.userId] = data.messages || [];
       if (data.userId === selectedUserId) {
-        displayPopupMessages(data.userId);
+        if (isMobile()) {
+          displayPopupMessages(data.userId);
+        } else {
+          loadChatMessages(data.userId);
+        }
       }
     });
 
@@ -812,7 +957,11 @@
       }
 
       if (data.userId === selectedUserId) {
-        displayPopupMessages(data.userId);
+        if (isMobile()) {
+          displayPopupMessages(data.userId);
+        } else {
+          loadChatMessages(data.userId);
+        }
       }
     });
 
@@ -847,7 +996,7 @@
       localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
       if (data.userId === selectedUserId) {
         console.log('Mostrando imagen para el usuario seleccionado:', data);
-        const chatMessages = document.getElementById('popupMessages');
+        const container = isMobile() ? document.getElementById('popupMessages') : document.getElementById('desktopMessages');
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', 'user');
         messageDiv.textContent = `${data.sender}:`;
@@ -855,8 +1004,8 @@
         img.src = data.image;
         img.onclick = () => openImageInNewWindow(data.image);
         messageDiv.appendChild(img);
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
       }
     });
 
@@ -900,7 +1049,7 @@
           }
         }
 
-        if (userId === selectedUserId) {
+        if (userId === selectedUserId && isMobile()) {
           closePopup();
           selectedUserId = null;
           selectedUsername = null;
@@ -911,6 +1060,8 @@
     function logoutAdmin() {
       localStorage.removeItem("adminLoggedIn");
       localStorage.removeItem("adminUser");
+      localStorage.removeItem("lastUserId"); // ✅ Extra: Limpiar último usuario
+      localStorage.removeItem("lastUsername");
       location.reload();
     }
 
