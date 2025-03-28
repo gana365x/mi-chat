@@ -5,8 +5,9 @@ const http = require('http');
 const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 
-// 📁 Ruta al archivo de historial
+// 📁 Rutas a archivos
 const historyFilePath = path.join(__dirname, 'chatHistory.json');
+const performanceFile = path.join(__dirname, 'performance.json');
 
 // 🧠 Estado en memoria
 const app = express();
@@ -37,12 +38,21 @@ if (fs.existsSync(historyFilePath)) {
   }
 }
 
-// 💾 Guardar historial al archivo
+if (!fs.existsSync(performanceFile)) {
+  fs.writeFileSync(performanceFile, JSON.stringify({}));
+}
+
 function saveChatHistory() {
   fs.writeFileSync(historyFilePath, JSON.stringify(chatHistory, null, 2));
 }
 
-// 🚀 Manejo de conexiones
+function incrementPerformance(agentUsername) {
+  const data = JSON.parse(fs.readFileSync(performanceFile));
+  if (!data[agentUsername]) data[agentUsername] = 0;
+  data[agentUsername]++;
+  fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
+}
+
 io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
     let userId = data.userId;
@@ -53,18 +63,13 @@ io.on('connection', (socket) => {
       userId = uuidv4();
     }
 
-    // ✅ Siempre actualizamos el socket del usuario
     userSessions.set(userId, { username, socket });
-
-    // ✅ Enviamos la sesión al cliente (esto guarda el userId en cookie)
     socket.emit('session', { userId, username });
 
-    // ✅ Si no hay historial previo, lo iniciamos
     if (!chatHistory[userId]) chatHistory[userId] = [];
 
-    // ✅ Actualizamos la lista de usuarios conectados
     const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => session.socket) // sólo usuarios con socket activo
+      .filter(([id, session]) => session.socket)
       .map(([id, session]) => ({ userId: id, username: session.username }));
     io.emit('user list', users);
   });
@@ -225,6 +230,10 @@ io.on('connection', (socket) => {
       userSocket.emit('chat closed', { userId: data.userId });
     }
 
+    if (data.agentUsername) {
+      incrementPerformance(data.agentUsername);
+    }
+
     if (userSessions.has(data.userId)) {
       const session = userSessions.get(data.userId);
       userSessions.set(data.userId, { ...session, socket: null });
@@ -253,7 +262,6 @@ io.on('connection', (socket) => {
 
 app.use(express.static(__dirname));
 
-// Ruta de login para admin
 app.use(express.json());
 
 const ADMIN_USERNAME = 'admin';
@@ -269,19 +277,14 @@ app.post('/admin-login', (req, res) => {
   }
 });
 
-// --- SUPER ADMIN LOGIN ---
 const agentsFilePath = path.join(__dirname, 'agents.json');
 const superAdminUser = 'superadmin';
 const superAdminPass = 'gana365super';
 
-app.use(express.json());
-
-// Crear archivo inicial si no existe
 if (!fs.existsSync(agentsFilePath)) {
   fs.writeFileSync(agentsFilePath, JSON.stringify([]));
 }
 
-// Ruta de login del superadmin
 app.post('/superadmin-login', (req, res) => {
   const { username, password } = req.body;
   if (username === superAdminUser && password === superAdminPass) {
@@ -291,7 +294,6 @@ app.post('/superadmin-login', (req, res) => {
   }
 });
 
-// 🆕 Nueva ruta de login para agentes
 app.post('/agent-login', (req, res) => {
   const { username, password } = req.body;
   if (username === superAdminUser && password === superAdminPass) {
@@ -308,13 +310,11 @@ app.post('/agent-login', (req, res) => {
   return res.status(401).json({ success: false });
 });
 
-// Obtener lista de agentes
 app.get('/agents', (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
   res.json(agents);
 });
 
-// Crear nuevo agente
 app.post('/agents', (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
   const { username, password } = req.body;
@@ -326,13 +326,29 @@ app.post('/agents', (req, res) => {
   res.status(200).json({ success: true });
 });
 
-// Eliminar un agente
 app.delete('/agents/:username', (req, res) => {
   let agents = JSON.parse(fs.readFileSync(agentsFilePath));
   const { username } = req.params;
   agents = agents.filter(a => a.username !== username);
   fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
   res.status(200).json({ success: true });
+});
+
+app.get('/performance', (req, res) => {
+  const data = JSON.parse(fs.readFileSync(performanceFile));
+  res.json(data);
+});
+
+// 🆕 Nueva ruta para devolver el displayName
+app.get('/get-agent-displayname', (req, res) => {
+  const username = req.query.username;
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const found = agents.find(a => a.username === username);
+  if (found) {
+    res.json({ displayName: found.displayName || username });
+  } else {
+    res.json({ displayName: username });
+  }
 });
 
 server.listen(PORT, () => {
