@@ -1,5 +1,4 @@
-[
-  {
+ {
     "username": "1",
     "password": "1",
     "displayName": "Agente Uno",
@@ -11,3 +10,4 @@
     "displayName": "Superadmin",
     "type": "superadmin"
   }
+]
