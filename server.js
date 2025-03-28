@@ -91,6 +91,8 @@ io.on('connection', (socket) => {
       chatHistory[userId].push(dateMessage);
       saveChatHistory();
     }
+
+    // io.emit('user list', getAllChatsSorted()); // Comentado para no mostrar al conectar
   });
 
   socket.on('update username', ({ userId, newUsername }) => {
@@ -133,10 +135,7 @@ io.on('connection', (socket) => {
     if (chatHistory[data.userId]) {
       const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
       if (wasClosed) {
-        // 🔁 Quitamos la marca de cierre anterior
         chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
-        
-        // 🔄 Y reenviamos el listado actualizado a los admins
         io.emit('user list', getAllChatsSorted());
       }
     }
@@ -276,4 +275,127 @@ io.on('connection', (socket) => {
     }
 
     if (userSessions.has(data.userId)) {
-      const session = userSessions
+      const session = userSessions.get(data.userId);
+      userSessions.set(data.userId, { ...session, socket: null });
+    }
+
+    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
+    chatHistory[data.userId].push({
+      sender: 'System',
+      message: 'Chat cerrado',
+      timestamp: new Date().toISOString(),
+      status: 'closed'
+    });
+
+    if (chatHistory[data.userId]) {
+      chatHistory[data.userId].activeSession = false;
+    }
+
+    saveChatHistory();
+    io.emit('user list', getAllChatsSorted());
+  });
+
+  socket.on('disconnect', () => {
+    adminSubscriptions.delete(socket.id);
+    for (let [userId, session] of userSessions.entries()) {
+      if (session.socket?.id === socket.id) {
+        userSessions.set(userId, { ...session, socket: null });
+        io.emit('user list', getAllChatsSorted());
+        break;
+      }
+    }
+  });
+});
+
+app.use(express.static(__dirname));
+app.use(express.json());
+
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'gana365';
+
+app.post('/admin-login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    return res.status(200).json({ success: true });
+  } else {
+    return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+  }
+});
+
+const agentsFilePath = path.join(__dirname, 'agents.json');
+const superAdminUser = 'superadmin';
+const superAdminPass = 'gana365super';
+
+if (!fs.existsSync(agentsFilePath)) {
+  fs.writeFileSync(agentsFilePath, JSON.stringify([]));
+}
+
+app.post('/superadmin-login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === superAdminUser && password === superAdminPass) {
+    res.status(200).json({ success: true });
+  } else {
+    res.status(401).json({ success: false });
+  }
+});
+
+app.post('/agent-login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === superAdminUser && password === superAdminPass) {
+    return res.status(200).json({ superadmin: true });
+  }
+
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const match = agents.find(a => a.username === username && a.password === password);
+
+  if (match) {
+    return res.status(200).json({ success: true });
+  }
+
+  return res.status(401).json({ success: false });
+});
+
+app.get('/agents', (req, res) => {
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  res.json(agents);
+});
+
+app.post('/agents', (req, res) => {
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const { username, password } = req.body;
+  if (agents.find(a => a.username === username)) {
+    return res.status(400).json({ success: false, message: 'Ya existe ese usuario' });
+  }
+  agents.push({ username, password });
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+  res.status(200).json({ success: true });
+});
+
+app.delete('/agents/:username', (req, res) => {
+  let agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const { username } = req.params;
+  agents = agents.filter(a => a.username !== username);
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+  res.status(200).json({ success: true });
+});
+
+app.get('/performance', (req, res) => {
+  const data = JSON.parse(fs.readFileSync(performanceFile));
+  res.json(data);
+});
+
+app.get('/get-agent-displayname', (req, res) => {
+  const username = req.query.username;
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const found = agents.find(a => a.username === username);
+  if (found) {
+    res.json({ displayName: found.displayName || username });
+  } else {
+    res.json({ displayName: username });
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
