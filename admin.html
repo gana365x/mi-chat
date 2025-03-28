@@ -823,6 +823,10 @@
     <div class="chat-view" id="chatArea" style="display: none !important;">
       <div class="chat-header" id="chatHeader">Nombre del usuario</div>
       <div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
+      <div id="agentInfo" style="padding: 6px 10px; font-size: 12px; color: #bbb; display: flex; align-items: center; gap: 8px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
+        <span>Agente: <span id="agentDisplayName">Cargando...</span></span>
+      </div>
       <div class="chat-input" id="chatInputArea">
         <input type="text" id="adminInput" placeholder="Escribir mensaje..." />
         <button onclick="sendAdminMessage()">Enviar</button>
@@ -916,6 +920,21 @@
     document.addEventListener("DOMContentLoaded", () => {
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
       const username = localStorage.getItem("adminUser") || "Agente";
+
+      // Consultar el nombre visible del agente
+      if (username) {
+        fetch(`/get-agent-displayname?username=${username}`)
+          .then(res => res.json())
+          .then(data => {
+            const span = document.getElementById("agentDisplayName");
+            span.textContent = data.displayName || username;
+          })
+          .catch(err => {
+            console.error("Error al obtener el nombre visible del agente:", err);
+            const span = document.getElementById("agentDisplayName");
+            span.textContent = username; // Fallback al username si falla
+          });
+      }
 
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
