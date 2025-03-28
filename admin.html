@@ -413,6 +413,7 @@
       margin-bottom: 10px;
       display: flex;
       flex-direction: column;
+      gap: 10px; /* Añadido para espaciado entre mensajes */
     }
 
     .popup-input {
@@ -488,11 +489,14 @@
     }
 
     .bubble.system {
-      background-color: #FFD700; /* Amarillo para mensajes del sistema */
+      background-color: #FFD700;
       align-self: center;
       margin: 0 auto;
       border-radius: 12px;
       color: #000;
+      text-align: center;
+      font-size: 12px;
+      padding: 8px 12px;
     }
 
     .timestamp {
@@ -655,7 +659,7 @@
           cerradoBadge.className = 'cerrado-badge';
           cerradoBadge.textContent = 'Cerrado';
           userDiv.appendChild(cerradoBadge);
-          userDiv.style.opacity = 0.4;
+          userDiv.style.opacity = 0.4; // Mantener chats cerrados visibles pero opacos
         } else {
           const closeBtn = document.createElement('button');
           closeBtn.textContent = 'Finalizar';
@@ -711,38 +715,50 @@
       const messages = localChatHistory[userId] || [];
 
       messages.forEach(msg => {
-        const div = document.createElement('div');
-        div.classList.add("bubble");
-
-        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        if (msg.sender === "Agent") {
-          div.classList.add("agent");
-          div.innerHTML = `
-            <div>${msg.message}</div>
-            <div class="timestamp">✅✅ ${timestamp}</div>
-          `;
-        } else if (msg.sender === "Bot") {
-          div.classList.add("bot");
-          div.innerHTML = `
-            <div>${msg.message}</div>
-            <div class="timestamp">🤖 ${timestamp}</div>
-          `;
-        } else if (msg.sender === "System") {
-          div.classList.add("system");
-          div.innerHTML = `
-            <div>${msg.message}</div>
-            <div class="timestamp">${timestamp}</div>
-          `;
+        // 🟦 PASO 3: Mostrar fecha de inicio
+        if (msg.sender === 'system' && msg.message.includes('Chat iniciado')) {
+          const dateTag = document.createElement('div');
+          dateTag.classList.add('bubble', 'system');
+          dateTag.style.textAlign = 'center';
+          dateTag.style.fontSize = '12px';
+          dateTag.style.color = '#999';
+          dateTag.style.margin = '10px 0';
+          dateTag.innerText = msg.message;
+          container.appendChild(dateTag);
         } else {
-          div.classList.add("user");
-          div.innerHTML = `
-            <div><strong>${msg.sender}:</strong><br>${msg.message}</div>
-            <div class="timestamp">${timestamp}</div>
-          `;
-        }
+          const div = document.createElement('div');
+          div.classList.add("bubble");
 
-        container.appendChild(div);
+          const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          if (msg.sender === "Agent") {
+            div.classList.add("agent");
+            div.innerHTML = `
+              <div>${msg.message}</div>
+              <div class="timestamp">✅✅ ${timestamp}</div>
+            `;
+          } else if (msg.sender === "Bot") {
+            div.classList.add("bot");
+            div.innerHTML = `
+              <div>${msg.message}</div>
+              <div class="timestamp">🤖 ${timestamp}</div>
+            `;
+          } else if (msg.sender === "System") {
+            div.classList.add("system");
+            div.innerHTML = `
+              <div>${msg.message}</div>
+              <div class="timestamp">${timestamp}</div>
+            `;
+          } else {
+            div.classList.add("user");
+            div.innerHTML = `
+              <div><strong>${msg.sender}:</strong><br>${msg.message}</div>
+              <div class="timestamp">${timestamp}</div>
+            `;
+          }
+
+          container.appendChild(div);
+        }
       });
 
       container.scrollTop = container.scrollHeight;
@@ -777,7 +793,6 @@
       }
     });
 
-    // 🧠 Paso 2: Manejar nuevos mensajes y reabrir chats cerrados
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
       if (!data.userId || !data.sender || !data.message) {
@@ -789,7 +804,6 @@
       }
       localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
 
-      // Verificamos si el chat estaba cerrado
       const chatElement = document.querySelector(`li[data-user-id="${data.userId}"]`);
       const wasClosed = chatElement && chatElement.querySelector('.cerrado-badge');
 
@@ -800,8 +814,6 @@
       if (data.userId === selectedUserId) {
         displayPopupMessages(data.userId);
       }
-
-      // El reordenamiento lo maneja el backend con 'user list', no necesitamos moverlo aquí
     });
 
     function showFinalizarButton(userId) {
@@ -811,7 +823,7 @@
         if (cerradoBadge) {
           cerradoBadge.remove();
         }
-        chatElement.style.opacity = 1; // Restaurar opacidad
+        chatElement.style.opacity = 1;
         const closeBtn = document.createElement('button');
         closeBtn.textContent = 'Finalizar';
         closeBtn.classList.add('finalizar-btn');
