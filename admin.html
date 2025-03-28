@@ -813,7 +813,16 @@
     </div>
 
     <div class="chat-view" id="chatArea" style="display: none !important;">
-      <div class="chat-header" id="chatHeader">Nombre del usuario</div>
+      <div class="chat-header" id="chatHeader">
+        <div id="chatUser">
+          <span>Usuario:</span>
+          <strong id="currentUser">Nombre</strong>
+          <button id="editBtn" onclick="toggleEditInput()">✏️</button>
+          <input type="text" id="editNameInput" style="display: none;" placeholder="Nuevo nombre">
+          <button id="saveBtn" onclick="saveNewName()" style="display: none;">Guardar</button>
+          <button id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancelar</button>
+        </div>
+      </div>
       <div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
       <div id="agentInfo" style="padding: 6px 10px; font-size: 12px; color: #bbb; display: flex; align-items: center; gap: 8px;">
         <div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
@@ -1022,7 +1031,7 @@
         }
       }
       document.getElementById("popupUser").textContent = username;
-      document.getElementById("chatHeader").textContent = username;
+      document.getElementById("currentUser").textContent = username;
 
       if (window.innerWidth <= 767) {
         document.getElementById("chatPopup").style.display = "flex";
@@ -1309,9 +1318,9 @@
     function resetEditUI() {
       document.getElementById("currentUser").style.display = "inline-block";
       document.getElementById("editNameInput").style.display = "none";
-      document.getElementById("editBtn").style.display = "inline-block";
       document.getElementById("saveBtn").style.display = "none";
       document.getElementById("cancelBtn").style.display = "none";
+      document.getElementById("editBtn").style.display = "inline-block";
     }
 
     function toggleMenuPopup() {
@@ -1401,12 +1410,45 @@
 
       if (selectedUserId) {
         selectedUsername = newName;
-        document.getElementById("chatHeader").textContent = newName;
+        document.getElementById("currentUser").textContent = newName;
         const chatItem = document.querySelector(`div[data-user-id="${selectedUserId}"] .username`);
         if (chatItem) chatItem.textContent = newName;
       }
 
       document.getElementById("editNameContainer").style.display = "none";
+    }
+
+    function toggleEditInput() {
+      document.getElementById("editNameInput").style.display = "inline-block";
+      document.getElementById("saveBtn").style.display = "inline-block";
+      document.getElementById("cancelBtn").style.display = "inline-block";
+      document.getElementById("editBtn").style.display = "none";
+
+      const currentName = document.getElementById("currentUser").textContent;
+      document.getElementById("editNameInput").value = currentName;
+    }
+
+    function cancelEdit() {
+      document.getElementById("editNameInput").style.display = "none";
+      document.getElementById("saveBtn").style.display = "none";
+      document.getElementById("cancelBtn").style.display = "none";
+      document.getElementById("editBtn").style.display = "inline-block";
+    }
+
+    function saveNewName() {
+      const newName = document.getElementById("editNameInput").value.trim();
+      if (!newName) return;
+
+      document.getElementById("currentUser").textContent = newName;
+
+      if (selectedUserId) {
+        socket.emit("update username", {
+          userId: selectedUserId,
+          newUsername: newName
+        });
+      }
+
+      cancelEdit();
     }
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
