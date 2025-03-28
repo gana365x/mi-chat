@@ -434,7 +434,6 @@
       border-radius: 8px;
     }
 
-    /* ✅ Paso 1: Actualización del CSS del chat-popup */
     .chat-popup {
       display: none;
       position: fixed;
@@ -480,8 +479,10 @@
     .popup-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 12px;
+      padding: 10px;
       background: #121212;
+      display: flex;
+      flex-direction: column;
     }
 
     .popup-input {
@@ -512,6 +513,50 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
+    }
+
+    /* ✅ Paso 2: Estilo WhatsApp con timestamps */
+    .bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      margin: 6px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: pre-wrap;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bubble.user {
+      background-color: #DCF8C6;
+      align-self: flex-end;
+      margin-left: auto;
+      border-top-right-radius: 0;
+    }
+
+    .bubble.agent {
+      background-color: #ADD8E6;
+      align-self: flex-start;
+      margin-right: auto;
+      border-top-left-radius: 0;
+    }
+
+    .bubble.bot {
+      background-color: #FFFFFF;
+      align-self: flex-start;
+      margin-right: auto;
+      border-top-left-radius: 0;
+    }
+
+    .timestamp {
+      font-size: 11px;
+      color: #555;
+      align-self: flex-end;
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -545,7 +590,6 @@
     <div class="chat-area" id="chatArea" style="display: none !important;"></div>
   </div>
 
-  <!-- ✅ Paso 2: Verificación y actualización del chatPopup en HTML -->
   <div id="chatPopup" class="chat-popup">
     <div class="popup-header">
       <span id="popupUser">Usuario</span>
@@ -815,21 +859,44 @@
       selectedUsername = username;
       document.getElementById("popupUser").textContent = username;
       document.getElementById("chatPopup").style.display = "flex";
-      document.getElementById("chatPopup").classList.add("show"); // ✅ Paso 3: Animación al abrir
+      document.getElementById("chatPopup").classList.add("show");
 
       socket.emit('request chat history', { userId });
       displayPopupMessages(userId);
     }
 
+    // ✅ Paso 1: Actualización de displayPopupMessages con timestamps
     function displayPopupMessages(userId) {
       const container = document.getElementById("popupMessages");
       container.innerHTML = '';
-
       const messages = localChatHistory[userId] || [];
+
       messages.forEach(msg => {
         const div = document.createElement('div');
-        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.message || ''}`;
-        div.style.margin = "8px 0";
+        div.classList.add("bubble");
+
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (msg.sender === "Agent") {
+          div.classList.add("agent");
+          div.innerHTML = `
+            <div>${msg.message}</div>
+            <div class="timestamp">✅✅ ${timestamp}</div>
+          `;
+        } else if (msg.sender === "Bot") {
+          div.classList.add("bot");
+          div.innerHTML = `
+            <div>${msg.message}</div>
+            <div class="timestamp">🤖 ${timestamp}</div>
+          `;
+        } else {
+          div.classList.add("user");
+          div.innerHTML = `
+            <div><strong>${msg.sender}:</strong><br>${msg.message}</div>
+            <div class="timestamp">${timestamp}</div>
+          `;
+        }
+
         container.appendChild(div);
       });
 
@@ -851,10 +918,10 @@
     }
 
     function closePopup() {
-      document.getElementById("chatPopup").classList.remove("show"); // ✅ Paso 3: Animación al cerrar
+      document.getElementById("chatPopup").classList.remove("show");
       setTimeout(() => {
         document.getElementById("chatPopup").style.display = "none";
-      }, 300); // Esperar a que termine la animación (0.3s)
+      }, 300);
     }
 
     socket.on('admin message', (data) => {
