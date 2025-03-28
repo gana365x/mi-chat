@@ -56,12 +56,15 @@ function getAllChatsSorted() {
       const username = userSessions.get(userId)?.username || 'Usuario';
       const lastMessageTime = messages.length > 0 ? new Date(messages[messages.length - 1].timestamp || 0) : new Date();
       const isActive = chatHistory[userId]?.activeSession === true;
+      if (!isActive) return null;
+
       return { userId, username, lastMessageTime, isClosed: !isActive };
     })
+    .filter(u => u !== null)
     .sort((a, b) => {
       const dateA = new Date(chatHistory[a.userId][0]?.timestamp || 0);
       const dateB = new Date(chatHistory[b.userId][0]?.timestamp || 0);
-      return dateB - dateA; // Más reciente primero
+      return dateB - dateA;
     });
 
   return users;
@@ -92,7 +95,7 @@ io.on('connection', (socket) => {
       saveChatHistory();
     }
 
-    io.emit('user list', getAllChatsSorted());
+    // io.emit('user list', getAllChatsSorted()); // Comentado para no mostrar al conectar
   });
 
   socket.on('update username', ({ userId, newUsername }) => {
@@ -134,9 +137,11 @@ io.on('connection', (socket) => {
     if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
       if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
       chatHistory[data.userId].activeSession = true;
+      saveChatHistory();
+      io.emit('user list', getAllChatsSorted());
+    } else {
+      saveChatHistory();
     }
-
-    saveChatHistory();
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -156,6 +161,7 @@ io.on('connection', (socket) => {
       };
       chatHistory[data.userId].push(botMsg);
       saveChatHistory();
+      io.emit('user list', getAllChatsSorted());
       if (userSocket) userSocket.emit('chat message', botMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
@@ -182,6 +188,7 @@ io.on('connection', (socket) => {
       };
       chatHistory[data.userId].push(retiroMsg);
       saveChatHistory();
+      io.emit('user list', getAllChatsSorted());
       if (userSocket) userSocket.emit('chat message', retiroMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
@@ -189,8 +196,6 @@ io.on('connection', (socket) => {
         }
       }
     }
-
-    io.emit('user list', getAllChatsSorted());
   });
 
   socket.on('image', (data) => {
