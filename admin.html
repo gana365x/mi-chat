@@ -87,16 +87,67 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 16px 20px;
+      background: #1c1c1c;
       border-bottom: 2px solid #FF3B00;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
+      border-radius: 10px 10px 0 0;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    .chat-header h2 {
+    #chatUser {
       margin: 0;
+      font-size: 16px;
+      color: #bbb;
+      font-weight: 500;
+    }
+
+    #chatUser strong {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    #currentUser {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+    }
+
+    #editNameInput {
       font-size: 18px;
-      font-weight: bold;
-      color: #333;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #FF3B00;
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      margin-left: 8px;
+    }
+
+    #editBtn,
+    #saveBtn,
+    #cancelBtn {
+      background: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      margin-left: 10px;
+    }
+
+    #editBtn:hover,
+    #saveBtn:hover,
+    #cancelBtn:hover {
+      transform: scale(1.1);
+      background: #FF3B00;
+      color: #fff;
     }
 
     .close-chat {
@@ -333,14 +384,13 @@
     <div class="chat-area" id="chatArea">
       <div class="chat-header">
         <h2 id="chatUser">
-          Chat con: 
-          <span id="currentUser">[Nombre del Usuario]</span>
-          <input type="text" id="editNameInput" style="display:none; margin-left: 10px;" />
+          Chat con: <strong><span id="currentUser">Pedro-55</span></strong>
+          <input type="text" id="editNameInput" style="display:none;" />
         </h2>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <button id="editBtn" onclick="editName()" title="Editar">✏️</button>
-          <button id="saveBtn" onclick="saveName()" style="display:none;" title="Guardar">✅</button>
-          <button id="cancelBtn" onclick="cancelEdit()" style="display:none;" title="Cancelar">❌</button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button id="editBtn" onclick="editName()">✏️</button>
+          <button id="saveBtn" onclick="saveName()" style="display:none;">✅</button>
+          <button id="cancelBtn" onclick="cancelEdit()" style="display:none;">❌</button>
           <button class="close-chat" onclick="closeChat()">Cerrar Chat</button>
         </div>
       </div>
