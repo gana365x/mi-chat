@@ -73,10 +73,6 @@
       color: #fff;
     }
 
-    .user-item.closed {
-      opacity: 0.4;
-    }
-
     .username-display {
       flex-grow: 1;
       font-weight: bold;
@@ -84,7 +80,7 @@
       color: white;
     }
 
-    .user-item button.close-chat {
+    .user-item button.finalizar-btn {
       background: #FF3B00;
       color: white;
       border: none;
@@ -95,7 +91,7 @@
       font-size: 12px;
     }
 
-    .user-item button.close-chat:hover {
+    .user-item button.finalizar-btn:hover {
       background: #d63100;
     }
 
@@ -607,16 +603,15 @@
       }
     });
 
-    // 🧩 Paso 2: Actualizar el manejo de la lista de usuarios
     socket.on('user list', (users) => {
       console.log('Lista de usuarios recibida:', users);
-      const userList = document.getElementById('userList'); // Contenedor real
+      const userList = document.getElementById('userList');
 
       // Limpiar antes de renderizar
       userList.innerHTML = '';
 
       users.forEach(user => {
-        const userDiv = document.createElement('li');
+        const userDiv = document.createElement('li'); // Cambié 'div' por 'li' para mantener consistencia con <ul>
         userDiv.classList.add('user-item');
         userDiv.dataset.userId = user.userId;
 
@@ -629,14 +624,16 @@
 
         // Marcar opaco si el chat está cerrado
         if (user.isClosed) {
-          userDiv.classList.add('closed');
-        } else {
-          // Agregar botón "Finalizar" si está abierto
+          userDiv.style.opacity = 0.4; // Usamos estilo inline como en tu ejemplo
+        }
+
+        // Solo agregar botón "Finalizar" si está activo
+        if (!user.isClosed) {
           const closeBtn = document.createElement('button');
           closeBtn.textContent = 'Finalizar';
-          closeBtn.className = 'close-chat';
+          closeBtn.classList.add('finalizar-btn');
           closeBtn.onclick = (e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Evitar que el clic en el botón seleccione el usuario
             finalizeChat(user.userId);
           };
           userDiv.appendChild(closeBtn);
@@ -816,8 +813,8 @@
         const li = document.querySelector(`li[data-user-id="${userId}"]`);
         if (li) {
           li.classList.remove('active');
-          li.classList.add('closed');
-          const btn = li.querySelector('button.close-chat');
+          li.style.opacity = 0.4; // Ajustamos opacidad directamente
+          const btn = li.querySelector('button.finalizar-btn');
           if (btn) btn.remove();
         }
 
@@ -900,6 +897,6 @@
       document.getElementById("cancelBtn").style.display = "none";
     }
   </script>
-  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MzkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
