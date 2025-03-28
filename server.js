@@ -5,11 +5,6 @@ const http = require('http');
 const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 
-// 📁 Rutas a archivos
-const historyFilePath = path.join(__dirname, 'chatHistory.json');
-const performanceFile = path.join(__dirname, 'performance.json');
-
-// 🧠 Estado en memoria
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -28,7 +23,9 @@ const userSessions = new Map();
 const chatHistory = {};
 const adminSubscriptions = new Map();
 
-// 📥 Cargar historial desde archivo
+const historyFilePath = path.join(__dirname, 'chatHistory.json');
+const performanceFile = path.join(__dirname, 'performance.json');
+
 if (fs.existsSync(historyFilePath)) {
   const data = fs.readFileSync(historyFilePath, 'utf-8');
   try {
@@ -53,6 +50,34 @@ function incrementPerformance(agentUsername) {
   fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
 }
 
+// 🧩 Paso 1: Nueva función para obtener y ordenar chats activos
+function getActiveChatsSorted() {
+  const activeUsers = [];
+
+  for (let [userId, session] of userSessions.entries()) {
+    const history = chatHistory[userId] || [];
+
+    // Solo mostrar usuarios que enviaron mensajes (excluye chats solo con mensajes del bot)
+    const hasMessages = history.some(msg => msg.sender !== 'Bot');
+    if (!hasMessages) continue;
+
+    // Obtenemos el timestamp del último mensaje (o ahora si no hay mensajes)
+    const lastMessageTime = history.length > 0 ? new Date(history[history.length - 1].timestamp || Date.now()) : new Date();
+
+    activeUsers.push({
+      userId,
+      username: session.username,
+      lastMessageTime,
+      isClosed: !session.socket // Si no tiene socket activo, está cerrado
+    });
+  }
+
+  // Ordenar del más nuevo al más viejo
+  activeUsers.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
+
+  return activeUsers;
+}
+
 io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
     let userId = data.userId;
@@ -68,10 +93,8 @@ io.on('connection', (socket) => {
 
     if (!chatHistory[userId]) chatHistory[userId] = [];
 
-    const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => session.socket)
-      .map(([id, session]) => ({ userId: id, username: session.username }));
-    io.emit('user list', users);
+    // 🔄 Emitir lista actualizada de usuarios
+    io.emit('user list', getActiveChatsSorted());
   });
 
   socket.on('update username', ({ userId, newUsername }) => {
@@ -93,27 +116,23 @@ io.on('connection', (socket) => {
         userSocket.emit('update username cookie', { newUsername });
       }
 
-      const users = Array.from(userSessions.entries())
-        .filter(([id, session]) => session.socket)
-        .map(([id, session]) => ({ userId: id, username: session.username }));
-
-      io.emit('user list', users);
+      // 🔄 Emitir lista actualizada de usuarios
+      io.emit('user list', getActiveChatsSorted());
       console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
     }
   });
 
   socket.on('admin connected', () => {
     socket.join('admins');
-    const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => id && session.username)
-      .map(([id, session]) => ({ userId: id, username: session.username }));
-    socket.emit('user list', users);
+    // 🔄 Emitir lista actualizada de usuarios al admin
+    socket.emit('user list', getActiveChatsSorted());
   });
 
   socket.on('chat message', (data) => {
     if (!data.userId || !data.sender || !data.message) return;
 
-    const messageData = { userId: data.userId, sender: data.sender, message: data.message };
+    // Agregar timestamp al mensaje
+    const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: new Date().toISOString() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
     saveChatHistory();
@@ -131,7 +150,8 @@ io.on('connection', (socket) => {
       const botMsg = {
         userId: data.userId,
         sender: 'Bot',
-        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`
+        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
+        timestamp: new Date().toISOString()
       };
       chatHistory[data.userId].push(botMsg);
       saveChatHistory();
@@ -156,7 +176,8 @@ io.on('connection', (socket) => {
     <div><strong>NOMBRE DE CTA BANCARIA:</strong> __________</div>
     <div><strong>CBU:</strong> __________</div>
     <div><strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> __________</div>
-  </div>`
+  </div>`,
+        timestamp: new Date().toISOString()
       };
       chatHistory[data.userId].push(retiroMsg);
       saveChatHistory();
@@ -167,11 +188,14 @@ io.on('connection', (socket) => {
         }
       }
     }
+
+    // 🔄 Emitir lista actualizada de usuarios después de un mensaje
+    io.emit('user list', getActiveChatsSorted());
   });
 
   socket.on('image', (data) => {
     if (!data.userId || !data.sender || !data.image) return;
-    const imageData = { userId: data.userId, sender: data.sender, image: data.image };
+    const imageData = { userId: data.userId, sender: data.sender, image: data.image, timestamp: new Date().toISOString() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(imageData);
     saveChatHistory();
@@ -188,7 +212,8 @@ io.on('connection', (socket) => {
     const botResponse = {
       userId: data.userId,
       sender: 'Bot',
-      message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!'
+      message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!',
+      timestamp: new Date().toISOString()
     };
     chatHistory[data.userId].push(botResponse);
     saveChatHistory();
@@ -198,11 +223,14 @@ io.on('connection', (socket) => {
         io.to(adminSocketId).emit('admin message', botResponse);
       }
     }
+
+    // 🔄 Emitir lista actualizada de usuarios después de una imagen
+    io.emit('user list', getActiveChatsSorted());
   });
 
   socket.on('agent message', (data) => {
     if (!data.userId || !data.message) return;
-    const messageData = { userId: data.userId, sender: 'Agent', message: data.message };
+    const messageData = { userId: data.userId, sender: 'Agent', message: data.message, timestamp: new Date().toISOString() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
     saveChatHistory();
@@ -215,6 +243,9 @@ io.on('connection', (socket) => {
         io.to(adminSocketId).emit('admin message', messageData);
       }
     }
+
+    // 🔄 Emitir lista actualizada de usuarios después de un mensaje del agente
+    io.emit('user list', getActiveChatsSorted());
   });
 
   socket.on('request chat history', (data) => {
@@ -239,21 +270,17 @@ io.on('connection', (socket) => {
       userSessions.set(data.userId, { ...session, socket: null });
     }
 
-    const users = Array.from(userSessions.entries())
-      .filter(([id, session]) => id && session.username)
-      .map(([id, session]) => ({ userId: id, username: session.username }));
-    io.emit('user list', users);
+    // 🔄 Emitir lista actualizada de usuarios después de cerrar un chat
+    io.emit('user list', getActiveChatsSorted());
   });
 
   socket.on('disconnect', () => {
     adminSubscriptions.delete(socket.id);
     for (let [userId, session] of userSessions.entries()) {
       if (session.socket?.id === socket.id) {
-        userSessions.delete(userId);
-        const users = Array.from(userSessions.entries())
-          .filter(([userId, session]) => userId && session.username)
-          .map(([id, session]) => ({ userId: id, username: session.username }));
-        io.emit('user list', users);
+        userSessions.set(userId, { ...session, socket: null });
+        // 🔄 Emitir lista actualizada de usuarios después de desconexión
+        io.emit('user list', getActiveChatsSorted());
         break;
       }
     }
@@ -261,7 +288,6 @@ io.on('connection', (socket) => {
 });
 
 app.use(express.static(__dirname));
-
 app.use(express.json());
 
 const ADMIN_USERNAME = 'admin';
@@ -339,7 +365,6 @@ app.get('/performance', (req, res) => {
   res.json(data);
 });
 
-// 🆕 Nueva ruta para devolver el displayName
 app.get('/get-agent-displayname', (req, res) => {
   const username = req.query.username;
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
