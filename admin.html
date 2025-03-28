@@ -307,38 +307,34 @@
     }
 
     .user-item {
-      background-color: #000;
-      color: #fff;
-      border-left: 4px solid transparent;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      justify-content: space-between;
-    }
+  background-color: #000;
+  color: #fff;
+  border-left: 4px solid transparent;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    .user-item:hover {
-      background: #444;
-    }
+/* Mensaje nuevo (no leído) */
+.user-item.unread {
+  border-left: 4px solid #FF3B00; /* borde naranja */
+}
 
-    .user-item.unread {
-      border-left: 4px solid #FF3B00;
-    }
+/* Chat actualmente abierto (activo) */
+.user-item.active {
+  border-left: 4px solid #ffffff; /* borde blanco */
+}
 
-    .user-item.active {
-      background: #FF3B00;
-      color: white;
-      border-left: 4px solid #fff;
-    }
-
-    .user-item.closed {
-      opacity: 0.4;
-    }
+/* Chat cerrado manualmente */
+.user-item.closed {
+  opacity: 0.4;
+}
 
     .username-display {
       flex-grow: 1;
