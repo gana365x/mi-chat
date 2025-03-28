@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Agentes - GANA365</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
@@ -48,22 +48,55 @@
       margin: 0;
     }
 
-    .user-list li {
+    .user-item {
+      background-color: #000;
+      color: #fff;
+      border-left: 4px solid transparent;
       padding: 10px;
-      background: #333;
       margin-bottom: 10px;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
-      font-size: 16px;
+      position: relative;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .user-list li:hover {
+    .user-item:hover {
       background: #444;
     }
 
-    .user-list li.active {
+    .user-item.active {
+      background-color: #000;
+      border-left: 4px solid #fff;
+      color: #fff;
+    }
+
+    .user-item.closed {
+      opacity: 0.4;
+    }
+
+    .username-display {
+      flex-grow: 1;
+      font-weight: bold;
+      font-size: 14px;
+      color: white;
+    }
+
+    .user-item button.close-chat {
       background: #FF3B00;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .user-item button.close-chat:hover {
+      background: #d63100;
     }
 
     .chat-area {
@@ -149,22 +182,6 @@
       color: #fff;
     }
 
-    .close-chat {
-      background: #FF3B00;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
-      font-size: 14px;
-    }
-
-    .close-chat:hover {
-      background: #d63100;
-    }
-
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -201,7 +218,7 @@
       max-width: 250px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
-    
+
     .message.bot::before {
       content: '';
       position: absolute;
@@ -287,105 +304,6 @@
       background: #d63100;
     }
 
-    .bot-message-line {
-      display: block;
-      line-height: 0.1;
-      font-size: 13px;
-      color: #222;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .bot-message-line {
-      font-size: 13px;
-      line-height: 1.3;
-      margin: 2px 0;
-    }
-
-    .bot-message-block {
-      padding: 5px;
-    }
-
-    .user-item {
-      background-color: #000;
-      color: #fff;
-      border-left: 4px solid transparent;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.3s ease;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .user-item:hover {
-      background: #444;
-    }
-
-    .user-item.unread {
-      border-left: 4px solid #FF3B00;
-    }
-
-    .user-item.active {
-      background-color: #000;
-      border-left: 4px solid #fff;
-      color: #fff;
-    }
-
-    .user-item.closed {
-      opacity: 0.4;
-    }
-
-    .username-display {
-      flex-grow: 1;
-      font-weight: bold;
-      font-size: 14px;
-      color: white;
-    }
-
-    .edit-input {
-      flex-grow: 1;
-      padding: 4px 8px;
-      font-size: 14px;
-      border-radius: 4px;
-      border: none;
-    }
-
-    .edit-btn,
-    .confirm-btn,
-    .cancel-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .edit-btn:hover,
-    .confirm-btn:hover,
-    .cancel-btn:hover {
-      transform: scale(1.2);
-      color: #FF3B00;
-    }
-
-    .user-item button.close-chat {
-      background: #FF3B00;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 12px;
-    }
-
-    .user-item button.close-chat:hover {
-      background: #d63100;
-    }
-
     .top-menu {
       position: absolute;
       top: 15px;
@@ -435,16 +353,16 @@
     }
 
     .chat-popup {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
+      height: 100vh;
       background: #1f1f1f;
       z-index: 10001;
+      flex-direction: column;
+      overflow: hidden;
       border-radius: 0;
       transform: translateY(100%);
       transition: transform 0.3s ease;
@@ -534,7 +452,6 @@
       flex-direction: column;
     }
 
-    /* ✅ Cambio: Color negro para cada tipo de burbuja */
     .bubble.user {
       background-color: #DCF8C6;
       align-self: flex-end;
@@ -566,7 +483,6 @@
       margin-top: 4px;
     }
 
-    /* ✅ Opcional: Asegurar que <strong> use color negro */
     .bubble strong {
       color: #000;
     }
@@ -636,9 +552,9 @@
       console.error('Error en Socket.IO:', error);
     });
 
-    const localChatHistory = {};
     let selectedUserId = null;
     let selectedUsername = null;
+    const localChatHistory = {};
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -691,48 +607,45 @@
       }
     });
 
+    // 🧩 Paso 2: Actualizar el manejo de la lista de usuarios
     socket.on('user list', (users) => {
       console.log('Lista de usuarios recibida:', users);
-      const userList = document.getElementById('userList');
+      const userList = document.getElementById('userList'); // Contenedor real
+
+      // Limpiar antes de renderizar
       userList.innerHTML = '';
-      [...users].reverse().forEach(user => {
-        if (!user.userId) {
-          console.error('Usuario sin userId:', user);
-          return;
-        }
-        const li = document.createElement('li');
-        li.classList.add('user-item');
-        li.dataset.userId = user.userId;
+
+      users.forEach(user => {
+        const userDiv = document.createElement('li');
+        userDiv.classList.add('user-item');
+        userDiv.dataset.userId = user.userId;
 
         const nameDisplay = document.createElement('span');
         nameDisplay.className = 'username-display';
         nameDisplay.id = 'inboxUserName-' + user.userId;
         nameDisplay.textContent = user.username;
 
-        const timeSpan = document.createElement('span');
-        timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        timeSpan.style.fontSize = '12px';
-        timeSpan.style.color = '#aaa';
-        timeSpan.style.marginLeft = 'auto';
+        userDiv.appendChild(nameDisplay);
 
-        li.appendChild(nameDisplay);
-        li.appendChild(timeSpan);
-
-        const finalizeBtn = document.createElement('button');
-        finalizeBtn.textContent = 'Finalizar';
-        finalizeBtn.className = 'close-chat';
-        finalizeBtn.style.marginLeft = '10px';
-        finalizeBtn.onclick = (e) => {
-          e.stopPropagation();
-          finalizeChat(user.userId);
-        };
-
-        if (!li.classList.contains('closed')) {
-          li.appendChild(finalizeBtn);
+        // Marcar opaco si el chat está cerrado
+        if (user.isClosed) {
+          userDiv.classList.add('closed');
+        } else {
+          // Agregar botón "Finalizar" si está abierto
+          const closeBtn = document.createElement('button');
+          closeBtn.textContent = 'Finalizar';
+          closeBtn.className = 'close-chat';
+          closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            finalizeChat(user.userId);
+          };
+          userDiv.appendChild(closeBtn);
         }
 
-        li.onclick = () => selectUser(user.userId, user.username);
-        userList.appendChild(li);
+        userDiv.onclick = () => selectUser(user.userId, user.username);
+        userList.appendChild(userDiv);
+
+        // Solicitar historial para cada usuario
         socket.emit('request chat history', { userId: user.userId });
       });
     });
@@ -748,137 +661,24 @@
       }
     }
 
-    function closeChat() {
-      if (selectedUserId) {
-        console.log('Cerrando chat para el usuario:', selectedUserId);
-        const agentUsername = localStorage.getItem("adminUser");
-        socket.emit('close chat', { userId: selectedUserId, agentUsername });
-        document.getElementById('chatArea').classList.remove('active');
-        const li = document.querySelector(`li[data-user-id="${selectedUserId}"]`);
-        if (li) {
-          li.classList.remove('active');
-          li.classList.add('closed');
-        }
-        selectedUserId = null;
-        selectedUsername = null;
-      } else {
-        console.log('No hay usuario seleccionado para cerrar el chat');
-      }
-    }
-
-    function finalizeChat(userId) {
-      if (userId) {
-        console.log('Finalizando chat para el usuario:', userId);
-        const agentUsername = localStorage.getItem("adminUser");
-        socket.emit('close chat', { userId, agentUsername });
-
-        const li = document.querySelector(`li[data-user-id="${userId}"]`);
-        if (li) {
-          li.classList.remove('active');
-          li.classList.add('closed');
-          const btn = li.querySelector('button.close-chat');
-          if (btn) btn.remove();
-        }
-
-        if (userId === selectedUserId) {
-          document.getElementById('chatArea').classList.remove('active');
-          selectedUserId = null;
-          selectedUsername = null;
-        }
-      }
-    }
-
-    function logoutAdmin() {
-      localStorage.removeItem("adminLoggedIn");
-      localStorage.removeItem("adminUser");
-      location.reload();
-    }
-
-    function goToConfig() {
-      window.location.href = "/config.html";
-    }
-
-    const lastUserId = sessionStorage.getItem('lastUserId');
-    const lastUsername = sessionStorage.getItem('lastUsername');
-    if (lastUserId && lastUsername) {
-      selectedUserId = lastUserId;
-      selectedUsername = lastUsername;
-      const chatArea = document.getElementById('chatArea');
-      chatArea.classList.add('active');
-      document.getElementById('currentUser').textContent = lastUsername;
-      socket.emit('request chat history', { userId: lastUserId });
-    }
-
-    let originalUserName = "";
-
-    function editName() {
-      const currentUserSpan = document.getElementById("currentUser");
-      const input = document.getElementById("editNameInput");
-      const editBtn = document.getElementById("editBtn");
-      const saveBtn = document.getElementById("saveBtn");
-      const cancelBtn = document.getElementById("cancelBtn");
-
-      originalUserName = currentUserSpan.textContent;
-      input.value = originalUserName;
-      currentUserSpan.style.display = "none";
-      input.style.display = "inline-block";
-      editBtn.style.display = "none";
-      saveBtn.style.display = "inline-block";
-      cancelBtn.style.display = "inline-block";
-    }
-
-    function saveName() {
-      const newName = document.getElementById("editNameInput").value.trim();
-      const currentUserSpan = document.getElementById("currentUser");
-
-      if (newName && selectedUserId) {
-        socket.emit('update username', { userId: selectedUserId, newUsername: newName });
-        currentUserSpan.textContent = newName;
-
-        const inboxName = document.querySelector(`#inboxUserName-${selectedUserId}`);
-        if (inboxName) inboxName.textContent = newName;
-      }
-
-      resetEditUI();
-    }
-
-    function cancelEdit() {
-      const input = document.getElementById("editNameInput");
-      const currentUserSpan = document.getElementById("currentUser");
-      currentUserSpan.textContent = originalUserName;
-      resetEditUI();
-    }
-
-    function resetEditUI() {
-      document.getElementById("currentUser").style.display = "inline-block";
-      document.getElementById("editNameInput").style.display = "none";
-      document.getElementById("editBtn").style.display = "inline-block";
-      document.getElementById("saveBtn").style.display = "none";
-      document.getElementById("cancelBtn").style.display = "none";
-    }
-
-    function toggleMenu() {
-      const popup = document.getElementById("popupMenu");
-      popup.style.display = (popup.style.display === "block") ? "none" : "block";
-    }
-
-    document.addEventListener("click", function (e) {
-      const popup = document.getElementById("popupMenu");
-      const menu = document.querySelector(".hamburger");
-      if (!popup.contains(e.target) && !menu.contains(e.target)) {
-        popup.style.display = "none";
-      }
-    });
-
     function selectUser(userId, username) {
+      console.log('Usuario seleccionado:', { userId, username });
       selectedUserId = userId;
       selectedUsername = username;
+      const userList = document.getElementById('userList').children;
+      for (let li of userList) {
+        li.classList.remove('active');
+        if (li.dataset.userId === userId) {
+          li.classList.add('active');
+          sessionStorage.setItem('lastUserId', userId);
+          sessionStorage.setItem('lastUsername', username);
+        }
+      }
       document.getElementById("popupUser").textContent = username;
       document.getElementById("chatPopup").style.display = "flex";
       document.getElementById("chatPopup").classList.add("show");
-
-      socket.emit('request chat history', { userId });
       displayPopupMessages(userId);
+      socket.emit('request chat history', { userId });
     }
 
     function displayPopupMessages(userId) {
@@ -939,6 +739,14 @@
       }, 300);
     }
 
+    socket.on('chat history', (data) => {
+      console.log('Historial de chat recibido:', data);
+      localChatHistory[data.userId] = data.messages || [];
+      if (data.userId === selectedUserId) {
+        displayPopupMessages(data.userId);
+      }
+    });
+
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
       if (!data.userId || !data.sender || !data.message) {
@@ -949,19 +757,148 @@
         localChatHistory[data.userId] = [];
       }
       localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
-      console.log('Historial local actualizado para', data.userId, ':', localChatHistory[data.userId]);
       if (data.userId === selectedUserId) {
         displayPopupMessages(data.userId);
       }
     });
 
-    socket.on('chat history', (data) => {
-      console.log('Historial de chat recibido:', data);
-      localChatHistory[data.userId] = data.messages || [];
+    socket.on('admin image', (data) => {
+      console.log('Imagen recibida en tiempo real:', data);
+      if (!data.userId || !data.sender || !data.image) {
+        console.error('Imagen recibida inválida, falta userId, sender o image:', data);
+        return;
+      }
+      if (!localChatHistory[data.userId]) {
+        localChatHistory[data.userId] = [];
+      }
+      localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
       if (data.userId === selectedUserId) {
-        displayPopupMessages(data.userId);
+        console.log('Mostrando imagen para el usuario seleccionado:', data);
+        const chatMessages = document.getElementById('popupMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', 'user');
+        messageDiv.textContent = `${data.sender}:`;
+        const img = document.createElement('img');
+        img.src = data.image;
+        img.onclick = () => openImageInNewWindow(data.image);
+        messageDiv.appendChild(img);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
       }
     });
+
+    function openImageInNewWindow(imageSrc) {
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Imagen</title>
+          <style>
+            body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+            img { max-width: 90%; max-height: 90%; }
+          </style>
+        </head>
+        <body>
+          <img src="${imageSrc}" alt="Imagen">
+        </body>
+        </html>
+      `);
+      newWindow.document.close();
+    }
+
+    function finalizeChat(userId) {
+      if (userId) {
+        console.log('Finalizando chat para el usuario:', userId);
+        const agentUsername = localStorage.getItem("adminUser");
+        socket.emit('close chat', { userId, agentUsername });
+
+        const li = document.querySelector(`li[data-user-id="${userId}"]`);
+        if (li) {
+          li.classList.remove('active');
+          li.classList.add('closed');
+          const btn = li.querySelector('button.close-chat');
+          if (btn) btn.remove();
+        }
+
+        if (userId === selectedUserId) {
+          closePopup();
+          selectedUserId = null;
+          selectedUsername = null;
+        }
+      }
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem("adminLoggedIn");
+      localStorage.removeItem("adminUser");
+      location.reload();
+    }
+
+    function goToConfig() {
+      window.location.href = "/config.html";
+    }
+
+    function toggleMenu() {
+      const popup = document.getElementById("popupMenu");
+      popup.style.display = (popup.style.display === "block") ? "none" : "block";
+    }
+
+    document.addEventListener("click", function (e) {
+      const popup = document.getElementById("popupMenu");
+      const menu = document.querySelector(".hamburger");
+      if (!popup.contains(e.target) && !menu.contains(e.target)) {
+        popup.style.display = "none";
+      }
+    });
+
+    let originalUserName = "";
+
+    function editName() {
+      const currentUserSpan = document.getElementById("currentUser");
+      const input = document.getElementById("editNameInput");
+      const editBtn = document.getElementById("editBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+
+      originalUserName = currentUserSpan.textContent;
+      input.value = originalUserName;
+      currentUserSpan.style.display = "none";
+      input.style.display = "inline-block";
+      editBtn.style.display = "none";
+      saveBtn.style.display = "inline-block";
+      cancelBtn.style.display = "inline-block";
+    }
+
+    function saveName() {
+      const newName = document.getElementById("editNameInput").value.trim();
+      const currentUserSpan = document.getElementById("currentUser");
+
+      if (newName && selectedUserId) {
+        socket.emit('update username', { userId: selectedUserId, newUsername: newName });
+        currentUserSpan.textContent = newName;
+
+        const inboxName = document.querySelector(`#inboxUserName-${selectedUserId}`);
+        if (inboxName) inboxName.textContent = newName;
+      }
+
+      resetEditUI();
+    }
+
+    function cancelEdit() {
+      const input = document.getElementById("editNameInput");
+      const currentUserSpan = document.getElementById("currentUser");
+      currentUserSpan.textContent = originalUserName;
+      resetEditUI();
+    }
+
+    function resetEditUI() {
+      document.getElementById("currentUser").style.display = "inline-block";
+      document.getElementById("editNameInput").style.display = "none";
+      document.getElementById("editBtn").style.display = "inline-block";
+      document.getElementById("saveBtn").style.display = "none";
+      document.getElementById("cancelBtn").style.display = "none";
+    }
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
