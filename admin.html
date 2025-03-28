@@ -327,6 +327,7 @@
       top: 15px;
       right: 20px;
       z-index: 10000;
+      display: none; /* Ocultado porque usamos la nueva topbar */
     }
 
     .hamburger {
@@ -535,67 +536,76 @@
       opacity: 0.4;
     }
 
-    /* 📱 Topbar en mobile */
-    .top-bar-mobile {
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
-    }
-
-    .top-btn {
-      background: #1f1f1f;
-      border: 1px solid #333;
-      color: white;
-      padding: 8px 16px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .top-btn:hover {
-      border-color: orange;
-      background: #2c2c2c;
-    }
-
-    /* 🖥️ Inbox Desktop */
-    .inbox-title-desktop {
+    /* 🌐 Topbar unificada */
+    .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-weight: bold;
-      padding: 14px;
-      font-size: 16px;
+      padding: 12px 16px;
       background: #181818;
       border-bottom: 1px solid #2c2c2c;
     }
 
-    #filterBtnDesktop {
+    .topbar-title {
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .hamburger-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
       cursor: pointer;
-      padding: 5px;
+      padding: 4px 10px;
       border-radius: 6px;
       transition: all 0.2s ease;
     }
 
-    #filterBtnDesktop:hover {
+    .hamburger-btn:hover {
       background: rgba(255, 255, 255, 0.1);
     }
 
-    #filterIcon,
-    #filterIconDesktop {
-      font-size: 18px;
-      transition: color 0.2s ease;
+    /* 🔽 Popup del menú hamburguesa */
+    .menu-popup {
+      position: absolute;
+      top: 52px;
+      right: 20px;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      z-index: 9999;
+      width: 180px;
+      padding: 10px 0;
+      transition: all 0.3s ease;
     }
 
-    .filter-active {
-      color: orange !important;
+    .menu-popup.active {
+      display: flex;
     }
 
-    /* 🎚️ Popup filtros */
+    .menu-option {
+      padding: 10px 20px;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .menu-option:hover {
+      background-color: #2c2c2c;
+      border-left: 4px solid orange;
+      padding-left: 16px;
+    }
+
+    /* 🎚️ Filtro */
     .filter-popup {
       position: absolute;
-      top: 60px;
+      top: 130px;
       right: 20px;
       background: #1f1f1f;
       border-radius: 10px;
@@ -630,18 +640,16 @@
       padding-left: 14px;
     }
 
-    /* 📱 Mobile responsivo */
+    /* Responsive para mobile */
     @media (max-width: 768px) {
-      .top-bar-mobile {
-        display: flex;
-      }
-
-      .inbox-title-desktop {
-        display: none;
+      .menu-popup {
+        top: 50px;
+        right: 10px;
+        width: 160px;
       }
 
       .filter-popup {
-        top: 58px;
+        top: 130px;
         right: 10px;
         width: 160px;
       }
@@ -671,24 +679,28 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
-      <!-- 📱 Topbar solo en mobile -->
-      <div class="top-bar-mobile">
-        <button onclick="openSettings()" class="top-btn">⚙️</button>
-        <button onclick="toggleFilterPopup()" class="top-btn" id="filterBtn">
-          <span id="filterIcon">🎚️</span>
+      <!-- 🌐 Topbar unificado -->
+      <div class="topbar">
+        <span class="topbar-title">INBOX</span>
+        <button class="hamburger-btn" onclick="toggleMenuPopup()">
+          ☰
         </button>
-        <button onclick="logOut()" class="top-btn">🔌</button>
       </div>
 
-      <!-- 🖥️ Título INBOX (desktop) con icono al costado derecho -->
-      <div class="inbox-title-desktop">
-        <span>INBOX</span>
-        <span id="filterBtnDesktop" onclick="toggleFilterPopup()" title="Filtrar chats">
-          <span id="filterIconDesktop">🎚️</span>
-        </span>
+      <!-- 🔽 Popup unificado -->
+      <div id="menuPopup" class="menu-popup">
+        <div class="menu-option" onclick="openSettings()">
+          ⚙️ Configuración
+        </div>
+        <div class="menu-option" onclick="toggleFilterPopup()">
+          🎚️ Filtro
+        </div>
+        <div class="menu-option" onclick="logOut()">
+          🔌 Desconectar
+        </div>
       </div>
 
-      <!-- Popup de filtros (compartido entre desktop y mobile) -->
+      <!-- Filtro (el mismo popup de antes, compartido) -->
       <div id="filterPopup" class="filter-popup">
         <div class="filter-option" data-value="all">Todos</div>
         <div class="filter-option" data-value="active">Activos</div>
@@ -786,7 +798,7 @@
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
         document.querySelector(".admin-container").style.display = "flex";
-        document.getElementById("menuWrapper").style.display = "block";
+        document.getElementById("menuWrapper").style.display = "none"; // Ocultado porque usamos la nueva topbar
         socket.emit('admin connected');
       } else {
         document.getElementById("loginScreen").style.display = "flex";
@@ -1163,33 +1175,33 @@
       document.getElementById("cancelBtn").style.display = "none";
     }
 
+    function toggleMenuPopup() {
+      const popup = document.getElementById("menuPopup");
+      popup.classList.toggle("active");
+
+      // Ocultar filtro si está abierto
+      document.getElementById("filterPopup").classList.remove("active");
+    }
+
     function toggleFilterPopup() {
       const popup = document.getElementById("filterPopup");
       popup.classList.toggle("active");
 
+      // Marcar seleccionado
       document.querySelectorAll('.filter-option').forEach(opt => {
         opt.classList.remove('selected');
         if (opt.dataset.value === currentFilter) {
           opt.classList.add('selected');
         }
       });
+
+      // Cerrar el menú hamburguesa
+      document.getElementById("menuPopup").classList.remove("active");
     }
 
     function applyFilter(value) {
       currentFilter = value;
       document.getElementById("filterPopup").classList.remove("active");
-
-      const icon = document.getElementById("filterIcon");
-      const iconDesktop = document.getElementById("filterIconDesktop");
-
-      if (value !== "all") {
-        icon.classList.add("filter-active");
-        iconDesktop.classList.add("filter-active");
-      } else {
-        icon.classList.remove("filter-active");
-        iconDesktop.classList.remove("filter-active");
-      }
-
       renderUserList();
     }
 
@@ -1198,11 +1210,17 @@
     });
 
     document.addEventListener("click", (e) => {
-      const popup = document.getElementById("filterPopup");
-      const btn = document.getElementById("filterBtn");
-      const btnDesktop = document.getElementById("filterBtnDesktop");
-      if (!popup.contains(e.target) && !btn.contains(e.target) && !btnDesktop.contains(e.target)) {
-        popup.classList.remove("active");
+      const menu = document.getElementById("menuPopup");
+      const filter = document.getElementById("filterPopup");
+      const hamburger = document.querySelector(".hamburger-btn");
+
+      if (
+        !menu.contains(e.target) &&
+        !filter.contains(e.target) &&
+        !hamburger.contains(e.target)
+      ) {
+        menu.classList.remove("active");
+        filter.classList.remove("active");
       }
     });
 
