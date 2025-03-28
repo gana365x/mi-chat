@@ -54,18 +54,15 @@ function getAllChatsSorted() {
   const users = Object.entries(chatHistory)
     .map(([userId, messages]) => {
       const username = userSessions.get(userId)?.username || 'Usuario';
-      const lastMessageTime = messages.length > 0 ? new Date(messages[messages.length - 1].timestamp || 0) : new Date();
-      const isActive = chatHistory[userId]?.activeSession === true;
-      if (!isActive) return null;
 
-      return { userId, username, lastMessageTime, isClosed: !isActive };
+      const lastMessage = messages[messages.length - 1];
+      const lastMessageTime = lastMessage?.timestamp ? new Date(lastMessage.timestamp) : new Date();
+
+      const isClosed = messages.some(msg => msg.status === 'closed');
+
+      return { userId, username, lastMessageTime, isClosed };
     })
-    .filter(u => u !== null)
-    .sort((a, b) => {
-      const dateA = new Date(chatHistory[a.userId][0]?.timestamp || 0);
-      const dateB = new Date(chatHistory[b.userId][0]?.timestamp || 0);
-      return dateB - dateA;
-    });
+    .sort((a, b) => b.lastMessageTime - a.lastMessageTime);
 
   return users;
 }
@@ -286,7 +283,6 @@ io.on('connection', (socket) => {
     }
 
     saveChatHistory();
-
     io.emit('user list', getAllChatsSorted());
   });
 
