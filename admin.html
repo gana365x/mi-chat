@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- ✅ Bonus para iPhone/Safari -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Panel de Agentes - GANA365</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
@@ -434,7 +434,6 @@
       border-radius: 8px;
     }
 
-    /* ✅ Paso 1: Asegurar flex y altura completa en chat-popup */
     .chat-popup {
       display: flex;
       flex-direction: column;
@@ -477,18 +476,16 @@
       cursor: pointer;
     }
 
-    /* ✅ Paso 3: Ajustar área de mensajes para no solaparse */
     .popup-messages {
       flex: 1;
       overflow-y: auto;
       padding: 12px;
       background: #121212;
-      margin-bottom: 10px; /* Deja lugar al input */
+      margin-bottom: 10px;
       display: flex;
       flex-direction: column;
     }
 
-    /* ✅ Paso 2: Hacer que el input quede fijo abajo */
     .popup-input {
       position: sticky;
       bottom: 0;
@@ -508,7 +505,7 @@
       font-size: 14px;
       background: #fff;
       color: #000;
-      -webkit-appearance: none; /* ✅ Bonus para iPhone/Safari */
+      -webkit-appearance: none;
     }
 
     .popup-input button {
@@ -519,7 +516,7 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
-      -webkit-appearance: none; /* ✅ Bonus para iPhone/Safari */
+      -webkit-appearance: none;
     }
 
     .bubble {
@@ -537,11 +534,13 @@
       flex-direction: column;
     }
 
+    /* ✅ Cambio: Color negro para cada tipo de burbuja */
     .bubble.user {
       background-color: #DCF8C6;
       align-self: flex-end;
       margin-left: auto;
       border-top-right-radius: 0;
+      color: #000;
     }
 
     .bubble.agent {
@@ -549,6 +548,7 @@
       align-self: flex-start;
       margin-right: auto;
       border-top-left-radius: 0;
+      color: #000;
     }
 
     .bubble.bot {
@@ -556,6 +556,7 @@
       align-self: flex-start;
       margin-right: auto;
       border-top-left-radius: 0;
+      color: #000;
     }
 
     .timestamp {
@@ -565,7 +566,11 @@
       margin-top: 4px;
     }
 
-    /* ✅ Bonus: Compatibilidad con iPhone/Safari */
+    /* ✅ Opcional: Asegurar que <strong> use color negro */
+    .bubble strong {
+      color: #000;
+    }
+
     input, button, textarea {
       -webkit-appearance: none;
     }
