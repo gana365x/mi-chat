@@ -704,6 +704,13 @@
 
     /* Responsive para mobile */
     @media (max-width: 768px) {
+      body, html {
+        height: 100vh;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+      }
+
       .menu-popup {
         top: 50px;
         right: 10px;
@@ -733,6 +740,8 @@
         width: 100vw;
         padding: 0 15px;
         box-sizing: border-box;
+        height: calc(100vh - 44px);
+        overflow-y: hidden;
       }
 
       .topbar {
@@ -746,6 +755,11 @@
         padding: 10px 15px;
         width: 100%;
         box-sizing: border-box;
+      }
+
+      .user-list {
+        height: calc(100% - 44px);
+        overflow-y: auto;
       }
     }
   </style>
