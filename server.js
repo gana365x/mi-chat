@@ -50,18 +50,17 @@ function incrementPerformance(agentUsername) {
   fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
 }
 
-// 🧩 Paso 1: Nueva función para obtener y ordenar chats activos
 function getActiveChatsSorted() {
   const activeUsers = [];
 
   for (let [userId, session] of userSessions.entries()) {
     const history = chatHistory[userId] || [];
 
-    // Solo mostrar usuarios que enviaron mensajes (excluye chats solo con mensajes del bot)
+    // Solo mostrar usuarios que enviaron mensajes
     const hasMessages = history.some(msg => msg.sender !== 'Bot');
     if (!hasMessages) continue;
 
-    // Obtenemos el timestamp del último mensaje (o ahora si no hay mensajes)
+    // Obtenemos el timestamp del último mensaje
     const lastMessageTime = history.length > 0 ? new Date(history[history.length - 1].timestamp || Date.now()) : new Date();
 
     activeUsers.push({
@@ -93,7 +92,6 @@ io.on('connection', (socket) => {
 
     if (!chatHistory[userId]) chatHistory[userId] = [];
 
-    // 🔄 Emitir lista actualizada de usuarios
     io.emit('user list', getActiveChatsSorted());
   });
 
@@ -116,7 +114,6 @@ io.on('connection', (socket) => {
         userSocket.emit('update username cookie', { newUsername });
       }
 
-      // 🔄 Emitir lista actualizada de usuarios
       io.emit('user list', getActiveChatsSorted());
       console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
     }
@@ -124,14 +121,12 @@ io.on('connection', (socket) => {
 
   socket.on('admin connected', () => {
     socket.join('admins');
-    // 🔄 Emitir lista actualizada de usuarios al admin
     socket.emit('user list', getActiveChatsSorted());
   });
 
   socket.on('chat message', (data) => {
     if (!data.userId || !data.sender || !data.message) return;
 
-    // Agregar timestamp al mensaje
     const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: new Date().toISOString() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
@@ -189,7 +184,6 @@ io.on('connection', (socket) => {
       }
     }
 
-    // 🔄 Emitir lista actualizada de usuarios después de un mensaje
     io.emit('user list', getActiveChatsSorted());
   });
 
@@ -224,7 +218,6 @@ io.on('connection', (socket) => {
       }
     }
 
-    // 🔄 Emitir lista actualizada de usuarios después de una imagen
     io.emit('user list', getActiveChatsSorted());
   });
 
@@ -244,7 +237,6 @@ io.on('connection', (socket) => {
       }
     }
 
-    // 🔄 Emitir lista actualizada de usuarios después de un mensaje del agente
     io.emit('user list', getActiveChatsSorted());
   });
 
@@ -270,7 +262,6 @@ io.on('connection', (socket) => {
       userSessions.set(data.userId, { ...session, socket: null });
     }
 
-    // 🔄 Emitir lista actualizada de usuarios después de cerrar un chat
     io.emit('user list', getActiveChatsSorted());
   });
 
@@ -279,7 +270,6 @@ io.on('connection', (socket) => {
     for (let [userId, session] of userSessions.entries()) {
       if (session.socket?.id === socket.id) {
         userSessions.set(userId, { ...session, socket: null });
-        // 🔄 Emitir lista actualizada de usuarios después de desconexión
         io.emit('user list', getActiveChatsSorted());
         break;
       }
