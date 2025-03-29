@@ -268,8 +268,12 @@
 
     .message.agent {
       background: #ADD8E6;
+      font-size: 13px;
+      line-height: 1.2;
+      padding: 8px 10px;
+      border-radius: 10px;
+      white-space: pre-line;
       align-self: flex-start;
-      border-top-left-radius: 0;
     }
 
     .message.agent::before {
@@ -474,9 +478,13 @@
 
     .bubble.agent {
       background-color: #ADD8E6;
+      font-size: 13px;
+      line-height: 1.2;
+      white-space: pre-line;
+      padding: 8px 10px;
+      border-radius: 10px;
       align-self: flex-start;
       margin-right: auto;
-      border-top-left-radius: 0;
       color: #000;
     }
 
@@ -921,7 +929,7 @@
     const localChatHistory = {};
     let currentFilter = "all";
     let pendingFinalizeUserId = null;
-    let ignoreNextAdminEcho = false; // Ya está presente, confirmado al inicio
+    let ignoreNextAdminEcho = false;
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -1094,23 +1102,36 @@
           chatContainer.appendChild(dateTag);
         } else {
           const div = document.createElement('div');
-          div.classList.add("bubble");
+          div.classList.add("bubble", msg.sender.toLowerCase());
 
           const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-          if (msg.sender === "Agent") {
-            div.classList.add("agent");
-            div.innerHTML = `<div>${msg.message}</div><div class="timestamp">✅✅ ${timestamp}</div>`;
-          } else if (msg.sender === "Bot") {
-            div.classList.add("bot");
-            div.innerHTML = `<div>${msg.message}</div><div class="timestamp">🤖 ${timestamp}</div>`;
-          } else if (msg.sender === "System") {
-            div.classList.add("system");
-            div.innerHTML = `<div>${msg.message}</div><div class="timestamp">${timestamp}</div>`;
-          } else {
-            div.classList.add("user");
-            div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div><div class="timestamp">${timestamp}</div>`;
+          if (msg.message) {
+            if (msg.sender === "Agent") {
+              div.innerHTML = `<div>${msg.message}</div>`;
+            } else if (msg.sender === "Bot") {
+              div.innerHTML = `<div>${msg.message}</div>`;
+            } else if (msg.sender === "System") {
+              div.innerHTML = `<div>${msg.message}</div>`;
+            } else {
+              div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+            }
           }
+
+          if (msg.image) {
+            const img = document.createElement("img");
+            img.src = msg.image;
+            img.alt = "imagen enviada";
+            img.style.maxWidth = "150px";
+            img.style.borderRadius = "8px";
+            img.style.marginTop = "5px";
+            div.appendChild(img);
+          }
+
+          const time = document.createElement("div");
+          time.className = "timestamp";
+          time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
+          div.appendChild(time);
 
           popupContainer.appendChild(div.cloneNode(true));
           chatContainer.appendChild(div);
@@ -1140,15 +1161,12 @@
       const message = input.value.trim();
       if (!message || !selectedUserId) return;
 
-      // Enviar al servidor
       socket.emit("agent message", { userId: selectedUserId, message });
 
-      // Mostrar en el chat directamente
       if (!localChatHistory[selectedUserId]) localChatHistory[selectedUserId] = [];
       localChatHistory[selectedUserId].push({ sender: "Agent", message: message });
       renderChat(localChatHistory[selectedUserId]);
 
-      // Ignorar la próxima vez que venga del socket
       ignoreNextAdminEcho = true;
 
       input.value = '';
@@ -1176,7 +1194,7 @@
       console.log('Mensaje recibido en tiempo real:', data);
       if (ignoreNextAdminEcho) {
         ignoreNextAdminEcho = false;
-        return; // ⛔ evitamos el duplicado visual
+        return;
       }
 
       if (!data.userId || !data.sender || !data.message) {
@@ -1231,17 +1249,7 @@
       }
       localChatHistory[data.userId].push({ sender: data.sender, image: data.image });
       if (data.userId === selectedUserId) {
-        console.log('Mostrando imagen para el usuario seleccionado:', data);
-        const chatMessages = document.getElementById('popupMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', 'user');
-        messageDiv.textContent = `${data.sender}:`;
-        const img = document.createElement('img');
-        img.src = data.image;
-        img.onclick = () => openImageInNewWindow(data.image);
-        messageDiv.appendChild(img);
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        renderChat(localChatHistory[data.userId]);
       }
     });
 
@@ -1536,7 +1544,6 @@
       }
     });
 
-    // PASO 1: Evento para login con Enter
     const usernameInput = document.getElementById("adminUsername");
     const passwordInput = document.getElementById("adminPassword");
 
@@ -1548,10 +1555,9 @@
       if (e.key === "Enter") submitLogin();
     });
 
-    // PASO 2: Evento para enviar mensaje con Enter
     adminInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault(); // evita que se haga salto de línea por accidente
+        e.preventDefault();
         sendAdminMessage();
       }
     });
