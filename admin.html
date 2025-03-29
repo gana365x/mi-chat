@@ -693,6 +693,17 @@
       color: white;
     }
 
+    #agentInfo {
+      padding: 10px 16px;
+      font-size: 13px;
+      color: #ccc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #181818;
+      border-bottom: 1px solid #2c2c2c;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.9); }
       to   { opacity: 1; transform: scale(1); }
@@ -782,6 +793,10 @@
 
   <div class="admin-container">
     <div class="inbox" id="userListContainer">
+      <div id="agentInfo">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
+        <span>Agente: <span id="agentDisplayName">Cargando...</span></span>
+      </div>
       <div class="topbar">
         <span class="topbar-title">
           <span style="margin-right: 5px;">📥</span> Bandeja de entrada
@@ -824,10 +839,6 @@
         </div>
       </div>
       <div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
-      <div id="agentInfo" style="padding: 6px 10px; font-size: 12px; color: #bbb; display: flex; align-items: center; gap: 8px;">
-        <div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
-        <span>Agente: <span id="agentDisplayName">Cargando...</span></span>
-      </div>
       <ul id="quickList" style="
         display: none;
         position: absolute;
