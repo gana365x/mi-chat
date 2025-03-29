@@ -921,7 +921,7 @@
     const localChatHistory = {};
     let currentFilter = "all";
     let pendingFinalizeUserId = null;
-    let ignoreNextAdminEcho = false;
+    let ignoreNextAdminEcho = false; // Ya está presente, confirmado al inicio
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -1137,16 +1137,21 @@
 
     function sendAdminMessage() {
       const input = document.getElementById("adminInput");
-      const msg = input.value.trim();
-      if (!msg || !selectedUserId) return;
+      const message = input.value.trim();
+      if (!message || !selectedUserId) return;
 
-      socket.emit('agent message', { userId: selectedUserId, message: msg });
+      // Enviar al servidor
+      socket.emit("agent message", { userId: selectedUserId, message });
 
+      // Mostrar en el chat directamente
       if (!localChatHistory[selectedUserId]) localChatHistory[selectedUserId] = [];
-      localChatHistory[selectedUserId].push({ sender: 'Agent', message: msg });
+      localChatHistory[selectedUserId].push({ sender: "Agent", message: message });
+      renderChat(localChatHistory[selectedUserId]);
+
+      // Ignorar la próxima vez que venga del socket
+      ignoreNextAdminEcho = true;
 
       input.value = '';
-      renderChat(localChatHistory[selectedUserId]);
     }
 
     function closePopup() {
@@ -1169,14 +1174,16 @@
 
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
+      if (ignoreNextAdminEcho) {
+        ignoreNextAdminEcho = false;
+        return; // ⛔ evitamos el duplicado visual
+      }
+
       if (!data.userId || !data.sender || !data.message) {
         console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
         return;
       }
-      if (ignoreNextAdminEcho) {
-        ignoreNextAdminEcho = false;
-        return;
-      }
+
       if (!localChatHistory[data.userId]) {
         localChatHistory[data.userId] = [];
       }
