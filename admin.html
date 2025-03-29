@@ -828,6 +828,22 @@
         <div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
         <span>Agente: <span id="agentDisplayName">Cargando...</span></span>
       </div>
+      <ul id="quickList" style="
+        display: none;
+        position: absolute;
+        bottom: 70px;
+        left: 10px;
+        background: #1f1f1f;
+        border: 1px solid #FF3B00;
+        color: white;
+        list-style: none;
+        padding: 10px;
+        border-radius: 10px;
+        width: 300px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+      "></ul>
       <div class="chat-input" id="chatInputArea">
         <input type="text" id="adminInput" placeholder="Escribir mensaje..." />
         <button onclick="sendAdminMessage()">Enviar</button>
@@ -1458,7 +1474,7 @@
       cancelEdit();
     }
 
-    // Autocompletado de respuestas rápidas en adminInput
+    // Autocompletado de respuestas rápidas en adminInput (versión anterior)
     document.getElementById('adminInput').addEventListener('input', (e) => {
       const value = e.target.value;
       if (value.startsWith('/')) {
@@ -1468,7 +1484,46 @@
         }
       }
     });
+
+    // Nueva funcionalidad de respuestas rápidas con lista desplegable
+    fetch('/quick-replies')
+      .then(res => res.json())
+      .then(data => {
+        quickReplies = data;
+      });
+
+    document.getElementById('adminInput').addEventListener('keyup', (e) => {
+      const input = e.target.value.trim();
+      const quickList = document.getElementById('quickList');
+
+      if (input === '/') {
+        quickList.innerHTML = '';
+        quickReplies.forEach((msg, index) => {
+          const li = document.createElement('li');
+          li.textContent = `/${index + 1} → ${msg}`;
+          li.style.cursor = 'pointer'; // Hacer clicable
+          li.style.padding = '5px'; // Mejorar espaciado
+          li.style.transition = 'background 0.2s'; // Transición suave
+          li.addEventListener('mouseover', () => li.style.background = '#333'); // Hover effect
+          li.addEventListener('mouseout', () => li.style.background = 'transparent');
+          li.addEventListener('click', () => {
+            document.getElementById('adminInput').value = msg;
+            quickList.style.display = 'none';
+          });
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(input)) {
+        const idx = parseInt(input.slice(1)) - 1;
+        if (quickReplies[idx]) {
+          document.getElementById('adminInput').value = quickReplies[idx];
+          quickList.style.display = 'none';
+        }
+      } else {
+        quickList.style.display = 'none';
+      }
+    });
   </script>
   <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f5208790931f5',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9281767e6b3444ed',t:'MTc0MzI3MzI4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
