@@ -64,8 +64,7 @@
     }
 
     input[type="text"],
-    input[type="password"],
-    textarea {
+    input[type="password"] {
       width: 100%;
       padding: 12px;
       border: none;
@@ -76,8 +75,7 @@
       transition: border 0.2s ease;
     }
 
-    input:focus,
-    textarea:focus {
+    input:focus {
       outline: none;
       border: 1px solid #FF3B00;
     }
@@ -171,9 +169,10 @@
     </div>
 
     <div class="form-group">
-      <label for="quickReplies">Respuestas rápidas (una por línea, puedes incluir emoticones)</label>
-      <textarea id="quickReplies" rows="6" style="width: 100%; padding: 10px; border-radius: 8px;"></textarea>
-      <button onclick="saveQuickReplies()">Guardar respuestas rápidas</button>
+      <label>Respuestas rápidas (usa /1, /2, etc.)</label>
+      <div id="quickRepliesList"></div>
+      <button onclick="addQuickReply()">➕ Agregar Respuesta</button>
+      <button onclick="saveQuickReplies()">💾 Guardar respuestas rápidas</button>
       <div id="quickMsg"></div>
     </div>
   </div>
@@ -279,31 +278,60 @@
       fetch('/quick-replies')
         .then(res => res.json())
         .then(data => {
-          document.getElementById("quickReplies").value = data.join('\n');
+          renderQuickReplies(data);
         });
     }
 
+    function renderQuickReplies(replies) {
+      const list = document.getElementById("quickRepliesList");
+      list.innerHTML = "";
+      replies.forEach((reply, index) => {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = reply;
+        input.dataset.index = index;
+        input.style.marginBottom = "10px";
+        list.appendChild(input);
+      });
+    }
+
+    function addQuickReply() {
+      const list = document.getElementById("quickRepliesList");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = "";
+      input.dataset.index = list.children.length;
+      input.style.marginBottom = "10px";
+      list.appendChild(input);
+    }
+
     function saveQuickReplies() {
-      const lines = document.getElementById("quickReplies").value
-        .split('\n')
-        .map(line => line.trim())
-        .filter(Boolean);
+      const inputs = document.querySelectorAll("#quickRepliesList input");
+      const replies = Array.from(inputs).map(input => input.value.trim()).filter(Boolean);
 
       fetch('/quick-replies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ replies: lines })
+        body: JSON.stringify(replies)
       })
       .then(res => res.json())
       .then(data => {
-        const msg = document.getElementById("quickMsg");
-        msg.textContent = data.success ? "Guardado correctamente ✅" : "Error ❌";
-        msg.className = data.success ? "success" : "error";
+        if (data.success) {
+          document.getElementById("quickMsg").textContent = "✅ Guardado correctamente";
+          document.getElementById("quickMsg").className = "success";
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(() => {
+        document.getElementById("quickMsg").textContent = "❌ Error al guardar";
+        document.getElementById("quickMsg").className = "error";
       });
     }
 
+    // Cargar las respuestas rápidas al iniciar la página
     loadQuickReplies();
   </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92817bd47c5ddd1d',t:'MTc0MzI3MzUwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
