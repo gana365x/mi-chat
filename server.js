@@ -449,16 +449,18 @@ app.post('/update-agent-password', (req, res) => {
   return res.status(200).json({ success: true });
 });
 
-// Obtener respuestas rápidas
+// Cargar respuestas rápidas (actualizado)
 app.get('/quick-replies', (req, res) => {
-  const replies = JSON.parse(fs.readFileSync(quickRepliesPath));
+  const replies = fs.existsSync(quickRepliesPath) ? JSON.parse(fs.readFileSync(quickRepliesPath)) : [];
   res.json(replies);
 });
 
-// Guardar respuestas rápidas
+// Guardar respuestas rápidas (actualizado)
 app.post('/quick-replies', express.json(), (req, res) => {
-  const { replies } = req.body;
-  if (!Array.isArray(replies)) return res.status(400).json({ success: false });
+  const replies = req.body;
+  if (!Array.isArray(replies)) {
+    return res.status(400).json({ success: false, message: "Formato incorrecto" });
+  }
 
   fs.writeFileSync(quickRepliesPath, JSON.stringify(replies, null, 2));
   res.json({ success: true });
