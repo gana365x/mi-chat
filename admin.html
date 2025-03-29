@@ -910,7 +910,7 @@
     const localChatHistory = {};
     let currentFilter = "all";
     let pendingFinalizeUserId = null;
-    let ignoreNextAdminEcho = false;
+    let ignoreNextAdminEcho = false; // Nueva variable global
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -1514,6 +1514,8 @@
         if (quickReplies[index]) {
           adminInput.value = quickReplies[index];
           quickList.style.display = 'none';
+          ignoreNextAdminEcho = true; // Evitar duplicado
+          sendAdminMessage(); // Enviar automáticamente
         }
       } else {
         quickList.style.display = 'none';
