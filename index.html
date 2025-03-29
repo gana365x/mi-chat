@@ -720,6 +720,7 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
+          console.log('Enviando imagen al servidor desde cliente:', { userId, sender: currentUser });
           socket.emit('image', { userId, sender: currentUser, image: e.target.result });
         };
         reader.readAsDataURL(file);
@@ -960,6 +961,8 @@
     socket.on('image', (data) => {
       if (data.userId !== userId) return;
 
+      console.log('Imagen recibida en cliente:', data);
+
       const messagesDiv = document.getElementById("messages");
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message', 'user');
@@ -1108,6 +1111,5 @@
       });
     }
   </script>
-  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f52088e0f9ab3',t:'MTc0MjkxNTI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
