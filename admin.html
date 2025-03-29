@@ -910,7 +910,7 @@
     const localChatHistory = {};
     let currentFilter = "all";
     let pendingFinalizeUserId = null;
-    let ignoreNextAdminEcho = false; // Nueva variable global
+    let ignoreNextAdminEcho = false;
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -1494,18 +1494,14 @@
         quickReplies.forEach((msg, index) => {
           const li = document.createElement('li');
           li.textContent = `/${index + 1} → ${msg}`;
-          li.style.padding = '6px 10px';
-          li.style.borderBottom = '1px solid #333';
+          li.style.marginBottom = '6px';
           li.style.cursor = 'pointer';
-
           li.addEventListener('click', () => {
             adminInput.value = msg;
             quickList.style.display = 'none';
-            // Opcional: enviar automáticamente
-            // adminInput.value = msg;
-            // sendAdminMessage();
+            ignoreNextAdminEcho = true;
+            sendAdminMessage();
           });
-
           quickList.appendChild(li);
         });
         quickList.style.display = 'block';
@@ -1514,8 +1510,8 @@
         if (quickReplies[index]) {
           adminInput.value = quickReplies[index];
           quickList.style.display = 'none';
-          ignoreNextAdminEcho = true; // Evitar duplicado
-          sendAdminMessage(); // Enviar automáticamente
+          ignoreNextAdminEcho = true;
+          sendAdminMessage();
         }
       } else {
         quickList.style.display = 'none';
