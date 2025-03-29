@@ -13,9 +13,9 @@
       margin: 0;
       padding: 20px;
       display: flex;
-      height: 100vh;
+      height: 100vh; /* 1. Altura fija */
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: hidden; /* 1. Sin scroll general */
     }
 
     .admin-container {
@@ -201,11 +201,11 @@
       color: #fff;
     }
 
-    .chat-messages {
+    #chatMessages {
       flex: 1;
-      overflow-y: auto;
-      margin-bottom: 20px;
+      overflow-y: auto; /* 2. Scroll interno */
       padding: 10px;
+      max-height: calc(100vh - 180px); /* 2. Altura controlada, ajustada por encabezado e input */
       background: #1a1a1a;
       border-radius: 5px;
       box-sizing: border-box;
@@ -299,6 +299,16 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    #chatInputArea {
+      position: absolute; /* 3. Input fijo abajo */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #1a1a1a; /* Fondo consistente */
+      padding: 10px;
+      z-index: 10;
     }
 
     .chat-input input {
@@ -643,8 +653,10 @@
     .popup-overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
+      top: 0; 
+      left: 0;
+      width: 100vw; 
+      height: 100vh;
       background: rgba(0, 0, 0, 0.5);
       z-index: 9999;
       justify-content: center;
@@ -774,6 +786,25 @@
       .user-list {
         height: calc(100% - 44px);
         overflow-y: auto;
+      }
+
+      /* 3. Ajustes específicos para móviles */
+      #chatMessages {
+        max-height: calc(100vh - 160px); /* Ajustado para teclado móvil */
+        overflow-y: auto;
+      }
+
+      #chatInputArea {
+        position: fixed; /* Fijo en móviles */
+        bottom: 0;
+        width: 100%;
+      }
+
+      .admin-container {
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
     }
   </style>
@@ -1092,7 +1123,7 @@
       console.log('Renderizando mensajes:', messages);
 
       messages.forEach(msg => {
-        if (msg.sender === 'system' && msg.message?.includes('Chat iniciado')) {
+        if (msg.sender === 'system' && msg.message.includes('Chat iniciado')) {
           const dateTag = document.createElement('div');
           dateTag.classList.add('bubble', 'system');
           dateTag.style.textAlign = 'center';
