@@ -186,14 +186,14 @@ io.on('connection', (socket) => {
         userId: data.userId,
         sender: 'Bot',
         message: `
-          <div style="font-size: 12px; font-family: 'Segoe UI', sans-serif; color: #222; line-height: 1.2;">
+          <div style="font-size:11px;font-family:'Segoe UI',sans-serif;color:#222;line-height:1.1;margin:0;padding:0;">
             <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
             👉👉👉<br>
-            <strong>USUARIO:</strong> _______<br>
-            <strong>MONTO A RETIRAR:</strong> _______<br>
-            <strong>NOMBRE DE CTA BANCARIA:</strong> _______<br>
-            <strong>CBU:</strong> _______<br>
-            <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> _______
+            <strong>USUARIO:</strong> _____<br>
+            <strong>MONTO A RETIRAR:</strong> _____<br>
+            <strong>NOMBRE DE CTA BANCARIA:</strong> _____<br>
+            <strong>CBU:</strong> _____<br>
+            <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> _____
           </div>
         `,
         timestamp: new Date().toISOString()
