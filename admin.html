@@ -1092,7 +1092,7 @@
       console.log('Renderizando mensajes:', messages);
 
       messages.forEach(msg => {
-        if (msg.sender === 'system' && msg.message.includes('Chat iniciado')) {
+        if (msg.sender === 'system' && msg.message?.includes('Chat iniciado')) {
           const dateTag = document.createElement('div');
           dateTag.classList.add('bubble', 'system');
           dateTag.style.textAlign = 'center';
@@ -1104,9 +1104,10 @@
           chatContainer.appendChild(dateTag);
         } else {
           const div = document.createElement('div');
-          div.classList.add("bubble", msg.sender.toLowerCase());
+          const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
+          div.classList.add("bubble", senderClass);
 
-          const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const timestamp = new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
           if (msg.message) {
             if (msg.sender === "Agent") {
@@ -1125,8 +1126,8 @@
             const img = document.createElement("img");
             img.src = msg.image;
             img.alt = "imagen enviada";
-            img.style.maxWidth = "150px";
-            img.style.borderRadius = "8px";
+            img.style.maxWidth = "200px";
+            img.style.borderRadius = "10px";
             img.style.marginTop = "5px";
             img.onclick = () => openImageInNewWindow(msg.image);
             div.appendChild(img);
@@ -1226,14 +1227,19 @@
     socket.on('admin image', (data) => {
       console.log('Imagen recibida en tiempo real:', data);
       console.log('selectedUserId:', selectedUserId, 'data.userId:', data.userId);
-      if (!data.userId || !data.sender || !data.image) {
+      if (!data || !data.userId || !data.sender || !data.image) {
         console.error('Imagen recibida inválida, falta userId, sender o image:', data);
         return;
       }
       if (!localChatHistory[data.userId]) {
         localChatHistory[data.userId] = [];
       }
-      localChatHistory[data.userId].push({ sender: data.sender, image: data.image, timestamp: data.timestamp });
+      localChatHistory[data.userId].push({ 
+        sender: data.sender, 
+        image: data.image, 
+        timestamp: data.timestamp 
+      });
+      
       if (data.userId === selectedUserId) {
         console.log('Renderizando chat con nueva imagen para usuario seleccionado');
         renderChat(localChatHistory[data.userId]);
