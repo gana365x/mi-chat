@@ -210,18 +210,29 @@ io.on('connection', (socket) => {
   });
 
   socket.on('image', (data) => {
-    if (!data.userId || !data.sender || !data.image) return;
+    if (!data.userId || !data.sender || !data.image) {
+      console.error('Datos de imagen incompletos:', data);
+      return;
+    }
     const imageData = { userId: data.userId, sender: data.sender, image: data.image, timestamp: new Date().toISOString() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(imageData);
     saveChatHistory();
 
+    console.log(`Imagen recibida del usuario ${data.userId}. Enviando a cliente y agentes...`);
+
     const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('image', imageData);
+    if (userSocket) {
+      userSocket.emit('image', imageData);
+      console.log(`Imagen enviada al cliente ${data.userId}`);
+    } else {
+      console.log(`No se encontró socket de usuario para ${data.userId}`);
+    }
 
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin image', imageData);
+        console.log(`Imagen enviada al agente con socket ${adminSocketId} para usuario ${data.userId}`);
       }
     }
 
@@ -449,13 +460,11 @@ app.post('/update-agent-password', (req, res) => {
   return res.status(200).json({ success: true });
 });
 
-// Cargar respuestas rápidas (actualizado)
 app.get('/quick-replies', (req, res) => {
   const replies = fs.existsSync(quickRepliesPath) ? JSON.parse(fs.readFileSync(quickRepliesPath)) : [];
   res.json(replies);
 });
 
-// Guardar respuestas rápidas (actualizado)
 app.post('/quick-replies', express.json(), (req, res) => {
   const replies = req.body;
   if (!Array.isArray(replies)) {
