@@ -907,6 +907,7 @@
     let currentFilter = "all";
     let pendingFinalizeUserId = null;
     let quickReplies = [];
+    let ignoreNextAdminEcho = false; // Nueva variable global
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -1162,6 +1163,10 @@
       console.log('Mensaje recibido en tiempo real:', data);
       if (!data.userId || !data.sender || !data.message) {
         console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
+        return;
+      }
+      if (ignoreNextAdminEcho) {
+        ignoreNextAdminEcho = false;
         return;
       }
       if (!localChatHistory[data.userId]) {
@@ -1495,20 +1500,23 @@
     document.getElementById('adminInput').addEventListener('keyup', (e) => {
       const input = e.target.value.trim();
       const quickList = document.getElementById('quickList');
+      const adminInput = document.getElementById('adminInput');
 
       if (input === '/') {
         quickList.innerHTML = '';
         quickReplies.forEach((msg, index) => {
           const li = document.createElement('li');
           li.textContent = `/${index + 1} → ${msg}`;
-          li.style.cursor = 'pointer'; // Hacer clicable
-          li.style.padding = '5px'; // Mejorar espaciado
-          li.style.transition = 'background 0.2s'; // Transición suave
-          li.addEventListener('mouseover', () => li.style.background = '#333'); // Hover effect
+          li.style.cursor = 'pointer';
+          li.style.padding = '5px';
+          li.style.transition = 'background 0.2s';
+          li.addEventListener('mouseover', () => li.style.background = '#333');
           li.addEventListener('mouseout', () => li.style.background = 'transparent');
           li.addEventListener('click', () => {
-            document.getElementById('adminInput').value = msg;
+            adminInput.value = msg;
             quickList.style.display = 'none';
+            ignoreNextAdminEcho = true; // Evitar eco al hacer clic
+            sendAdminMessage(); // Enviar automáticamente
           });
           quickList.appendChild(li);
         });
@@ -1516,8 +1524,10 @@
       } else if (/^\/\d+$/.test(input)) {
         const idx = parseInt(input.slice(1)) - 1;
         if (quickReplies[idx]) {
-          document.getElementById('adminInput').value = quickReplies[idx];
+          adminInput.value = quickReplies[idx];
           quickList.style.display = 'none';
+          ignoreNextAdminEcho = true; // Evitar eco al usar /1, /2, etc.
+          sendAdminMessage(); // Enviar automáticamente
         }
       } else {
         quickList.style.display = 'none';
