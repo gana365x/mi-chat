@@ -209,33 +209,46 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('image', (data) => {
-    if (!data.userId || !data.sender || !data.image) return;
-    const imageData = { userId: data.userId, sender: data.sender, image: data.image, timestamp: new Date().toISOString() };
-    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
-    chatHistory[data.userId].push(imageData);
+  socket.on('user image', (data) => {
+    const { userId, imageUrl } = data;
+
+    if (!userId || !imageUrl) {
+      console.error('Datos de imagen inválidos:', data);
+      return;
+    }
+
+    const imageData = {
+      userId,
+      sender: 'user',
+      image: imageUrl,
+      timestamp: new Date().toISOString()
+    };
+
+    if (!chatHistory[userId]) chatHistory[userId] = [];
+    chatHistory[userId].push(imageData);
     saveChatHistory();
 
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('image', imageData);
+    const userSocket = userSessions.get(userId)?.socket;
+    if (userSocket) userSocket.emit('user image', imageData);
 
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
+      if (subscribedUserId === userId) {
         io.to(adminSocketId).emit('admin image', imageData);
       }
     }
 
     const botResponse = {
-      userId: data.userId,
+      userId,
       sender: 'Bot',
       message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!',
       timestamp: new Date().toISOString()
     };
-    chatHistory[data.userId].push(botResponse);
+    chatHistory[userId].push(botResponse);
     saveChatHistory();
+
     if (userSocket) userSocket.emit('chat message', botResponse);
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
+      if (subscribedUserId === userId) {
         io.to(adminSocketId).emit('admin message', botResponse);
       }
     }
@@ -449,13 +462,11 @@ app.post('/update-agent-password', (req, res) => {
   return res.status(200).json({ success: true });
 });
 
-// Cargar respuestas rápidas (actualizado)
 app.get('/quick-replies', (req, res) => {
   const replies = fs.existsSync(quickRepliesPath) ? JSON.parse(fs.readFileSync(quickRepliesPath)) : [];
   res.json(replies);
 });
 
-// Guardar respuestas rápidas (actualizado)
 app.post('/quick-replies', express.json(), (req, res) => {
   const replies = req.body;
   if (!Array.isArray(replies)) {
