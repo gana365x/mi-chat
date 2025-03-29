@@ -307,7 +307,15 @@
 
     function saveQuickReplies() {
       const inputs = document.querySelectorAll("#quickRepliesList input");
-      const replies = Array.from(inputs).map(input => input.value.trim()).filter(Boolean);
+      const replies = Array.from(inputs)
+        .map(input => input.value.trim())
+        .filter(value => value && value !== "undefined" && value !== "null");
+
+      if (replies.length === 0) {
+        document.getElementById("quickMsg").textContent = "❌ No hay respuestas válidas para guardar";
+        document.getElementById("quickMsg").className = "error";
+        return;
+      }
 
       fetch('/quick-replies', {
         method: 'POST',
