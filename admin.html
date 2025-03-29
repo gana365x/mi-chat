@@ -832,17 +832,21 @@
         display: none;
         position: absolute;
         bottom: 70px;
-        left: 10px;
+        left: 50%;
+        transform: translateX(-50%);
         background: #1f1f1f;
         border: 1px solid #FF3B00;
-        color: white;
-        list-style: none;
-        padding: 10px;
         border-radius: 10px;
+        padding: 10px;
         width: 300px;
         max-height: 200px;
         overflow-y: auto;
-        z-index: 10;
+        z-index: 9999;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+        font-size: 14px;
+        color: white;
+        list-style: none;
+        text-align: left;
       "></ul>
       <div class="chat-input" id="chatInputArea">
         <input type="text" id="adminInput" placeholder="Escribir mensaje..." />
@@ -906,8 +910,7 @@
     const localChatHistory = {};
     let currentFilter = "all";
     let pendingFinalizeUserId = null;
-    let quickReplies = [];
-    let ignoreNextAdminEcho = false; // Nueva variable global
+    let ignoreNextAdminEcho = false;
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -970,12 +973,6 @@
         document.getElementById("loginScreen").style.display = "flex";
         document.querySelector(".admin-container").style.display = "none";
       }
-
-      // Cargar respuestas rápidas al iniciar
-      fetch('/quick-replies')
-        .then(res => res.json())
-        .then(data => { quickReplies = data; })
-        .catch(err => console.error("Error al cargar respuestas rápidas:", err));
     });
 
     socket.on('user list', (users) => {
@@ -1479,55 +1476,44 @@
       cancelEdit();
     }
 
-    // Autocompletado de respuestas rápidas en adminInput (versión anterior)
-    document.getElementById('adminInput').addEventListener('input', (e) => {
-      const value = e.target.value;
-      if (value.startsWith('/')) {
-        const match = quickReplies.find(q => q.startsWith(value));
-        if (match) {
-          e.target.value = match;
-        }
-      }
-    });
+    const adminInput = document.getElementById('adminInput');
+    const quickList = document.getElementById('quickList');
+    let quickReplies = [];
 
-    // Nueva funcionalidad de respuestas rápidas con lista desplegable
     fetch('/quick-replies')
       .then(res => res.json())
       .then(data => {
         quickReplies = data;
       });
 
-    document.getElementById('adminInput').addEventListener('keyup', (e) => {
-      const input = e.target.value.trim();
-      const quickList = document.getElementById('quickList');
-      const adminInput = document.getElementById('adminInput');
+    adminInput.addEventListener('input', (e) => {
+      const value = e.target.value.trim();
 
-      if (input === '/') {
+      if (value === '/') {
         quickList.innerHTML = '';
         quickReplies.forEach((msg, index) => {
           const li = document.createElement('li');
           li.textContent = `/${index + 1} → ${msg}`;
+          li.style.padding = '6px 10px';
+          li.style.borderBottom = '1px solid #333';
           li.style.cursor = 'pointer';
-          li.style.padding = '5px';
-          li.style.transition = 'background 0.2s';
-          li.addEventListener('mouseover', () => li.style.background = '#333');
-          li.addEventListener('mouseout', () => li.style.background = 'transparent');
+
           li.addEventListener('click', () => {
             adminInput.value = msg;
             quickList.style.display = 'none';
-            ignoreNextAdminEcho = true; // Evitar eco al hacer clic
-            sendAdminMessage(); // Enviar automáticamente
+            // Opcional: enviar automáticamente
+            // adminInput.value = msg;
+            // sendAdminMessage();
           });
+
           quickList.appendChild(li);
         });
         quickList.style.display = 'block';
-      } else if (/^\/\d+$/.test(input)) {
-        const idx = parseInt(input.slice(1)) - 1;
-        if (quickReplies[idx]) {
-          adminInput.value = quickReplies[idx];
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          adminInput.value = quickReplies[index];
           quickList.style.display = 'none';
-          ignoreNextAdminEcho = true; // Evitar eco al usar /1, /2, etc.
-          sendAdminMessage(); // Enviar automáticamente
         }
       } else {
         quickList.style.display = 'none';
