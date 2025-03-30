@@ -12,7 +12,7 @@
       margin: 0;
       padding: 20px;
     }
-    h1, h2 {
+    h1, h2, h3 {
       color: #FF3B00;
     }
     .login-box, .main-box {
@@ -31,16 +31,16 @@
       background: #333;
       color: white;
     }
-    .date-container {
-      position: relative;
-      display: inline-block;
-    }
     .calendar-icon {
       position: absolute;
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
+    }
+    .calendar-wrapper {
+      position: relative;
+      display: inline-block;
     }
     button {
       background-color: #FF3B00;
@@ -74,12 +74,6 @@
     }
     .delete-btn:hover {
       background: #cc0000;
-    }
-    .calendar-wrapper {
-      position: relative;
-    }
-    .calendar-wrapper input[type="date"] {
-      padding-right: 30px;
     }
   </style>
 </head>
@@ -143,12 +137,18 @@
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
 
-      <div id="statsResults" style="margin-top: 20px;">
-        <p>Chats finalizados por agente: <span id="statChats">0</span></p>
-        <p>Mensajes entrantes: <span id="statMessages">0</span></p>
-        <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
-        <p>Retirar presionado: <span id="statRetiro">0</span></p>
-        <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+      <!-- Sub-secciones -->
+      <div style="margin-top: 20px;">
+        <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
+        <canvas id="chartAgentes" height="150"></canvas>
+
+        <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
+        <div id="statsResults">
+          <p>Mensajes entrantes: <span id="statMessages">0</span></p>
+          <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
+          <p>Retirar presionado: <span id="statRetiro">0</span></p>
+          <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+        </div>
       </div>
     </div>
 
@@ -160,7 +160,12 @@
     </div>
   </div>
 
+  <!-- Chart.js desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
+    let chartInstance = null;
+
     function loginSuperAdmin() {
       const username = document.getElementById('superUsername').value.trim();
       const password = document.getElementById('superPassword').value.trim();
@@ -265,34 +270,15 @@
       let start = new Date(), end = new Date();
 
       switch (value) {
-        case "today":
-          start.setHours(0, 0, 0, 0);
-          end.setHours(23, 59, 59, 999);
-          break;
-        case "yesterday":
-          start.setDate(start.getDate() - 1);
-          start.setHours(0, 0, 0, 0);
-          end = new Date(start);
-          end.setHours(23, 59, 59, 999);
-          break;
+        case "today": start.setHours(0, 0, 0, 0); end.setHours(23, 59, 59, 999); break;
+        case "yesterday": start.setDate(start.getDate() - 1); start.setHours(0, 0, 0, 0); end = new Date(start); end.setHours(23, 59, 59, 999); break;
         case "week":
           const day = now.getDay();
           const diff = now.getDate() - day + (day === 0 ? -6 : 1);
           start = new Date(now.setDate(diff));
-          start.setHours(0, 0, 0, 0);
-          end = new Date();
-          end.setHours(23, 59, 59, 999);
-          break;
-        case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1);
-          end = new Date();
-          end.setHours(23, 59, 59, 999);
-          break;
-        case "lastMonth":
-          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          end = new Date(now.getFullYear(), now.getMonth(), 0);
-          end.setHours(23, 59, 59, 999);
-          break;
+          start.setHours(0, 0, 0, 0); end = new Date(); end.setHours(23, 59, 59, 999); break;
+        case "month": start = new Date(now.getFullYear(), now.getMonth(), 1); end = new Date(); end.setHours(23, 59, 59, 999); break;
+        case "lastMonth": start = new Date(now.getFullYear(), now.getMonth() - 1, 1); end = new Date(now.getFullYear(), now.getMonth(), 0); end.setHours(23, 59, 59, 999); break;
       }
 
       fromDateInput.value = start.toISOString().split('T')[0];
@@ -322,17 +308,44 @@
     }
 
     function loadStats(from, to) {
+      // Interacciones
       fetch(`/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
         .then(res => res.json())
         .then(data => {
-          document.getElementById("statChats").textContent = data.chats;
           document.getElementById("statMessages").textContent = data.messages;
           document.getElementById("statCargar").textContent = data.cargarFichas;
           document.getElementById("statRetiro").textContent = data.retiros;
           document.getElementById("statImagenes").textContent = data.imagenes;
-        })
-        .catch(err => {
-          console.error("Error al cargar estadísticas:", err);
+        });
+
+      // Agentes
+      fetch(`/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+        .then(res => res.json())
+        .then(agentData => {
+          const labels = agentData.map(item => item.username);
+          const values = agentData.map(item => item.finalizados);
+          const ctx = document.getElementById('chartAgentes').getContext('2d');
+
+          if (chartInstance) chartInstance.destroy();
+
+          chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Chats Finalizados',
+                data: values,
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              scales: { x: { beginAtZero: true } },
+              plugins: { legend: { display: false } }
+            }
+          });
         });
     }
   </script>
