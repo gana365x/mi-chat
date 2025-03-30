@@ -65,19 +65,19 @@
     }
 
     .menu-icon-only {
-      width: 45px;
-      height: 45px;
-      border: 2px solid #FF3B00;
-      border-radius: 10px;
-      margin: 10px auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+  width: 32px;
+  height: 32px;
+  border: 2px solid #FF3B00;
+  border-radius: 8px;
+  margin: 8px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
     .menu-icon-only:hover {
       background-color: #2a2a2a;
@@ -592,20 +592,19 @@
     }
 
     .menu-popup {
-      position: absolute;
-      top: 52px;
-      right: 20px;
-      background: #1f1f1f;
-      border: 1px solid #333;
-      border-radius: 10px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-      display: none;
-      flex-direction: column;
-      z-index: 9999;
-      width: 180px;
-      padding: 10px 0;
-      transition: all 0.3s ease;
-    }
+  position: absolute;
+  top: 52px;
+  right: 20px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  display: none;
+  flex-direction: column;
+  z-index: 9999;
+  width: 80px; /* 👈 Más angosto */
+  padding: 10px 0;
+}
 
     .menu-popup.active {
       display: flex;
