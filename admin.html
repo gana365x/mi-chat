@@ -725,64 +725,64 @@
     }
 
     @media (max-width: 768px) {
-      body, html {
-        height: 100vh;
-        overflow: hidden;
-        position: fixed;
-        width: 100%;
-      }
+  body, html {
+    height: 100vh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
 
-      .menu-popup {
-        top: 50px;
-        right: 10px;
-        width: 160px;
-      }
+  .menu-popup {
+    top: 42px;
+    right: 8px;
+    width: 52px;          /* ✅ más angosto */
+    padding: 4px 0;       /* ✅ más compacto */
+    border-radius: 8px;
+  }
 
-      .filter-popup {
-        top: 130px;
-        right: 10px;
-        width: 160px;
-      }
+  .menu-icon-only {
+    width: 30px;          /* ✅ más chico */
+    height: 30px;
+    font-size: 14px;
+    margin: 3px auto;     /* ✅ menos espacio entre botones */
+    border-radius: 5px;
+  }
 
-      .chat-popup {
-        width: 100vw;
-        height: 100vh;
-        bottom: 0;
-        right: 0;
-        border-radius: 0;
-        transform: none;
-      }
+  .chat-popup {
+    width: 100vw;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+    transform: none;
+  }
 
-      .chat-popup.show {
-        transform: translateY(0);
-      }
+  .inbox {
+    width: 100vw;
+    padding: 0 15px;
+    box-sizing: border-box;
+    height: calc(100vh - 44px);
+    overflow-y: hidden;
+  }
 
-      .inbox {
-        width: 100vw;
-        padding: 0 15px;
-        box-sizing: border-box;
-        height: calc(100vh - 44px);
-        overflow-y: hidden;
-      }
+  .topbar {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
 
-      .topbar {
-        padding-left: 5px;
-        padding-right: 5px;
-      }
+  .chat-item {
+    margin: 10px 0;
+    border-radius: 12px;
+    padding: 10px 15px;
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-      .chat-item {
-        margin: 10px 0;
-        border-radius: 12px;
-        padding: 10px 15px;
-        width: 100%;
-        box-sizing: border-box;
-      }
-
-      .user-list {
-        height: calc(100% - 44px);
-        overflow-y: auto;
-      }
-    }
+  .user-list {
+    height: calc(100% - 44px);
+    overflow-y: auto;
+  }
+}
   </style>
 </head>
 <body>
