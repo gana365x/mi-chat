@@ -28,25 +28,15 @@ const performanceFile = path.join(__dirname, 'performance.json');
 const agentsFilePath = path.join(__dirname, 'agents.json');
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const configFilePath = path.join(__dirname, 'config.json');
+const timezoneFile = path.join(__dirname, 'timezone.json');
 
-let timezone = 'America/Argentina/Buenos_Aires';
-if (fs.existsSync(configFilePath)) {
-  try {
-    const config = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
-    if (config.timezone) timezone = config.timezone;
-  } catch (e) {
-    console.error('Error al leer config.json:', e);
-  }
-}
-
+// Función para obtener timestamp con zona horaria configurable
 function getTimestamp() {
   const defaultTimezone = "America/Argentina/Buenos_Aires";
-  const timezoneFilePath = path.join(__dirname, 'timezone.json');
-
   let timezone = defaultTimezone;
 
   try {
-    const data = fs.readFileSync(timezoneFilePath, 'utf-8');
+    const data = fs.readFileSync(timezoneFile, 'utf-8');
     const config = JSON.parse(data);
     if (config.timezone) {
       timezone = config.timezone;
@@ -66,25 +56,18 @@ function getTimestamp() {
 }
 
 // Inicializar archivos si no existen
-if (fs.existsSync(historyFilePath)) {
+if (!fs.existsSync(historyFilePath)) fs.writeFileSync(historyFilePath, JSON.stringify({}));
+if (!fs.existsSync(performanceFile)) fs.writeFileSync(performanceFile, JSON.stringify({}));
+if (!fs.existsSync(agentsFilePath)) fs.writeFileSync(agentsFilePath, JSON.stringify([]));
+if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
+if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
+
+// Cargar historial de chat
+try {
   const data = fs.readFileSync(historyFilePath, 'utf-8');
-  try {
-    Object.assign(chatHistory, JSON.parse(data));
-  } catch (e) {
-    console.error('Error al leer el historial:', e);
-  }
-}
-
-if (!fs.existsSync(performanceFile)) {
-  fs.writeFileSync(performanceFile, JSON.stringify({}));
-}
-
-if (!fs.existsSync(agentsFilePath)) {
-  fs.writeFileSync(agentsFilePath, JSON.stringify([]));
-}
-
-if (!fs.existsSync(quickRepliesPath)) {
-  fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
+  Object.assign(chatHistory, JSON.parse(data));
+} catch (e) {
+  console.error('Error al leer el historial:', e);
 }
 
 function saveChatHistory() {
@@ -92,24 +75,13 @@ function saveChatHistory() {
 }
 
 function incrementPerformance(agentUsername) {
-  const data = JSON.parse(fs.readFileSync(performanceFile));
-  if (!data[agentUsername]) data[agentUsername] = 0;
-  data[agentUsername]++;
-  fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
-}
-
-// Función para obtener timestamp en GMT-3
-{
-  const defaultTimezone = "America/Argentina/Buenos_Aires";
   try {
-    const { timezone } = JSON.parse(fs.readFileSync(path.join(__dirname, 'timezone.json')));
-    const now = new Date();
-    const localDate = new Date(now.toLocaleString('en-US', { timeZone: timezone || defaultTimezone }));
-    return localDate.toISOString();
+    const data = JSON.parse(fs.readFileSync(performanceFile, 'utf-8'));
+    if (!data[agentUsername]) data[agentUsername] = 0;
+    data[agentUsername]++;
+    fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
   } catch (e) {
-    const now = new Date();
-    const localDate = new Date(now.toLocaleString('en-US', { timeZone: defaultTimezone }));
-    return localDate.toISOString();
+    console.error('Error al actualizar performance:', e);
   }
 }
 
@@ -191,32 +163,27 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push(messageData);
 
     if (chatHistory[data.userId]) {
-  const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
+      const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
 
-  if (wasClosed) {
-    // Eliminar estado cerrado para reactivar el chat
-    chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
+      if (wasClosed) {
+        chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
+        const openMsg = {
+          userId: data.userId,
+          sender: 'System',
+          message: '💬 Chat abierto',
+          timestamp: getTimestamp()
+        };
+        chatHistory[data.userId].push(openMsg);
 
-    // Agregar mensaje de reapertura
-    const openMsg = {
-      userId: data.userId,
-      sender: 'System',
-      message: '💬 Chat abierto',
-      timestamp: getTimestamp()
-    };
-    chatHistory[data.userId].push(openMsg);
+        for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+          if (subscribedUserId === data.userId) {
+            io.to(adminSocketId).emit('admin message', openMsg);
+          }
+        }
 
-    // ❌ NO lo enviamos al usuario (index.html)
-    // ✅ Solo lo enviamos al admin
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin message', openMsg);
+        io.emit('user list', getAllChatsSorted());
       }
     }
-
-    io.emit('user list', getAllChatsSorted());
-  }
-}
 
     if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
       if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
@@ -347,84 +314,82 @@ io.on('connection', (socket) => {
     io.emit('user list', getAllChatsSorted());
   });
 
-  // ... (todo tu código antes de llegar al bloque de "socket.on('request chat history')")
+  socket.on('request chat history', (data) => {
+    if (!data.userId) return;
+    adminSubscriptions.set(socket.id, data.userId);
+    chatHistory[data.userId] = chatHistory[data.userId] || [];
 
-socket.on('request chat history', (data) => {
-  if (!data.userId) return;
-  adminSubscriptions.set(socket.id, data.userId);
-  chatHistory[data.userId] = chatHistory[data.userId] || [];
+    const lastMsg = chatHistory[data.userId][chatHistory[data.userId].length - 1];
+    if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
+      const openMsg = {
+        sender: 'System',
+        message: '💬 Chat abierto',
+        timestamp: getTimestamp()
+      };
+      chatHistory[data.userId].push(openMsg);
+      saveChatHistory();
 
-  const lastMsg = chatHistory[data.userId][chatHistory[data.userId].length - 1];
-  if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
-    const openMsg = {
-      sender: 'System',
-      message: '💬 Chat abierto',
-      timestamp: getTimestamp()
-    };
-    chatHistory[data.userId].push(openMsg);
-    saveChatHistory();
+      const userSocket = userSessions.get(data.userId)?.socket;
+      if (userSocket) userSocket.emit('chat message', openMsg);
 
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('chat message', openMsg);
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin message', openMsg);
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
+          io.to(adminSocketId).emit('admin message', openMsg);
+        }
       }
     }
-  }
 
-  const history = chatHistory[data.userId] || [];
-  socket.emit('chat history', { userId: data.userId, messages: history });
-});
-
-socket.on('close chat', ({ userId, agentUsername }) => {
-  const userSocket = userSessions.get(userId)?.socket;
-  if (userSocket) {
-    userSocket.emit('chat closed', { userId });
-  }
-
-  if (agentUsername) {
-    incrementPerformance(agentUsername);
-  }
-
-  if (userSessions.has(userId)) {
-    const session = userSessions.get(userId);
-    userSessions.set(userId, { ...session, socket: null });
-  }
-
-  chatHistory[userId] = chatHistory[userId] || [];
-
-  const closeMsg = {
-    sender: 'System',
-    message: '🔒 Chat cerrado',
-    timestamp: getTimestamp(),
-    status: 'closed'
-  };
-  chatHistory[userId].push(closeMsg);
-
-  if (userSocket) {
-    userSocket.emit('chat message', closeMsg);
-  }
-
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === userId) {
-      io.to(adminSocketId).emit('admin message', closeMsg);
-    }
-  }
-
-  if (chatHistory[userId]) {
-    chatHistory[userId].activeSession = false;
-  }
-
-  saveChatHistory();
-  io.emit('user list', getAllChatsSorted());
-
-  io.emit('chat history', {
-    userId,
-    messages: chatHistory[userId]
+    const history = chatHistory[data.userId] || [];
+    socket.emit('chat history', { userId: data.userId, messages: history });
   });
-});
+
+  socket.on('close chat', ({ userId, agentUsername }) => {
+    const userSocket = userSessions.get(userId)?.socket;
+    if (userSocket) {
+      userSocket.emit('chat closed', { userId });
+    }
+
+    if (agentUsername) {
+      incrementPerformance(agentUsername);
+    }
+
+    if (userSessions.has(userId)) {
+      const session = userSessions.get(userId);
+      userSessions.set(userId, { ...session, socket: null });
+    }
+
+    chatHistory[userId] = chatHistory[userId] || [];
+
+    const closeMsg = {
+      sender: 'System',
+      message: '🔒 Chat cerrado',
+      timestamp: getTimestamp(),
+      status: 'closed'
+    };
+    chatHistory[userId].push(closeMsg);
+
+    if (userSocket) {
+      userSocket.emit('chat message', closeMsg);
+    }
+
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === userId) {
+        io.to(adminSocketId).emit('admin message', closeMsg);
+      }
+    }
+
+    if (chatHistory[userId]) {
+      chatHistory[userId].activeSession = false;
+    }
+
+    saveChatHistory();
+    io.emit('user list', getAllChatsSorted());
+
+    io.emit('chat history', {
+      userId,
+      messages: chatHistory[userId]
+    });
+  });
 
   socket.on('disconnect', () => {
     adminSubscriptions.delete(socket.id);
@@ -578,24 +543,17 @@ app.post('/quick-replies', express.json(), (req, res) => {
   fs.writeFileSync(quickRepliesPath, JSON.stringify(replies, null, 2));
   res.json({ success: true });
 });
-const timezoneFile = path.join(__dirname, 'timezone.json');
 
-// Crear archivo si no existe
-if (!fs.existsSync(timezoneFile)) {
-  fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
-}
-
-// Obtener zona horaria
+// Endpoints para manejar la zona horaria
 app.get('/get-timezone', (req, res) => {
   try {
-    const data = JSON.parse(fs.readFileSync(timezoneFile));
+    const data = JSON.parse(fs.readFileSync(timezoneFile, 'utf-8'));
     res.json({ timezone: data.timezone });
   } catch (error) {
     res.status(500).json({ timezone: "America/Argentina/Buenos_Aires" });
   }
 });
 
-// Actualizar zona horaria
 app.post('/update-timezone', (req, res) => {
   const { timezone } = req.body;
   if (!timezone || typeof timezone !== 'string') {
