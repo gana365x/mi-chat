@@ -101,7 +101,7 @@ function getAllChatsSorted() {
 
 io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
-    let-U userId = data.userId;
+    let userId = data.userId; // Corrección: quitado el "-U" incorrecto
     const username = data.username;
     if (!username) return;
 
