@@ -239,10 +239,14 @@
     </div>
   </div>
 
-  <!-- Chart.js desde CDN -->
+  <!-- Chart.js y chartjs-plugin-datalabels desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <script>
+    // Registrar el plugin datalabels
+    Chart.register(ChartDataLabels);
+
     let chartInstance = null;
 
     function loginSuperAdmin() {
@@ -365,13 +369,11 @@
 
       switch (value) {
         case "today":
-          // Hoy: 00:00 a 23:59 del día actual
           start.setHours(0, 0, 0, 0);
           end.setHours(23, 59, 59, 999);
           break;
           
         case "yesterday":
-          // Ayer: 00:00 a 23:59 del día anterior
           start.setDate(start.getDate() - 1);
           start.setHours(0, 0, 0, 0);
           end = new Date(start);
@@ -379,9 +381,8 @@
           break;
           
         case "week":
-          // Esta semana: Lunes 00:00 hasta hoy 23:59
           const day = now.getDay();
-          const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Ajuste para que el lunes sea el primer día
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
           start = new Date(now.setDate(diff));
           start.setHours(0, 0, 0, 0);
           end = new Date();
@@ -389,7 +390,6 @@
           break;
           
         case "month":
-          // Este mes: 1er día del mes 00:00 hasta hoy 23:59
           start = new Date(now.getFullYear(), now.getMonth(), 1);
           start.setHours(0, 0, 0, 0);
           end = new Date();
@@ -397,7 +397,6 @@
           break;
           
         case "lastMonth":
-          // Mes anterior: 1er día del mes anterior 00:00 hasta último día 23:59
           start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
           start.setHours(0, 0, 0, 0);
           end = new Date(now.getFullYear(), now.getMonth(), 0);
@@ -405,7 +404,6 @@
           break;
       }
 
-      // Formatear fechas para los inputs
       fromDateInput.value = start.toISOString().split('T')[0];
       fromTimeInput.value = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
       toDateInput.value = end.toISOString().split('T')[0];
@@ -476,6 +474,17 @@
                   backgroundColor: '#FF3B00',
                   titleColor: '#fff',
                   bodyColor: '#fff'
+                },
+                datalabels: {
+                  anchor: 'end',
+                  align: 'right',
+                  offset: 4,
+                  color: '#fff',
+                  font: {
+                    size: 14,
+                    weight: 'bold'
+                  },
+                  formatter: (value) => value
                 }
               },
               scales: {
