@@ -367,34 +367,36 @@
 
       switch (value) {
         case "today":
-          start = new Date();
-          end = new Date();
+          start = new Date(); // Día actual
+          end = new Date(start); // Mismo día que start
           break;
           
         case "yesterday":
-          start.setDate(start.getDate() - 1);
-          end.setDate(end.getDate() - 1);
+          start = new Date();
+          start.setDate(start.getDate() - 1); // Día anterior
+          end = new Date(start); // Mismo día que start
           break;
           
         case "week":
           const day = now.getDay();
-          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-          start = new Date(now.setDate(diff));
-          end = new Date();
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Lunes de esta semana
+          start = new Date(now);
+          start.setDate(diff);
+          end = new Date(); // Hasta hoy
           break;
           
         case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1);
-          end = new Date();
+          start = new Date(now.getFullYear(), now.getMonth(), 1); // 1° del mes
+          end = new Date(); // Hasta hoy
           break;
           
         case "lastMonth":
-          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          end = new Date(now.getFullYear(), now.getMonth(), 0);
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1); // 1° del mes pasado
+          end = new Date(now.getFullYear(), now.getMonth(), 0); // Último día del mes pasado
           break;
       }
 
-      // Solo actualizamos las fechas, las horas quedan fijas en 00:00 y 23:59
+      // Establecemos las fechas y horas fijas
       fromDateInput.value = start.toISOString().split('T')[0];
       document.getElementById("fromTime").value = '00:00';
       toDateInput.value = end.toISOString().split('T')[0];
