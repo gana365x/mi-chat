@@ -2,13 +2,13 @@
   {
     "username": "1",
     "password": "1",
-    "displayName": "Agente Uno",
+    "name": "Agente Uno",  // Cambiado de displayName a name
     "type": "agent"
   },
   {
     "username": "2",
     "password": "2",
-    "displayName": "Superadmin",
+    "name": "Superadmin",  // Cambiado de displayName a name
     "type": "superadmin"
   }
 ]
