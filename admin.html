@@ -6,7 +6,6 @@
   <title>Panel de Agentes - GANA365</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
-    /* Estilos originales sin cambios */
     body {
       font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       background-color: #121212;
@@ -980,17 +979,20 @@
 
     // Cargar la zona horaria desde el servidor
     function loadTimezoneFromServer() {
-      fetch('/get-timezone')
-        .then(res => res.json())
+      return fetch('/get-timezone')
+        .then(res => {
+          if (!res.ok) throw new Error('Respuesta del servidor no OK');
+          return res.json();
+        })
         .then(data => {
           systemTimezone = data.timezone || "UTC";
-          console.log("🕒 Zona horaria cargada:", systemTimezone);
+          console.log("🕒 Zona horaria cargada exitosamente:", systemTimezone);
         })
         .catch(err => {
-          console.warn("⚠️ No se pudo cargar la zona horaria, usando UTC", err);
+          console.warn("⚠️ Error al cargar la zona horaria, usando UTC:", err);
+          systemTimezone = "UTC";
         });
     }
-    document.addEventListener('DOMContentLoaded', loadTimezoneFromServer);
 
     const socket = io();
 
@@ -1026,17 +1028,26 @@
       popupContainer.innerHTML = '';
       chatContainer.innerHTML = '';
 
-      console.log('Renderizando mensajes:', messages);
+      console.log('Renderizando mensajes con timezone:', systemTimezone, 'Mensajes:', messages);
 
       let lastRenderedDate = null;
 
       messages.forEach(msg => {
+        // Depurar el timestamp para identificar el problema
+        console.log('Procesando mensaje:', msg, 'Timestamp:', msg.timestamp);
+
+        // Validar y corregir el timestamp si es inválido
         if (!msg.timestamp || isNaN(new Date(msg.timestamp))) {
           console.warn("Mensaje con timestamp inválido:", msg);
-          msg.timestamp = new Date().toISOString(); // Usamos fecha actual por defecto
+          msg.timestamp = new Date().toISOString(); // Valor por defecto si es inválido
         }
 
         const msgDate = new Date(msg.timestamp);
+        if (isNaN(msgDate)) {
+          console.error("Timestamp sigue siendo inválido después de corrección:", msg.timestamp);
+          msgDate = new Date(); // Último recurso: usar la fecha actual
+        }
+
         const formattedDay = new Intl.DateTimeFormat('es-AR', {
           timeZone: systemTimezone,
           year: 'numeric', month: 'numeric', day: 'numeric'
@@ -1083,13 +1094,16 @@
           div.classList.add("bubble", senderClass);
 
           let timestamp = 'Sin hora';
-          if (msg.timestamp) {
-            try {
-              const date = new Date(msg.timestamp);
+          try {
+            const date = new Date(msg.timestamp);
+            if (!isNaN(date)) {
               timestamp = date.toLocaleString("es-AR", { timeZone: systemTimezone });
-            } catch (error) {
-              console.error("Error al convertir la hora:", error);
+            } else {
+              throw new Error('Fecha inválida');
             }
+          } catch (error) {
+            console.error("Error al convertir la hora:", error, "Timestamp:", msg.timestamp);
+            timestamp = new Date().toLocaleString("es-AR", { timeZone: systemTimezone }); // Valor por defecto
           }
 
           if (msg.message) {
@@ -1161,7 +1175,9 @@
       return data.displayName || username;
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadTimezoneFromServer();
+
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
       const agentUser = localStorage.getItem("adminUser");
 
