@@ -1157,29 +1157,35 @@
       let lastRenderedDate = null;
 
       messages.forEach(msg => {
-        const msgDate = new Date(msg.timestamp);
-        msgDate.setHours(msgDate.getHours() - 3); // Ajustar a GMT-3
+        const msgDateStr = new Date(msg.timestamp).toLocaleString('es-AR', {
+  timeZone: 'America/Argentina/Buenos_Aires'
+});
+const msgDate = new Date(msgDateStr);
+const msgDay = msgDate.toDateString(); // Ej: "Thu Mar 28 2024"
 
-        const msgDay = msgDate.toDateString(); // "Mon Mar 25 2025"
-        if (msgDay !== lastRenderedDate) {
-          lastRenderedDate = msgDay;
+if (msgDay !== lastRenderedDate) {
+  lastRenderedDate = msgDay;
 
-          const now = new Date();
-          now.setHours(now.getHours() - 3); // También en GMT-3
+  const nowStr = new Date().toLocaleString('es-AR', {
+    timeZone: 'America/Argentina/Buenos_Aires'
+  });
+  const now = new Date(nowStr);
 
-          const diff = Math.floor((now - msgDate) / (1000 * 60 * 60 * 24));
-          let label = '';
+  const diff = Math.floor((now - msgDate) / (1000 * 60 * 60 * 24));
+  let label = '';
 
-          if (diff === 0) label = 'Hoy';
-          else if (diff === 1) label = 'Ayer';
-          else label = msgDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+  if (diff === 0) label = 'Hoy';
+  else if (diff === 1) label = 'Ayer';
+  else label = msgDate.toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long'
+  });
 
-          const dateLabel = document.createElement('div');
-          dateLabel.className = 'date-label';
-          dateLabel.textContent = label;
-          chatContainer.appendChild(dateLabel.cloneNode(true));
-          popupContainer.appendChild(dateLabel);
-        }
+  const dateLabel = document.createElement('div');
+  dateLabel.className = 'date-label';
+  dateLabel.textContent = label;
+  chatContainer.appendChild(dateLabel);
+}
 
         if (msg.sender === 'System') {
           const systemMsg = document.createElement('div');
