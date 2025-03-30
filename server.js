@@ -278,27 +278,40 @@ io.on('connection', (socket) => {
   socket.on('request chat history', (data) => {
     if (!data.userId) return;
     adminSubscriptions.set(socket.id, data.userId);
+    chatHistory[data.userId] = chatHistory[data.userId] || [];
+
+    // Solo agregar si no fue agregado como último mensaje
+    const lastMsg = chatHistory[data.userId][chatHistory[data.userId].length - 1];
+    if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
+      chatHistory[data.userId].push({
+        sender: 'System',
+        message: '💬 Chat abierto',
+        timestamp: new Date().toISOString()
+      });
+      saveChatHistory();
+    }
+
     const history = chatHistory[data.userId] || [];
     socket.emit('chat history', { userId: data.userId, messages: history });
   });
 
-  socket.on('close chat', (data) => {
-    const userSocket = userSessions.get(data.userId)?.socket;
+  socket.on('close chat', ({ userId, agentUsername }) => {
+    const userSocket = userSessions.get(userId)?.socket;
     if (userSocket) {
-      userSocket.emit('chat closed', { userId: data.userId });
+      userSocket.emit('chat closed', { userId });
     }
 
-    if (data.agentUsername) {
-      incrementPerformance(data.agentUsername);
+    if (agentUsername) {
+      incrementPerformance(agentUsername);
     }
 
-    if (userSessions.has(data.userId)) {
-      const session = userSessions.get(data.userId);
-      userSessions.set(data.userId, { ...session, socket: null });
+    if (userSessions.has(userId)) {
+      const session = userSessions.get(userId);
+      userSessions.set(userId, { ...session, socket: null });
     }
 
-    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
-    chatHistory[data.userId].push({
+    chatHistory[userId] = chatHistory[userId] || [];
+    chatHistory[userId].push({
       sender: 'System',
       message: '🔒 Chat cerrado',
       timestamp: new Date().toISOString(),
@@ -306,7 +319,7 @@ io.on('connection', (socket) => {
     });
 
     const systemMsg = {
-      userId: data.userId,
+      userId,
       sender: 'System',
       message: '🔒 Chat cerrado',
       timestamp: new Date().toISOString(),
@@ -318,17 +331,23 @@ io.on('connection', (socket) => {
     }
 
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
+      if (subscribedUserId === userId) {
         io.to(adminSocketId).emit('admin message', systemMsg);
       }
     }
 
-    if (chatHistory[data.userId]) {
-      chatHistory[data.userId].activeSession = false;
+    if (chatHistory[userId]) {
+      chatHistory[userId].activeSession = false;
     }
 
     saveChatHistory();
     io.emit('user list', getAllChatsSorted());
+
+    // Emitir actualización al admin
+    io.emit('chat history', {
+      userId,
+      messages: chatHistory[userId]
+    });
   });
 
   socket.on('disconnect', () => {
