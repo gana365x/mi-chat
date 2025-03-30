@@ -176,7 +176,13 @@
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
       <table>
-        <thead><tr><th>Usuario</th><th>Nombre</th><th>Acciones</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre Visible</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
         <tbody id="agentsTable"></tbody>
       </table>
     </div>
@@ -276,12 +282,8 @@
           agents.forEach(agent => {
             const row = document.createElement('tr');
             row.innerHTML = `
-              <td>
-                <strong>${agent.username}</strong>
-              </td>
-              <td>
-                <span style="color: #ccc;">${agent.name || ''}</span>
-              </td>
+              <td><strong>${agent.username}</strong></td>
+              <td>${agent.name || 'Sin nombre'}</td>
               <td style="display: flex; gap: 10px;">
                 <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
                 <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
@@ -562,7 +564,5 @@
       </div>
     </div>
   </div>
-
-  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928a9359c96644e2',t:'MTc0MzM2ODgzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
