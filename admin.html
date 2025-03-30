@@ -904,25 +904,27 @@
       </div>
       <div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
       <ul id="quickList" style="
-        display: none;
-        position: absolute;
-        bottom: 70px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1f1f1f;
-        border: 1px solid #FF3B00;
-        border-radius: 10px;
-        padding: 10px;
-        width: 500px;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 9999;
-        box-shadow: 0 6px 12px rgba(0,0,0,0.6);
-        font-size: 14px;
-        color: white;
-        list-style: none;
-        text-align: left;
-      "></ul>
+  display: none;
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f1f1f;
+  border: 1px solid #FF3B00;
+  border-radius: 10px;
+  padding: 10px;
+  width: auto;
+  min-width: 300px;
+  max-width: 600px;
+  white-space: nowrap;
+  overflow-y: auto;
+  z-index: 9999;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+  font-size: 14px;
+  color: white;
+  list-style: none;
+  text-align: left;
+"></ul>
       <div class="chat-input" id="chatInputArea">
         <input type="text" id="adminInput" placeholder="Escribir mensaje..." />
         <button onclick="sendAdminMessage()">Enviar</button>
