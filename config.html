@@ -125,6 +125,7 @@
       color: white;
       padding: 8px;
       border-radius: 6px;
+      transition: border 0.2s ease;
     }
 
     /* Estilo para campos vacíos */
@@ -266,7 +267,41 @@
 </head>
 <body>
 
-  <!-- [Resto del código HTML permanece igual] -->
+  <div class="header">
+    <h1><i class="fa-solid fa-gear"></i> Configuración</h1>
+    <button class="back-btn" onclick="window.location.href='admin.html'"><i class="fas fa-arrow-left"></i></button>
+  </div>
+
+  <div class="container">
+    <div class="form-group">
+      <label for="newName">Cambiar nombre visible</label>
+      <input type="text" id="newName" placeholder="Nuevo nombre visible" />
+      <button onclick="changeName()">Guardar Nombre</button>
+      <div id="nameMsg"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="newPassword">Cambiar contraseña</label>
+      <div class="password-wrapper">
+        <input type="password" id="newPassword" placeholder="Nueva contraseña (4-16 caracteres)" />
+        <i class="fa-solid fa-eye" onclick="togglePassword('newPassword', this)"></i>
+      </div>
+      <div class="password-wrapper">
+        <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" />
+        <i class="fa-solid fa-eye" onclick="togglePassword('confirmPassword', this)"></i>
+      </div>
+      <button onclick="changePassword()">Guardar Contraseña</button>
+      <div id="passMsg"></div>
+    </div>
+
+    <div class="form-group">
+      <label>Respuestas rápidas (usa comandos personalizados)</label>
+      <div id="quickRepliesContainer">
+        <button onclick="openRepliesPopup()">📝 Abrir Respuestas Rápidas</button>
+        <div id="quickMsg" style="margin-top: 10px;"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Popup de respuestas rápidas -->
   <div id="quickRepliesPopup" class="popup-overlay">
@@ -283,7 +318,250 @@
     </div>
   </div>
 
-  <!-- [Resto del código JavaScript permanece igual] -->
-  
-</body>
+  <script>
+    const agentUser = localStorage.getItem("adminUser");
+
+    function changeName() {
+      const newName = document.getElementById("newName").value.trim();
+      const nameMsg = document.getElementById("nameMsg");
+
+      if (!newName) {
+        nameMsg.innerHTML = "El nombre no puede estar vacío ❌";
+        nameMsg.className = "error";
+        return;
+      }
+
+      fetch('/update-agent-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: agentUser, newName })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          nameMsg.innerHTML = "Nombre actualizado correctamente ✅";
+          nameMsg.className = "success";
+        } else {
+          nameMsg.innerHTML = "Error al actualizar el nombre ❌";
+          nameMsg.className = "error";
+        }
+      })
+      .catch(err => {
+        nameMsg.innerHTML = "Error al conectar con el servidor ❌";
+        nameMsg.className = "error";
+        console.error("Error en la solicitud:", err);
+      });
+    }
+
+    function changePassword() {
+      const newPass = document.getElementById("newPassword").value.trim();
+      const confirmPass = document.getElementById("confirmPassword").value.trim();
+      const passMsg = document.getElementById("passMsg");
+
+      if (!newPass || !confirmPass) {
+        passMsg.innerHTML = 'Completa ambos campos ❌';
+        passMsg.className = 'error';
+        return;
+      }
+
+      if (newPass.length < 4 || newPass.length > 16) {
+        passMsg.innerHTML = 'La contraseña debe tener entre 4 y 16 caracteres ❌';
+        passMsg.className = 'error';
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        passMsg.innerHTML = 'Las contraseñas no coinciden ❌';
+        passMsg.className = 'error';
+        return;
+      }
+
+      fetch('/update-agent-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: agentUser, newPassword: newPass })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        if (data.success) {
+          passMsg.innerHTML = 'Contraseña actualizada correctamente ✅';
+          passMsg.className = 'success';
+          document.getElementById("newPassword").value = '';
+          document.getElementById("confirmPassword").value = '';
+        } else {
+          passMsg.innerHTML = 'No se pudo cambiar la contraseña ❌';
+          passMsg.className = 'error';
+        }
+      })
+      .catch(() => {
+        passMsg.innerHTML = 'Error al conectar con el servidor ❌';
+        passMsg.className = 'error';
+      });
+    }
+
+    function togglePassword(inputId, iconElement) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        iconElement.classList.remove("fa-eye");
+        iconElement.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        iconElement.classList.remove("fa-eye-slash");
+        iconElement.classList.add("fa-eye");
+      }
+    }
+
+    // Variables y funciones para respuestas rápidas
+    let currentReplies = [];
+
+    function openRepliesPopup() {
+      const popup = document.getElementById("quickRepliesPopup");
+      popup.classList.add("active");
+      loadQuickReplies(); // siempre cargar al abrir
+    }
+
+    function closeRepliesPopup() {
+      document.getElementById("quickRepliesPopup").classList.remove("active");
+      
+      // Limpiar bordes visuales de todos los inputs
+      document.querySelectorAll(".quick-reply-input").forEach(input => {
+        input.style.border = "none";
+      });
+    }
+
+    function loadQuickReplies() {
+      fetch('/quick-replies')
+        .then(res => res.json())
+        .then(data => {
+          currentReplies = data;
+          renderPopupReplies(currentReplies);
+        });
+    }
+
+    function renderPopupReplies(replies) {
+      const list = document.getElementById("popupRepliesList");
+      list.innerHTML = "";
+
+      replies.forEach((reply, index) => {
+        const item = document.createElement("div");
+        item.className = "quick-reply-item";
+
+        const cmdInput = document.createElement("input");
+        cmdInput.type = "text";
+        cmdInput.className = "quick-reply-input";
+        cmdInput.style.maxWidth = "80px";
+        cmdInput.value = reply.command || `/c${index + 1}`;
+        cmdInput.dataset.index = index;
+
+        const textInput = document.createElement("input");
+        textInput.className = "quick-reply-input";
+        textInput.type = "text";
+        textInput.value = reply.text || "";
+        textInput.placeholder = "Escribe la respuesta...";
+        textInput.dataset.index = index;
+
+        const actions = document.createElement("div");
+        actions.className = "quick-reply-actions";
+
+        const editBtn = document.createElement("i");
+        editBtn.className = "fas fa-pencil-alt";
+        editBtn.onclick = () => {
+          textInput.disabled = false;
+          cmdInput.disabled = false;
+          
+          // 🔥 Activamos borde naranja visualmente
+          textInput.style.border = "1px solid #FF3B00";
+          cmdInput.style.border = "1px solid #FF3B00";
+
+          // Dar foco al campo de comando primero
+          cmdInput.focus();
+        };
+
+        const deleteBtn = document.createElement("i");
+        deleteBtn.className = "fas fa-trash";
+        deleteBtn.onclick = () => showDeleteConfirmPopup(index);
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        cmdInput.disabled = true;
+        textInput.disabled = true;
+
+        item.appendChild(cmdInput);
+        item.appendChild(textInput);
+        item.appendChild(actions);
+        list.appendChild(item);
+      });
+    }
+
+    function addQuickReply() {
+      currentReplies.push({ command: `/cmd${currentReplies.length + 1}`, text: "" });
+      renderPopupReplies(currentReplies);
+    }
+
+    function saveQuickReplies() {
+      const items = document.querySelectorAll(".quick-reply-item");
+      const updatedReplies = [];
+
+      items.forEach(item => {
+        const inputs = item.querySelectorAll("input");
+        const command = inputs[0].value.trim();
+        const text = inputs[1].value.trim();
+
+        if (!command.startsWith("/")) return; // prevenir comandos inválidos
+
+        updatedReplies.push({ command, text });
+      });
+
+      fetch('/quick-replies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedReplies)
+      })
+        .then(res => res.json())
+        .then(() => {
+          document.getElementById("quickMsg").innerHTML = "✅ Respuestas guardadas correctamente";
+          document.getElementById("quickMsg").className = "success";
+          closeRepliesPopup();
+        })
+        .catch(() => {
+          document.getElementById("quickMsg").innerHTML = "❌ Error al guardar respuestas";
+          document.getElementById("quickMsg").className = "error";
+        });
+    }
+
+    function showDeleteConfirmPopup(index) {
+      const list = document.getElementById("popupRepliesList");
+      const item = list.children[index];
+      const actions = item.querySelector(".quick-reply-actions");
+
+      actions.innerHTML = '';
+
+      const confirmBox = document.createElement("div");
+      confirmBox.className = "confirm-box";
+
+      const confirmBtn = document.createElement("span");
+      confirmBtn.innerText = "✅";
+      confirmBtn.className = "confirm-btn";
+      confirmBtn.onclick = () => {
+        currentReplies[index].text = ""; // vaciamos el texto pero dejamos el comando
+        renderPopupReplies(currentReplies);
+      };
+
+      const cancelBtn = document.createElement("span");
+      cancelBtn.innerText = "❌";
+      cancelBtn.className = "cancel-btn";
+      cancelBtn.onclick = () => renderPopupReplies(currentReplies);
+
+      confirmBox.appendChild(confirmBtn);
+      confirmBox.appendChild(cancelBtn);
+      actions.appendChild(confirmBox);
+    }
+  </script>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92817bd47c5ddd1d',t:'MTc0MzI3MzUwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9283d001ca900c0a',t:'MTc0MzI5NzkyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
