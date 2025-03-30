@@ -65,8 +65,9 @@ function getAllChatsSorted() {
   const users = Object.entries(chatHistory)
     .map(([userId, messages]) => {
       const username = userSessions.get(userId)?.username || 'Usuario';
-      const lastMessage = messages[messages.length - 1];
-      const lastMessageTime = lastMessage?.timestamp ? new Date(lastMessage.timestamp) : new Date();
+      const validMessages = messages.filter(msg => msg.status !== 'closed');
+      const lastValidMessage = validMessages[validMessages.length - 1];
+      const lastMessageTime = lastValidMessage?.timestamp ? new Date(lastValidMessage.timestamp) : new Date();
       const isClosed = messages.some(msg => msg.status === 'closed');
       return { userId, username, lastMessageTime, isClosed };
     })
