@@ -784,6 +784,22 @@
     overflow-y: auto;
   }
 }
+    .popup-edit-icon {
+  background-color: #1f1f1f;
+  color: white;
+  border: 2px solid #FF3B00;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.popup-edit-icon:hover {
+  background-color: #2a2a2a;
+  transform: scale(1.1);
+}
+
   </style>
 </head>
 <body>
@@ -894,10 +910,17 @@
         <button onclick="closePopup()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">⨉</button>
       </div>
     </div>
-    <div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center;">
-      <input id="newPopupName" type="text" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: none; width: 70%;" />
-      <button onclick="confirmPopupNameChange()" style="padding: 6px 10px; margin-left: 6px; border: none; border-radius: 6px; background: #FF3B00; color: white;">Guardar</button>
-    </div>
+    <div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
+  <input id="newPopupName" type="text" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" />
+  
+  <button onclick="confirmPopupNameChange()" class="popup-edit-icon" title="Guardar">
+    💾
+  </button>
+  <button onclick="document.getElementById('editNameContainer').style.display='none'" class="popup-edit-icon" title="Cancelar">
+    ❌
+  </button>
+</div>
+
     <div id="popupMessages" class="popup-messages"></div>
     <div class="popup-input">
       <input type="text" id="popupInput" placeholder="Escribir mensaje..." onkeypress="if(event.key==='Enter') sendPopupMessage()">
