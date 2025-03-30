@@ -487,8 +487,8 @@
       line-height: 1.4;
       word-break: break-word;
       white-space: pre-wrap;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
       position: relative;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
     }
@@ -1149,6 +1149,10 @@
         } else if (data.success) {
           localStorage.setItem("adminLoggedIn", "true");
           localStorage.setItem("adminUser", username);
+          // Guardar también el nombre visible del agente
+          if (data.name) {
+            localStorage.setItem("agentDisplayName", data.name);
+          }
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".admin-container").style.display = "flex";
           document.getElementById("menuWrapper").style.display = "none";
@@ -1163,23 +1167,24 @@
       });
     }
 
-    async function getDisplayName(username) {
-      const response = await fetch('/get-agent-displayname?username=' + encodeURIComponent(username));
-      const data = await response.json();
-      return data.displayName || username;
-    }
-
     document.addEventListener("DOMContentLoaded", async () => {
       await loadTimezoneFromServer();
 
       const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
       const agentUser = localStorage.getItem("adminUser");
+      const agentDisplayName = localStorage.getItem("agentDisplayName");
 
-      if (agentUser) {
+      // Mostrar el nombre del agente (si está disponible)
+      if (agentDisplayName) {
+        document.getElementById("agentDisplayName").textContent = agentDisplayName;
+      } else if (agentUser) {
+        // Si no hay nombre visible guardado, obtenerlo del servidor
         fetch(`/get-agent-displayname?username=${agentUser}`)
           .then(res => res.json())
           .then(data => {
-            document.getElementById("agentDisplayName").textContent = data.displayName || agentUser;
+            const displayName = data.name || agentUser;
+            document.getElementById("agentDisplayName").textContent = displayName;
+            localStorage.setItem("agentDisplayName", displayName);
           })
           .catch(err => {
             console.error("Error al obtener el nombre visible del agente:", err);
@@ -1476,6 +1481,7 @@
     function logoutAdmin() {
       localStorage.removeItem("adminLoggedIn");
       localStorage.removeItem("adminUser");
+      localStorage.removeItem("agentDisplayName");
       location.reload();
     }
 
