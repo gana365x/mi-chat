@@ -1200,12 +1200,18 @@ if (msgDay !== lastRenderedDate) {
           const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
           div.classList.add("bubble", senderClass);
 
-          const timestamp = new Date(msg.timestamp || Date.now()).toLocaleTimeString('es-AR', {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-  timeZone: 'America/Argentina/Buenos_Aires'
-});
+          let timestamp = 'Sin hora';
+if (msg.timestamp) {
+  const date = new Date(msg.timestamp);
+  if (!isNaN(date)) {
+    timestamp = date.toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'America/Argentina/Buenos_Aires'
+    });
+  }
+}
 
           if (msg.message) {
             if (msg.sender === "Agent" || msg.sender === "Bot") {
