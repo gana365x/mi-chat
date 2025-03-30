@@ -183,6 +183,34 @@
       margin-top: 10px;
     }
 
+    /* Estilos para el popup */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-overlay.active {
+      display: flex;
+    }
+
+    .popup-box {
+      background: #1e1e1e;
+      color: white;
+      padding: 25px 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    }
+
     @media (max-width: 600px) {
       .container {
         padding: 20px;
@@ -239,6 +267,15 @@
       <button onclick="addQuickReply()" style="margin-top: 20px;">➕ Agregar Respuesta</button>
       <button onclick="saveQuickReplies()" style="margin-top: 10px;">💾 Guardar respuestas rápidas</button>
       <div id="quickMsg"></div>
+    </div>
+  </div>
+
+  <!-- Popup de respuestas rápidas -->
+  <div id="quickRepliesPopup" class="popup-overlay">
+    <div class="popup-box">
+      <h3 style="margin-top: 0;">📋 Respuestas rápidas</h3>
+      <div id="popupRepliesList"></div>
+      <button onclick="closeRepliesPopup()" style="margin-top: 20px;">Cerrar</button>
     </div>
   </div>
 
@@ -343,6 +380,7 @@
       fetch('/quick-replies')
         .then(res => res.json())
         .then(data => {
+          currentReplies = data;
           renderQuickReplies(data);
         });
     }
@@ -356,9 +394,7 @@
     let currentReplies = [];
 
     document.getElementById("toggleRepliesBtn").addEventListener("click", () => {
-      repliesExpanded = !repliesExpanded;
-      document.getElementById("toggleRepliesBtn").innerText = repliesExpanded ? '▲' : '▼';
-      renderQuickReplies(currentReplies);
+      openRepliesPopup();
     });
 
     function renderQuickReplies(replies) {
@@ -458,6 +494,84 @@
         document.getElementById("quickMsg").innerHTML = "❌ Error al guardar respuestas";
         document.getElementById("quickMsg").className = "error";
       });
+    }
+
+    // Funciones para el popup
+    function openRepliesPopup() {
+      const popup = document.getElementById("quickRepliesPopup");
+      popup.classList.add("active");
+      renderPopupReplies(currentReplies);
+    }
+
+    function closeRepliesPopup() {
+      document.getElementById("quickRepliesPopup").classList.remove("active");
+    }
+
+    function renderPopupReplies(replies) {
+      const list = document.getElementById("popupRepliesList");
+      list.innerHTML = "";
+
+      replies.forEach((reply, index) => {
+        const item = document.createElement("div");
+        item.className = "quick-reply-item";
+
+        const input = document.createElement("input");
+        input.className = "quick-reply-input";
+        input.type = "text";
+        input.value = reply;
+        input.dataset.index = index;
+        input.disabled = true;
+
+        const actions = document.createElement("div");
+        actions.className = "quick-reply-actions";
+
+        const editBtn = document.createElement("i");
+        editBtn.className = "fas fa-pencil-alt";
+        editBtn.onclick = () => {
+          input.disabled = false;
+          input.focus();
+          input.style.border = "1px solid #FF3B00";
+        };
+
+        const deleteBtn = document.createElement("i");
+        deleteBtn.className = "fas fa-trash";
+        deleteBtn.onclick = () => showDeleteConfirmPopup(index);
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        item.appendChild(input);
+        item.appendChild(actions);
+        list.appendChild(item);
+      });
+    }
+
+    function showDeleteConfirmPopup(index) {
+      const list = document.getElementById("popupRepliesList");
+      const item = list.children[index];
+      const actions = item.querySelector(".quick-reply-actions");
+
+      actions.innerHTML = '';
+
+      const confirmBox = document.createElement("div");
+      confirmBox.className = "confirm-box";
+
+      const confirmBtn = document.createElement("span");
+      confirmBtn.innerText = "✅";
+      confirmBtn.className = "confirm-btn";
+      confirmBtn.onclick = () => {
+        currentReplies.splice(index, 1);
+        renderPopupReplies(currentReplies);
+      };
+
+      const cancelBtn = document.createElement("span");
+      cancelBtn.innerText = "❌";
+      cancelBtn.className = "cancel-btn";
+      cancelBtn.onclick = () => renderPopupReplies(currentReplies);
+
+      confirmBox.appendChild(confirmBtn);
+      confirmBox.appendChild(cancelBtn);
+      actions.appendChild(confirmBox);
     }
 
     // Cargar las respuestas rápidas al iniciar la página
