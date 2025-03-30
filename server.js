@@ -549,6 +549,32 @@ app.post('/quick-replies', express.json(), (req, res) => {
   fs.writeFileSync(quickRepliesPath, JSON.stringify(replies, null, 2));
   res.json({ success: true });
 });
+const timezoneFile = path.join(__dirname, 'timezone.json');
+
+// Crear archivo si no existe
+if (!fs.existsSync(timezoneFile)) {
+  fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
+}
+
+// Obtener zona horaria
+app.get('/get-timezone', (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(timezoneFile));
+    res.json({ timezone: data.timezone });
+  } catch (error) {
+    res.status(500).json({ timezone: "America/Argentina/Buenos_Aires" });
+  }
+});
+
+// Actualizar zona horaria
+app.post('/update-timezone', (req, res) => {
+  const { timezone } = req.body;
+  if (!timezone || typeof timezone !== 'string') {
+    return res.status(400).json({ success: false, message: "Zona inválida" });
+  }
+  fs.writeFileSync(timezoneFile, JSON.stringify({ timezone }, null, 2));
+  res.json({ success: true });
+});
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
