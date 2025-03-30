@@ -263,10 +263,9 @@
         padding: 8px 15px;
       }
     }
-  </style>
+ </style>
 </head>
 <body>
-
   <div class="header">
     <h1><i class="fa-solid fa-gear"></i> Configuración</h1>
     <button class="back-btn" onclick="window.location.href='admin.html'"><i class="fas fa-arrow-left"></i></button>
@@ -295,6 +294,19 @@
     </div>
 
     <div class="form-group">
+      <label for="timezoneSelect">Zona Horaria (GMT)</label>
+      <select id="timezoneSelect" style="width:100%; padding:12px; background:#1f1f1f; color:white; border-radius:8px;">
+        <option value="America/Argentina/Buenos_Aires">GMT-3 Buenos Aires</option>
+        <option value="America/Mexico_City">GMT-6 Ciudad de México</option>
+        <option value="America/Bogota">GMT-5 Bogotá</option>
+        <option value="Europe/Madrid">GMT+1 Madrid</option>
+        <option value="UTC">UTC (Universal)</option>
+      </select>
+      <button onclick="saveTimezone()">Guardar Zona Horaria</button>
+      <div id="timezoneMsg"></div>
+    </div>
+
+    <div class="form-group">
       <label>Respuestas rápidas (usa comandos personalizados)</label>
       <div id="quickRepliesContainer">
         <button onclick="openRepliesPopup()">📝 Abrir Respuestas Rápidas</button>
@@ -320,6 +332,36 @@
 
   <script>
     const agentUser = localStorage.getItem("adminUser");
+
+    function saveTimezone() {
+      const tz = document.getElementById("timezoneSelect").value;
+      fetch('/update-timezone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timezone: tz })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const msg = document.getElementById("timezoneMsg");
+        if (data.success) {
+          msg.innerHTML = "Zona horaria actualizada correctamente ✅";
+          msg.className = "success";
+        } else {
+          msg.innerHTML = "Error al actualizar la zona horaria ❌";
+          msg.className = "error";
+        }
+      });
+    }
+
+    function loadTimezone() {
+      fetch('/get-timezone')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("timezoneSelect").value = data.timezone || "America/Argentina/Buenos_Aires";
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadTimezone);
 
     function changeName() {
       const newName = document.getElementById("newName").value.trim();
