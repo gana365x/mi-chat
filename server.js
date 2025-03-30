@@ -162,10 +162,8 @@ io.on('connection', (socket) => {
     };
     chatHistory[data.userId].push(openMsg);
 
-    // Enviar a usuario y admins
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('chat message', openMsg);
-
+    // ❌ NO lo enviamos al usuario (index.html)
+    // ✅ Solo lo enviamos al admin
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', openMsg);
