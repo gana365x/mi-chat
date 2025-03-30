@@ -27,6 +27,22 @@ const historyFilePath = path.join(__dirname, 'chatHistory.json');
 const performanceFile = path.join(__dirname, 'performance.json');
 const agentsFilePath = path.join(__dirname, 'agents.json');
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
+const configFilePath = path.join(__dirname, 'config.json');
+
+let timezone = 'America/Argentina/Buenos_Aires';
+if (fs.existsSync(configFilePath)) {
+  try {
+    const config = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
+    if (config.timezone) timezone = config.timezone;
+  } catch (e) {
+    console.error('Error al leer config.json:', e);
+  }
+}
+
+function getTimestamp() {
+  const localDate = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+  return localDate.toISOString();
+}
 
 // Inicializar archivos si no existen
 if (fs.existsSync(historyFilePath)) {
