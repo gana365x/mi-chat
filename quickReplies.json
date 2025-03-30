@@ -1,10 +1,7 @@
 [
   { "command": "/1", "text": "Hola !! compartinos el comprobante así te podemos cargar las fichas !" },
-  { "command": "/2", "text": "¿Querés retirar tus fichas? Completá el formulario y te ayudamos 💸" }
-  { "command": "/3", "text": "¿Querés retirar tus fichas? Completá el formulario y te ayudamos 💸" }
-  { "command": "/4", "text": "¿Querés retirar tus fichas? Completá el formulario y te ayudamos 💸" }
+  { "command": "/2", "text": "¿Querés retirar tus fichas? Completá el formulario y te ayudamos 💸" },
+  { "command": "/3", "text": "¿Querés retirar tus fichas? Completá el formulario y te ayudamos 💸" },
+  { "command": "/4", "text": "¿Querés retirar tus fichas? Completá el formulario y te ayudamos 💸" },
   { "command": "/5", "text": "¿Querés retirar tus fichas? Completá el formulario y te ayudamos 💸" }
 ]
-
-  
-
