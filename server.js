@@ -175,7 +175,7 @@ io.on('connection', (socket) => {
         };
         chatHistory[data.userId].push(openMsg);
 
-        for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
+        for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
           if (subscribedUser Id === data.userId) {
             io.to(adminSocketId).emit('admin message', openMsg);
           }
