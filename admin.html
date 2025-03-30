@@ -975,9 +975,10 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    // PASO 1: Guardar el timezone al iniciar
-    let systemTimezone = "UTC"; // valor por defecto
+    // Variable global para la zona horaria
+    let systemTimezone = "UTC";
 
+    // Cargar la zona horaria desde el servidor
     function loadTimezoneFromServer() {
       fetch('/get-timezone')
         .then(res => res.json())
@@ -989,7 +990,6 @@
           console.warn("⚠️ No se pudo cargar la zona horaria, usando UTC", err);
         });
     }
-
     document.addEventListener('DOMContentLoaded', loadTimezoneFromServer);
 
     const socket = io();
@@ -1013,18 +1013,13 @@
     let pendingFinalizeUserId = null;
     let ignoreNextAdminEcho = false;
 
-    // PASO 2: Usar systemTimezone en la función formatTime para la lista de usuarios
+    // Función para formatear la hora en la lista de usuarios
     function formatTime(dateStr) {
       const date = new Date(dateStr);
-      return date.toLocaleTimeString('es-AR', {
-        timeZone: systemTimezone,
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
+      return date.toLocaleTimeString("es-AR", { timeZone: systemTimezone });
     }
 
-    // PASO 3: Usar systemTimezone en renderChat
+    // Función para renderizar los mensajes con timestamps ajustados
     function renderChat(messages) {
       const popupContainer = document.getElementById("popupMessages");
       const chatContainer = document.getElementById("chatMessages");
@@ -1194,16 +1189,10 @@
     });
 
     socket.on('user list', (users) => {
-  console.log('Lista de usuarios recibida:', users);
-  window.chatUsers = users;
-
-  // Esperamos que timezone esté cargado
-  if (currentTimezone !== "UTC") {
-    renderUserList();
-  } else {
-    setTimeout(() => renderUserList(), 200); // pequeña espera si todavía no está
-  }
-});
+      console.log('Lista de usuarios recibida:', users);
+      window.chatUsers = users;
+      renderUserList();
+    });
 
     function renderUserList() {
       const listContainer = document.getElementById("userList");
