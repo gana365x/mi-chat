@@ -6,6 +6,7 @@
   <title>Panel de Agentes - GANA365</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
+    /* Estilos originales sin cambios */
     body {
       font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       background-color: #121212;
@@ -21,7 +22,7 @@
     .admin-container {
       display: flex;
       width: 100%;
-      height: calc(100vh - 40px); /* 👈 evitamos que se pase del viewport */
+      height: calc(100vh - 40px);
       gap: 20px;
     }
 
@@ -147,7 +148,7 @@
       flex-direction: column;
       box-sizing: border-box;
       border: 2px solid #FF3B00;
-      border-bottom: 4px solid #FF3B00; /* 👈 Línea inferior más gruesa y visible */
+      border-bottom: 4px solid #FF3B00;
       color: white;
       height: 100%;
       overflow: hidden;
@@ -323,7 +324,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 1cm; /* 👈 mueve hacia arriba 1cm */
+      margin-bottom: 1cm;
     }
 
     .chat-input input {
@@ -607,7 +608,7 @@
       display: none;
       flex-direction: column;
       z-index: 9999;
-      width: 80px; /* 👈 Más angosto */
+      width: 80px;
       padding: 10px 0;
     }
 
@@ -750,16 +751,16 @@
       .menu-popup {
         top: 42px;
         right: 8px;
-        width: 52px;          /* ✅ más angosto */
-        padding: 4px 0;       /* ✅ más compacto */
+        width: 52px;
+        padding: 4px 0;
         border-radius: 8px;
       }
 
       .menu-icon-only {
-        width: 30px;          /* ✅ más chico */
+        width: 30px;
         height: 30px;
         font-size: 14px;
-        margin: 3px auto;     /* ✅ menos espacio entre botones */
+        margin: 3px auto;
         border-radius: 5px;
       }
 
@@ -889,7 +890,7 @@
       <ul class="user-list" id="userList"></ul>
     </div>
 
-    <div id="resizer"></div> <!-- 👈 NUEVO SEPARADOR -->
+    <div id="resizer"></div>
 
     <div class="chat-view" id="chatArea" style="display: none !important;">
       <div class="chat-header" id="chatHeader">
@@ -974,6 +975,27 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    // Nueva función global para formatear fechas
+    let currentTimezone = "America/Argentina/Buenos_Aires"; // Valor por defecto
+
+    function formatDateToTimezone(isoDate) {
+      try {
+        const date = new Date(isoDate);
+        return date.toLocaleString("es-AR", {
+          timeZone: currentTimezone,
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      } catch (e) {
+        return "Fecha inválida";
+      }
+    }
+
     const socket = io();
 
     socket.on('connect', () => {
@@ -995,8 +1017,7 @@
     let pendingFinalizeUserId = null;
     let ignoreNextAdminEcho = false;
 
-    let currentTimezone = "America/Argentina/Buenos_Aires"; // valor por defecto
-
+    // Cargar la zona horaria desde el servidor al inicio
     fetch('/get-timezone')
       .then(res => res.json())
       .then(data => {
@@ -1084,12 +1105,7 @@
           let timestamp = 'Sin hora';
           if (msg.timestamp) {
             try {
-              timestamp = new Intl.DateTimeFormat('es-AR', {
-                timeZone: currentTimezone,
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-              }).format(new Date(msg.timestamp));
+              timestamp = formatDateToTimezone(msg.timestamp); // Usamos la nueva función
             } catch (error) {
               console.error("Error al convertir la hora:", error);
             }
@@ -1730,5 +1746,5 @@
     });
   </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9284b992a85a53ab',t:'MTc0MzMwNzQ4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9289550a7cb4afef',t:'MTc0MzM1NTc5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
