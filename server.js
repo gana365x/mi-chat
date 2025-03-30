@@ -300,7 +300,17 @@ io.on('connection', (socket) => {
     adminSubscriptions.set(socket.id, data.userId);
     chatHistory[data.userId] = chatHistory[data.userId] || [];
 
-    const userSocket = userSessions.get(data.userId)?.socket;
+    const lastMsg = chatHistory[data.userId][chatHistory[data.userId].length - 1];
+    if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
+      const openMsg = {
+        sender: 'System',
+        message: '💬 Chat abierto',
+        timestamp: getTimestamp()
+      };
+      chatHistory[data.userId].push(openMsg);
+      saveChatHistory();
+
+      const userSocket = userSessions.get(data.userId)?.socket;
       if (userSocket) userSocket.emit('chat message', openMsg);
 
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
