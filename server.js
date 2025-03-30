@@ -87,7 +87,7 @@ function incrementPerformance(agentUsername) {
 }
 
 // Función para obtener timestamp en GMT-3
-function getTimestampWithConfiguredTimezone() {
+{
   const defaultTimezone = "America/Argentina/Buenos_Aires";
   try {
     const { timezone } = JSON.parse(fs.readFileSync(path.join(__dirname, 'timezone.json')));
