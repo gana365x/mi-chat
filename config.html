@@ -473,9 +473,10 @@
 
     function saveQuickReplies() {
       const inputs = document.querySelectorAll(".quick-reply-input");
-      inputs.forEach(i => i.disabled = false);
+      inputs.forEach(i => i.disabled = false); // aseguramos lectura
 
-      const newReplies = Array.from(inputs).map(input => input.value.trim()).filter(Boolean);
+      // ✅ No eliminamos vacíos, respetamos estructura
+      const newReplies = Array.from(inputs).map(input => input.value);
 
       fetch('/quick-replies', {
         method: 'POST',
