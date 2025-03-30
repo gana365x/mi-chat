@@ -162,17 +162,33 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push(messageData);
 
     if (chatHistory[data.userId]) {
+      // Si el chat estaba cerrado y el usuario vuelve a escribir
       const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
-      // Bloque eliminado: ya no se generará "💬 Chat abierto" automáticamente
-    }
+      if (wasClosed) {
+        // Removemos el estado cerrado para reactivar el chat
+        chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
 
-    if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
-      if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
-      chatHistory[data.userId].activeSession = true;
-      saveChatHistory();
-      io.emit('user list', getAllChatsSorted());
-    } else {
-      saveChatHistory();
+        // Enviamos un mensaje del sistema para marcar reapertura
+        chatHistory[data.userId].push({
+          userId: data.userId,
+          sender: 'System',
+          message: '🔄 El chat fue reabierto por el cliente',
+          timestamp: getTimestamp()
+        });
+
+        saveChatHistory();
+        io.emit('user list', getAllChatsSorted());
+      }
+
+      // Bloque original para 'Cargar Fichas' o 'Retirar'
+      if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
+        if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
+        chatHistory[data.userId].activeSession = true;
+        saveChatHistory();
+        io.emit('user list', getAllChatsSorted());
+      } else {
+        saveChatHistory();
+      }
     }
 
     const userSocket = userSessions.get(data.userId)?.socket;
