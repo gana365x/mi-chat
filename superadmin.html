@@ -165,8 +165,12 @@
 
       <div style="margin-top: 30px;">
         <h3>Estadísticas de Agentes</h3>
-        <canvas id="agentChart" height="200"></canvas>
-      </div>
+        <div style="margin-top: 30px; height: 200px;">
+  <h3>Estadísticas de Agentes</h3>
+  <div style="height: 100%;">
+    <canvas id="agentChart"></canvas>
+  </div>
+</div>
 
       <div style="margin-top: 30px;">
         <h3>Estadísticas de Interacciones</h3>
@@ -299,15 +303,18 @@
               }]
             },
             options: {
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: { stepSize: 1 }
-                }
-              }
-            }
+  responsive: true,
+  maintainAspectRatio: false,  // Esta línea evita que se expanda infinitamente
+  plugins: {
+    legend: { display: false }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: { stepSize: 1 }
+    }
+  }
+}
           });
         });
     }
