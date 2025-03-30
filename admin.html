@@ -975,26 +975,22 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    // Nueva función global para formatear fechas
-    let currentTimezone = "America/Argentina/Buenos_Aires"; // Valor por defecto
+    // PASO 1: Guardar el timezone al iniciar
+    let systemTimezone = "UTC"; // valor por defecto
 
-    function formatDateToTimezone(isoDate) {
-      try {
-        const date = new Date(isoDate);
-        return date.toLocaleString("es-AR", {
-          timeZone: currentTimezone,
-          hour12: false,
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
+    function loadTimezoneFromServer() {
+      fetch('/get-timezone')
+        .then(res => res.json())
+        .then(data => {
+          systemTimezone = data.timezone || "UTC";
+          console.log("🕒 Zona horaria cargada:", systemTimezone);
+        })
+        .catch(err => {
+          console.warn("⚠️ No se pudo cargar la zona horaria, usando UTC", err);
         });
-      } catch (e) {
-        return "Fecha inválida";
-      }
     }
+
+    document.addEventListener('DOMContentLoaded', loadTimezoneFromServer);
 
     const socket = io();
 
@@ -1017,29 +1013,18 @@
     let pendingFinalizeUserId = null;
     let ignoreNextAdminEcho = false;
 
-    // Cargar la zona horaria desde el servidor al inicio
-    fetch('/get-timezone')
-      .then(res => res.json())
-      .then(data => {
-        if (data.timezone) {
-          currentTimezone = data.timezone;
-          console.log("Zona horaria cargada:", currentTimezone);
-        }
-      })
-      .catch(() => {
-        console.warn("No se pudo cargar la zona horaria, se usa por defecto.");
-      });
-
+    // PASO 2: Usar systemTimezone en la función formatTime para la lista de usuarios
     function formatTime(dateStr) {
       const date = new Date(dateStr);
       return date.toLocaleTimeString('es-AR', {
-        timeZone: currentTimezone,
+        timeZone: systemTimezone,
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
       });
     }
 
+    // PASO 3: Usar systemTimezone en renderChat
     function renderChat(messages) {
       const popupContainer = document.getElementById("popupMessages");
       const chatContainer = document.getElementById("chatMessages");
@@ -1058,20 +1043,20 @@
 
         const msgDate = new Date(msg.timestamp);
         const formattedDay = new Intl.DateTimeFormat('es-AR', {
-          timeZone: currentTimezone,
+          timeZone: systemTimezone,
           year: 'numeric', month: 'numeric', day: 'numeric'
         }).format(msgDate);
 
         const now = new Date();
         const formattedNow = new Intl.DateTimeFormat('es-AR', {
-          timeZone: currentTimezone,
+          timeZone: systemTimezone,
           year: 'numeric', month: 'numeric', day: 'numeric'
         }).format(now);
 
         const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
         const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
-          timeZone: currentTimezone,
+          timeZone: systemTimezone,
           year: 'numeric', month: 'numeric', day: 'numeric'
         }).format(yesterday);
 
@@ -1079,7 +1064,7 @@
         if (formattedDay === formattedNow) label = 'Hoy';
         else if (formattedDay === formattedYesterday) label = 'Ayer';
         else label = new Intl.DateTimeFormat('es-AR', {
-          timeZone: currentTimezone,
+          timeZone: systemTimezone,
           day: 'numeric', month: 'long'
         }).format(msgDate);
 
@@ -1105,7 +1090,8 @@
           let timestamp = 'Sin hora';
           if (msg.timestamp) {
             try {
-              timestamp = formatDateToTimezone(msg.timestamp); // Usamos la nueva función
+              const date = new Date(msg.timestamp);
+              timestamp = date.toLocaleString("es-AR", { timeZone: systemTimezone });
             } catch (error) {
               console.error("Error al convertir la hora:", error);
             }
@@ -1487,7 +1473,7 @@
 
     let originalUserName = "";
 
-    function editName() {
+    function toggleEditInput() {
       const currentUserSpan = document.getElementById("currentUser");
       const input = document.getElementById("editNameInput");
       const editBtn = document.getElementById("editBtn");
@@ -1503,7 +1489,7 @@
       cancelBtn.style.display = "inline-block";
     }
 
-    function saveName() {
+    function saveNewName() {
       const newName = document.getElementById("editNameInput").value.trim();
       const currentUserSpan = document.getElementById("currentUser");
 
@@ -1628,39 +1614,6 @@
       document.getElementById("editNameContainer").style.display = "none";
     }
 
-    function toggleEditInput() {
-      document.getElementById("editNameInput").style.display = "inline-block";
-      document.getElementById("saveBtn").style.display = "inline-block";
-      document.getElementById("cancelBtn").style.display = "inline-block";
-      document.getElementById("editBtn").style.display = "none";
-
-      const currentName = document.getElementById("currentUser").textContent;
-      document.getElementById("editNameInput").value = currentName;
-    }
-
-    function cancelEdit() {
-      document.getElementById("editNameInput").style.display = "none";
-      document.getElementById("saveBtn").style.display = "none";
-      document.getElementById("cancelBtn").style.display = "none";
-      document.getElementById("editBtn").style.display = "inline-block";
-    }
-
-    function saveNewName() {
-      const newName = document.getElementById("editNameInput").value.trim();
-      if (!newName) return;
-
-      document.getElementById("currentUser").textContent = newName;
-
-      if (selectedUserId) {
-        socket.emit("update username", {
-          userId: selectedUserId,
-          newUsername: newName
-        });
-      }
-
-      cancelEdit();
-    }
-
     const adminInput = document.getElementById('adminInput');
     const quickList = document.getElementById('quickList');
     let quickReplies = [];
@@ -1746,5 +1699,5 @@
     });
   </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9284b992a85a53ab',t:'MTc0MzMwNzQ4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9289550a7cb4afef',t:'MTc0MzM1NTc5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9289550a7cb4afef',t:'MTc0MzM1NTc5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928992f2e964bf7f',t:'MTc0MzM1ODMzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
