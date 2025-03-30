@@ -1069,32 +1069,22 @@
                 ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="showFinalizePopup('${user.userId}')">Finalizar</button>`}
               </div>
             </div>
-            const chatDiv = document.createElement('div');
-chatDiv.classList.add('chat-item');
-// etc.
+            <div class="hora">${formatTime(user.lastMessageTime)}</div>
+          `;
 
-console.log("Hora para usuario", user.username, user.lastMessageTime); // <- fuera del innerHTML
-
-chatDiv.innerHTML = `
-  <div class="chat-left">
-    <span class="username">${user.username}</span>
-    <div class="badges">
-      ${user.isClosed
-        ? `<span class="badge cerrado">Cerrado</span>`
-        : `<button class="badge finalizar" onclick="showFinalizePopup('${user.userId}')">Finalizar</button>`}
-    </div>
-  </div>
-  <div class="hora">${formatTime(user.lastMessageTime)}</div>
-`;
+          chatDiv.onclick = (e) => {
+            if (e.target.classList.contains('finalizar')) return;
+            selectUser(user.userId, user.username);
+          };
+          listContainer.appendChild(chatDiv);
+        }
       });
     }
 
     function formatTime(dateStr) {
-  if (!dateStr) return "--:--";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "--:--"; // fecha inválida
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
+      const date = new Date(dateStr);
+      return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    }
 
     function updateUsername(userId, newUsername) {
       console.log('Actualizando nombre de usuario para', userId, 'a', newUsername);
