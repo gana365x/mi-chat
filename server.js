@@ -41,15 +41,27 @@ if (fs.existsSync(configFilePath)) {
 
 function getTimestamp() {
   const defaultTimezone = "America/Argentina/Buenos_Aires";
+  const timezoneFilePath = path.join(__dirname, 'timezone.json');
+
+  let timezone = defaultTimezone;
+
   try {
-    const { timezone } = JSON.parse(fs.readFileSync(path.join(__dirname, 'timezone.json')));
-    const now = new Date();
-    const localDate = new Date(now.toLocaleString('en-US', { timeZone: timezone || defaultTimezone }));
-    return localDate.toISOString();
+    const data = fs.readFileSync(timezoneFilePath, 'utf-8');
+    const config = JSON.parse(data);
+    if (config.timezone) {
+      timezone = config.timezone;
+    }
   } catch (e) {
+    console.error("❌ Error leyendo timezone.json:", e.message);
+  }
+
+  try {
     const now = new Date();
-    const localDate = new Date(now.toLocaleString('en-US', { timeZone: defaultTimezone }));
-    return localDate.toISOString();
+    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+    return localTime.toISOString();
+  } catch (e) {
+    console.error("❌ Error convirtiendo a zona horaria:", e.message);
+    return new Date().toISOString();
   }
 }
 
