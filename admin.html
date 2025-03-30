@@ -1033,19 +1033,14 @@
       let lastRenderedDate = null;
 
       messages.forEach(msg => {
-        // Depurar el timestamp para identificar el problema
-        console.log('Procesando mensaje:', msg, 'Timestamp:', msg.timestamp);
-
-        // Validar y corregir el timestamp si es inválido
-        if (!msg.timestamp || isNaN(new Date(msg.timestamp))) {
-          console.warn("Mensaje con timestamp inválido:", msg);
-          msg.timestamp = new Date().toISOString(); // Valor por defecto si es inválido
-        }
-
-        const msgDate = new Date(msg.timestamp);
-        if (isNaN(msgDate)) {
-          console.error("Timestamp sigue siendo inválido después de corrección:", msg.timestamp);
-          msgDate = new Date(); // Último recurso: usar la fecha actual
+        // Asegurarse de que el timestamp sea válido o asignar uno por defecto
+        let msgDate;
+        if (!msg.timestamp || isNaN(Date.parse(msg.timestamp))) {
+          console.warn("Timestamp inválido o ausente, usando fecha actual:", msg);
+          msgDate = new Date(); // Fecha actual como respaldo
+          msg.timestamp = msgDate.toISOString(); // Actualizar el timestamp
+        } else {
+          msgDate = new Date(msg.timestamp);
         }
 
         const formattedDay = new Intl.DateTimeFormat('es-AR', {
@@ -1093,18 +1088,7 @@
           const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
           div.classList.add("bubble", senderClass);
 
-          let timestamp = 'Sin hora';
-          try {
-            const date = new Date(msg.timestamp);
-            if (!isNaN(date)) {
-              timestamp = date.toLocaleString("es-AR", { timeZone: systemTimezone });
-            } else {
-              throw new Error('Fecha inválida');
-            }
-          } catch (error) {
-            console.error("Error al convertir la hora:", error, "Timestamp:", msg.timestamp);
-            timestamp = new Date().toLocaleString("es-AR", { timeZone: systemTimezone }); // Valor por defecto
-          }
+          let timestamp = msgDate.toLocaleString("es-AR", { timeZone: systemTimezone });
 
           if (msg.message) {
             if (msg.sender === "Agent" || msg.sender === "Bot") {
@@ -1339,36 +1323,52 @@
 
     socket.on('admin message', (data) => {
       console.log('Mensaje recibido en tiempo real:', data);
+
       if (ignoreNextAdminEcho) {
         ignoreNextAdminEcho = false;
         return;
       }
 
-      if (!data.userId || !data.sender || !data.message) {
-        console.error('Mensaje recibido inválido, falta userId, sender o message:', data);
+      // Permitir mensajes del sistema sin userId
+      if (!data || !data.sender || !data.message) {
+        console.error('Mensaje recibido inválido, falta sender o message:', data);
         return;
       }
 
-      if (!localChatHistory[data.userId]) {
+      // Si no es un mensaje del sistema, requerir userId
+      if (data.sender !== 'System' && !data.userId) {
+        console.error('Mensaje recibido inválido, falta userId:', data);
+        return;
+      }
+
+      if (data.userId && !localChatHistory[data.userId]) {
         localChatHistory[data.userId] = [];
       }
-      localChatHistory[data.userId].push({ sender: data.sender, message: data.message });
 
-      const chatElement = document.querySelector(`div[data-user-id="${data.userId}"]`);
-      const wasClosed = chatElement && chatElement.querySelector('.cerrado');
+      if (data.userId) {
+        localChatHistory[data.userId].push({ sender: data.sender, message: data.message, timestamp: data.timestamp || new Date().toISOString() });
+      
+        const chatElement = document.querySelector(`div[data-user-id="${data.userId}"]`);
+        const wasClosed = chatElement && chatElement.querySelector('.cerrado');
 
-      if (wasClosed) {
-        showFinalizarButton(data.userId);
-      }
+        if (wasClosed) {
+          showFinalizarButton(data.userId);
+        }
 
-      if (data.userId === selectedUserId) {
-        renderChat(localChatHistory[data.userId]);
+        if (data.userId === selectedUserId) {
+          renderChat(localChatHistory[data.userId]);
+        }
+      } else {
+        // Manejar mensajes del sistema sin userId
+        if (selectedUserId && localChatHistory[selectedUserId]) {
+          localChatHistory[selectedUserId].push({ sender: data.sender, message: data.message, timestamp: data.timestamp || new Date().toISOString() });
+          renderChat(localChatHistory[selectedUserId]);
+        }
       }
     });
 
     socket.on('admin image', (data) => {
       console.log('Imagen recibida en tiempo real:', data);
-      console.log('selectedUserId:', selectedUserId, 'data.userId:', data.userId);
       if (!data || !data.userId || !data.sender || !data.image) {
         console.error('Imagen recibida inválida, falta userId, sender o image:', data);
         return;
@@ -1383,10 +1383,7 @@
       });
       
       if (data.userId === selectedUserId) {
-        console.log('Renderizando chat con nueva imagen para usuario seleccionado');
         renderChat(localChatHistory[data.userId]);
-      } else {
-        console.log('Imagen recibida, pero no es el usuario seleccionado');
       }
     });
 
@@ -1709,6 +1706,5 @@
       document.body.style.cursor = 'default';
     });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9284b992a85a53ab',t:'MTc0MzMwNzQ4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9289550a7cb4afef',t:'MTc0MzM1NTc5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928992f2e964bf7f',t:'MTc0MzM1ODMzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
