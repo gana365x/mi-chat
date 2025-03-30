@@ -147,12 +147,34 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push(messageData);
 
     if (chatHistory[data.userId]) {
-      const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
-      if (wasClosed) {
-        chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
-        io.emit('user list', getAllChatsSorted());
+  const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
+
+  if (wasClosed) {
+    // Eliminar estado cerrado para reactivar el chat
+    chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
+
+    // Agregar mensaje de reapertura
+    const openMsg = {
+      userId: data.userId,
+      sender: 'System',
+      message: '💬 Chat abierto',
+      timestamp: getGMT3Timestamp()
+    };
+    chatHistory[data.userId].push(openMsg);
+
+    // Enviar a usuario y admins
+    const userSocket = userSessions.get(data.userId)?.socket;
+    if (userSocket) userSocket.emit('chat message', openMsg);
+
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
+        io.to(adminSocketId).emit('admin message', openMsg);
       }
     }
+
+    io.emit('user list', getAllChatsSorted());
+  }
+}
 
     if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
       if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
