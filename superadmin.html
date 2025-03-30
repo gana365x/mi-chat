@@ -248,6 +248,7 @@
     Chart.register(ChartDataLabels);
 
     let chartInstance = null;
+    let allAgents = []; // Lista global de agentes registrados
 
     function loginSuperAdmin() {
       const username = document.getElementById('superUsername').value.trim();
@@ -281,6 +282,7 @@
       fetch('/agents')
         .then(res => res.json())
         .then(agents => {
+          allAgents = agents.map(agent => agent.username); // Guardamos los usernames
           const table = document.getElementById('agentsTable');
           table.innerHTML = '';
           agents.forEach(agent => {
@@ -368,13 +370,13 @@
       switch (value) {
         case "today":
           start = new Date();
-          end = new Date(start); // Mismo día que start
+          end = new Date(start);
           break;
           
         case "yesterday":
           start = new Date();
           start.setDate(start.getDate() - 1);
-          end = new Date(start); // Mismo día que start
+          end = new Date(start);
           break;
           
         case "week":
@@ -443,18 +445,18 @@
         })
         .then(agentData => {
           console.log("Datos recibidos de /stats-agents:", agentData);
-          const labels = agentData.map(item => item.username);
-          const values = agentData.map(item => item.finalizados || 0);
-          
-          // Si no hay datos, mostramos un gráfico vacío
-          if (!agentData || agentData.length === 0) {
-            console.log("No hay datos para el rango seleccionado, mostrando gráfico vacío.");
-            labels.push("Sin datos");
-            values.push(0);
-          }
+
+          // Crear un mapa de datos por agente
+          const agentStats = {};
+          agentData.forEach(item => {
+            agentStats[item.username] = item.finalizados || 0;
+          });
+
+          // Asegurar que todos los agentes registrados aparezcan, con 0 si no tienen datos
+          const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
+          const values = labels.map(username => agentStats[username] || 0);
 
           const ctx = document.getElementById('chartAgentes').getContext('2d');
-
           if (chartInstance) chartInstance.destroy();
 
           chartInstance = new Chart(ctx, {
@@ -496,20 +498,12 @@
               scales: {
                 x: {
                   beginAtZero: true,
-                  grid: {
-                    color: '#333'
-                  },
-                  ticks: {
-                    color: '#fff'
-                  }
+                  grid: { color: '#333' },
+                  ticks: { color: '#fff' }
                 },
                 y: {
-                  grid: {
-                    color: '#333'
-                  },
-                  ticks: {
-                    color: '#fff'
-                  }
+                  grid: { color: '#333' },
+                  ticks: { color: '#fff' }
                 }
               }
             }
@@ -517,16 +511,19 @@
         })
         .catch(err => {
           console.error("Error al cargar estadísticas de agentes:", err);
-          // Mostrar gráfico vacío en caso de error
+          // Mostrar todos los agentes con 0 en caso de error o sin datos
+          const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
+          const values = labels.map(() => 0);
+
           const ctx = document.getElementById('chartAgentes').getContext('2d');
           if (chartInstance) chartInstance.destroy();
           chartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
-              labels: ["Error al cargar"],
+              labels: labels,
               datasets: [{
                 label: 'Chats Finalizados',
-                data: [0],
+                data: values,
                 backgroundColor: '#1a1a1a',
                 borderColor: '#FF3B00',
                 borderWidth: 2,
@@ -539,7 +536,22 @@
               responsive: true,
               plugins: {
                 legend: { display: false },
-                datalabels: { display: false }
+                tooltip: {
+                  backgroundColor: '#FF3B00',
+                  titleColor: '#fff',
+                  bodyColor: '#fff'
+                },
+                datalabels: {
+                  anchor: 'end',
+                  align: 'right',
+                  offset: 4,
+                  color: '#fff',
+                  font: {
+                    size: 14,
+                    weight: 'bold'
+                  },
+                  formatter: (value) => value
+                }
               },
               scales: {
                 x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff' } },
