@@ -1145,55 +1145,46 @@
       console.log('Renderizando mensajes:', messages);
 
       messages.forEach(msg => {
-        if (msg.sender === 'system' && msg.message?.includes('Chat iniciado')) {
-          const dateTag = document.createElement('div');
-          dateTag.classList.add('bubble', 'system');
-          dateTag.style.textAlign = 'center';
-          dateTag.style.fontSize = '12px';
-          dateTag.style.color = '#999';
-          dateTag.style.margin = '10px 0';
-          dateTag.innerText = msg.message;
-          popupContainer.appendChild(dateTag.cloneNode(true));
-          chatContainer.appendChild(dateTag);
-        } else {
-          const div = document.createElement('div');
-          const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
-          div.classList.add("bubble", senderClass);
+        if (msg.sender === 'System') {
+  const systemMsg = document.createElement('div');
+  systemMsg.classList.add('bubble', 'system');
+  systemMsg.innerText = msg.message;
+  popupContainer.appendChild(systemMsg.cloneNode(true));
+  chatContainer.appendChild(systemMsg);
+} else {
+  const div = document.createElement('div');
+  const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
+  div.classList.add("bubble", senderClass);
 
-          const timestamp = new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const timestamp = new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-          if (msg.message) {
-            if (msg.sender === "Agent") {
-              div.innerHTML = `<div>${msg.message}</div>`;
-            } else if (msg.sender === "Bot") {
-              div.innerHTML = `<div>${msg.message}</div>`;
-            } else if (msg.sender === "System") {
-              div.innerHTML = `<div>${msg.message}</div>`;
-            } else {
-              div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
-            }
-          }
+  if (msg.message) {
+    if (msg.sender === "Agent" || msg.sender === "Bot") {
+      div.innerHTML = `<div>${msg.message}</div>`;
+    } else {
+      div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+    }
+  }
 
-          if (msg.image) {
-            console.log('Renderizando imagen:', msg.image);
-            const img = document.createElement("img");
-            img.src = msg.image;
-            img.alt = "imagen enviada";
-            img.style.maxWidth = "200px";
-            img.style.borderRadius = "10px";
-            img.style.marginTop = "5px";
-            img.onclick = () => openImageInNewWindow(msg.image);
-            div.appendChild(img);
-          }
+  if (msg.image) {
+    const img = document.createElement("img");
+    img.src = msg.image;
+    img.alt = "imagen enviada";
+    img.style.maxWidth = "200px";
+    img.style.borderRadius = "10px";
+    img.style.marginTop = "5px";
+    img.onclick = () => openImageInNewWindow(msg.image);
+    div.appendChild(img);
+  }
 
-          const time = document.createElement("div");
-          time.className = "timestamp";
-          time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
-          div.appendChild(time);
+  const time = document.createElement("div");
+  time.className = "timestamp";
+  time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
+  div.appendChild(time);
 
-          popupContainer.appendChild(div.cloneNode(true));
-          chatContainer.appendChild(div);
-        }
+  popupContainer.appendChild(div.cloneNode(true));
+  chatContainer.appendChild(div);
+}
       });
 
       popupContainer.scrollTop = popupContainer.scrollHeight;
