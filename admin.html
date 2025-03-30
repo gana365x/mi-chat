@@ -904,27 +904,27 @@
       </div>
       <div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
       <ul id="quickList" style="
-  display: none;
-  position: absolute;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1f1f1f;
-  border: 1px solid #FF3B00;
-  border-radius: 10px;
-  padding: 10px;
-  width: auto;
-  min-width: 300px;
-  max-width: 600px;
-  white-space: nowrap;
-  overflow-y: auto;
-  z-index: 9999;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.6);
-  font-size: 14px;
-  color: white;
-  list-style: none;
-  text-align: left;
-"></ul>
+        display: none;
+        position: absolute;
+        bottom: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f1f1f;
+        border: 1px solid #FF3B00;
+        border-radius: 10px;
+        padding: 10px;
+        width: auto;
+        min-width: 300px;
+        max-width: 600px;
+        white-space: nowrap;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+        font-size: 14px;
+        color: white;
+        list-style: none;
+        text-align: left;
+      "></ul>
       <div class="chat-input" id="chatInputArea">
         <input type="text" id="adminInput" placeholder="Escribir mensaje..." />
         <button onclick="sendAdminMessage()">Enviar</button>
@@ -995,35 +995,168 @@
     let pendingFinalizeUserId = null;
     let ignoreNextAdminEcho = false;
 
-    function submitLogin() {
-  const username = document.getElementById("adminUsername").value.trim();
-  const password = document.getElementById("adminPassword").value.trim();
+    let currentTimezone = "America/Argentina/Buenos_Aires"; // valor por defecto
 
-  fetch('/agent-login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.superadmin) {
-      window.location.href = "/superadmin.html";
-    } else if (data.success) {
-      localStorage.setItem("adminLoggedIn", "true");
-      localStorage.setItem("adminUser", username);
-      document.getElementById("loginScreen").style.display = "none";
-      document.querySelector(".admin-container").style.display = "flex";
-      document.getElementById("menuWrapper").style.display = "none";
-      socket.emit('admin connected');
-    } else {
-      throw new Error("Credenciales inválidas");
+    fetch('/get-timezone')
+      .then(res => res.json())
+      .then(data => {
+        if (data.timezone) {
+          currentTimezone = data.timezone;
+          console.log("Zona horaria cargada:", currentTimezone);
+        }
+      })
+      .catch(() => {
+        console.warn("No se pudo cargar la zona horaria, se usa por defecto.");
+      });
+
+    function formatTime(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString('es-AR', {
+        timeZone: currentTimezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
     }
-  })
-  .catch(err => {
-    document.getElementById("loginError").style.display = "block";
-    console.error("Login fallido:", err);
-  });
-}
+
+    function renderChat(messages) {
+      const popupContainer = document.getElementById("popupMessages");
+      const chatContainer = document.getElementById("chatMessages");
+      popupContainer.innerHTML = '';
+      chatContainer.innerHTML = '';
+
+      console.log('Renderizando mensajes:', messages);
+
+      let lastRenderedDate = null;
+
+      messages.forEach(msg => {
+        if (!msg.timestamp || isNaN(new Date(msg.timestamp))) {
+          console.warn("Mensaje con timestamp inválido:", msg);
+          msg.timestamp = new Date().toISOString(); // Usamos fecha actual por defecto
+        }
+
+        const msgDate = new Date(msg.timestamp);
+        const formattedDay = new Intl.DateTimeFormat('es-AR', {
+          timeZone: currentTimezone,
+          year: 'numeric', month: 'numeric', day: 'numeric'
+        }).format(msgDate);
+
+        const now = new Date();
+        const formattedNow = new Intl.DateTimeFormat('es-AR', {
+          timeZone: currentTimezone,
+          year: 'numeric', month: 'numeric', day: 'numeric'
+        }).format(now);
+
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
+          timeZone: currentTimezone,
+          year: 'numeric', month: 'numeric', day: 'numeric'
+        }).format(yesterday);
+
+        let label = '';
+        if (formattedDay === formattedNow) label = 'Hoy';
+        else if (formattedDay === formattedYesterday) label = 'Ayer';
+        else label = new Intl.DateTimeFormat('es-AR', {
+          timeZone: currentTimezone,
+          day: 'numeric', month: 'long'
+        }).format(msgDate);
+
+        if (formattedDay !== lastRenderedDate) {
+          lastRenderedDate = formattedDay;
+          const dateLabel = document.createElement('div');
+          dateLabel.className = 'date-label';
+          dateLabel.textContent = label;
+          chatContainer.appendChild(dateLabel);
+        }
+
+        if (msg.sender === 'System') {
+          const systemMsg = document.createElement('div');
+          systemMsg.classList.add('bubble', 'system');
+          systemMsg.innerText = msg.message;
+          popupContainer.appendChild(systemMsg.cloneNode(true));
+          chatContainer.appendChild(systemMsg);
+        } else {
+          const div = document.createElement('div');
+          const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
+          div.classList.add("bubble", senderClass);
+
+          let timestamp = 'Sin hora';
+          if (msg.timestamp) {
+            try {
+              timestamp = new Intl.DateTimeFormat('es-AR', {
+                timeZone: currentTimezone,
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              }).format(new Date(msg.timestamp));
+            } catch (error) {
+              console.error("Error al convertir la hora:", error);
+            }
+          }
+
+          if (msg.message) {
+            if (msg.sender === "Agent" || msg.sender === "Bot") {
+              div.innerHTML = `<div>${msg.message}</div>`;
+            } else {
+              div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+            }
+          }
+
+          if (msg.image) {
+            const img = document.createElement("img");
+            img.src = msg.image;
+            img.alt = "imagen enviada";
+            img.style.maxWidth = "200px";
+            img.style.borderRadius = "10px";
+            img.style.marginTop = "5px";
+            img.onclick = () => openImageInNewWindow(msg.image);
+            div.appendChild(img);
+          }
+
+          const time = document.createElement("div");
+          time.className = "timestamp";
+          time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
+          div.appendChild(time);
+
+          popupContainer.appendChild(div.cloneNode(true));
+          chatContainer.appendChild(div);
+        }
+      });
+
+      popupContainer.scrollTop = popupContainer.scrollHeight;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function submitLogin() {
+      const username = document.getElementById("adminUsername").value.trim();
+      const password = document.getElementById("adminPassword").value.trim();
+
+      fetch('/agent-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.superadmin) {
+          window.location.href = "/superadmin.html";
+        } else if (data.success) {
+          localStorage.setItem("adminLoggedIn", "true");
+          localStorage.setItem("adminUser", username);
+          document.getElementById("loginScreen").style.display = "none";
+          document.querySelector(".admin-container").style.display = "flex";
+          document.getElementById("menuWrapper").style.display = "none";
+          socket.emit('admin connected');
+        } else {
+          throw new Error("Credenciales inválidas");
+        }
+      })
+      .catch(err => {
+        document.getElementById("loginError").style.display = "block";
+        console.error("Login fallido:", err);
+      });
+    }
 
     async function getDisplayName(username) {
       const response = await fetch('/get-agent-displayname?username=' + encodeURIComponent(username));
@@ -1105,16 +1238,6 @@
       });
     }
 
-    function formatTime(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString('es-AR', {
-    timeZone: 'America/Argentina/Buenos_Aires',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-}
-
     function updateUsername(userId, newUsername) {
       console.log('Actualizando nombre de usuario para', userId, 'a', newUsername);
       socket.emit('update username', { userId, newUsername });
@@ -1152,117 +1275,6 @@
 
       socket.emit('request chat history', { userId });
     }
-
-    // ... (todo tu código anterior intacto)
-
-function renderChat(messages) {
-  const popupContainer = document.getElementById("popupMessages");
-  const chatContainer = document.getElementById("chatMessages");
-  popupContainer.innerHTML = '';
-  chatContainer.innerHTML = '';
-
-  console.log('Renderizando mensajes:', messages);
-
-  let lastRenderedDate = null;
-
-  messages.forEach(msg => {
-  if (!msg.timestamp || isNaN(new Date(msg.timestamp))) {
-    console.warn("Mensaje con timestamp inválido:", msg);
-    msg.timestamp = new Date().toISOString(); // Usamos fecha actual por defecto
-  }
-
-  const msgDate = new Date(msg.timestamp);
-  const formattedDay = new Intl.DateTimeFormat('es-AR', {
-      timeZone: 'America/Argentina/Buenos_Aires',
-      year: 'numeric', month: 'numeric', day: 'numeric'
-    }).format(msgDate);
-
-    const now = new Date();
-    const formattedNow = new Intl.DateTimeFormat('es-AR', {
-      timeZone: 'America/Argentina/Buenos_Aires',
-      year: 'numeric', month: 'numeric', day: 'numeric'
-    }).format(now);
-
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
-      timeZone: 'America/Argentina/Buenos_Aires',
-      year: 'numeric', month: 'numeric', day: 'numeric'
-    }).format(yesterday);
-
-    let label = '';
-    if (formattedDay === formattedNow) label = 'Hoy';
-    else if (formattedDay === formattedYesterday) label = 'Ayer';
-    else label = new Intl.DateTimeFormat('es-AR', {
-      timeZone: 'America/Argentina/Buenos_Aires',
-      day: 'numeric', month: 'long'
-    }).format(msgDate);
-
-    if (formattedDay !== lastRenderedDate) {
-      lastRenderedDate = formattedDay;
-      const dateLabel = document.createElement('div');
-      dateLabel.className = 'date-label';
-      dateLabel.textContent = label;
-      chatContainer.appendChild(dateLabel);
-    }
-
-    if (msg.sender === 'System') {
-      const systemMsg = document.createElement('div');
-      systemMsg.classList.add('bubble', 'system');
-      systemMsg.innerText = msg.message;
-      popupContainer.appendChild(systemMsg.cloneNode(true));
-      chatContainer.appendChild(systemMsg);
-    } else {
-      const div = document.createElement('div');
-      const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
-      div.classList.add("bubble", senderClass);
-
-      let timestamp = 'Sin hora';
-if (msg.timestamp) {
-  try {
-    timestamp = new Intl.DateTimeFormat('es-AR', {
-      timeZone: 'America/Argentina/Buenos_Aires',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).format(new Date(msg.timestamp));
-  } catch (error) {
-    console.error("Error al convertir la hora:", error);
-  }
-}
-
-      if (msg.message) {
-        if (msg.sender === "Agent" || msg.sender === "Bot") {
-          div.innerHTML = `<div>${msg.message}</div>`;
-        } else {
-          div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
-        }
-      }
-
-      if (msg.image) {
-        const img = document.createElement("img");
-        img.src = msg.image;
-        img.alt = "imagen enviada";
-        img.style.maxWidth = "200px";
-        img.style.borderRadius = "10px";
-        img.style.marginTop = "5px";
-        img.onclick = () => openImageInNewWindow(msg.image);
-        div.appendChild(img);
-      }
-
-      const time = document.createElement("div");
-      time.className = "timestamp";
-      time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
-      div.appendChild(time);
-
-      popupContainer.appendChild(div.cloneNode(true));
-      chatContainer.appendChild(div);
-    }
-  });
-
-  popupContainer.scrollTop = popupContainer.scrollHeight;
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
 
     function sendPopupMessage() {
       const input = document.getElementById("popupInput");
@@ -1644,36 +1656,36 @@ if (msg.timestamp) {
       });
 
     adminInput.addEventListener('input', (e) => {
-  const value = e.target.value.trim();
+      const value = e.target.value.trim();
 
-  if (value === '/') {
-    quickList.innerHTML = '';
-    quickReplies.forEach((msg, index) => {
-      const li = document.createElement('li');
-      li.textContent = `${msg.command} → ${msg.text}`;
-      li.style.marginBottom = '6px';
-      li.style.cursor = 'pointer';
-      li.addEventListener('click', () => {
-        adminInput.value = msg.text;
+      if (value === '/') {
+        quickList.innerHTML = '';
+        quickReplies.forEach((msg, index) => {
+          const li = document.createElement('li');
+          li.textContent = `${msg.command} → ${msg.text}`;
+          li.style.marginBottom = '6px';
+          li.style.cursor = 'pointer';
+          li.addEventListener('click', () => {
+            adminInput.value = msg.text;
+            quickList.style.display = 'none';
+            ignoreNextAdminEcho = true;
+            sendAdminMessage();
+          });
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          adminInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendAdminMessage();
+        }
+      } else {
         quickList.style.display = 'none';
-        ignoreNextAdminEcho = true;
-        sendAdminMessage();
-      });
-      quickList.appendChild(li);
+      }
     });
-    quickList.style.display = 'block';
-  } else if (/^\/\d+$/.test(value)) {
-    const index = parseInt(value.slice(1), 10) - 1;
-    if (quickReplies[index]) {
-      adminInput.value = quickReplies[index].text;
-      quickList.style.display = 'none';
-      ignoreNextAdminEcho = true;
-      sendAdminMessage();
-    }
-  } else {
-    quickList.style.display = 'none';
-  }
-});
 
     const usernameInput = document.getElementById("adminUsername");
     const passwordInput = document.getElementById("adminPassword");
