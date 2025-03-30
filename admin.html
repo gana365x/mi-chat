@@ -1618,36 +1618,36 @@ if (msgDay !== lastRenderedDate) {
       });
 
     adminInput.addEventListener('input', (e) => {
-      const value = e.target.value.trim();
+  const value = e.target.value.trim();
 
-      if (value === '/') {
-        quickList.innerHTML = '';
-        quickReplies.forEach((msg, index) => {
-          const li = document.createElement('li');
-          li.textContent = `/${index + 1} → ${msg}`;
-          li.style.marginBottom = '6px';
-          li.style.cursor = 'pointer';
-          li.addEventListener('click', () => {
-            adminInput.value = msg;
-            quickList.style.display = 'none';
-            ignoreNextAdminEcho = true;
-            sendAdminMessage();
-          });
-          quickList.appendChild(li);
-        });
-        quickList.style.display = 'block';
-      } else if (/^\/\d+$/.test(value)) {
-        const index = parseInt(value.slice(1), 10) - 1;
-        if (quickReplies[index]) {
-          adminInput.value = quickReplies[index];
-          quickList.style.display = 'none';
-          ignoreNextAdminEcho = true;
-          sendAdminMessage();
-        }
-      } else {
+  if (value === '/') {
+    quickList.innerHTML = '';
+    quickReplies.forEach((msg, index) => {
+      const li = document.createElement('li');
+      li.textContent = `${msg.command} → ${msg.text}`;
+      li.style.marginBottom = '6px';
+      li.style.cursor = 'pointer';
+      li.addEventListener('click', () => {
+        adminInput.value = msg.text;
         quickList.style.display = 'none';
-      }
+        ignoreNextAdminEcho = true;
+        sendAdminMessage();
+      });
+      quickList.appendChild(li);
     });
+    quickList.style.display = 'block';
+  } else if (/^\/\d+$/.test(value)) {
+    const index = parseInt(value.slice(1), 10) - 1;
+    if (quickReplies[index]) {
+      adminInput.value = quickReplies[index].text;
+      quickList.style.display = 'none';
+      ignoreNextAdminEcho = true;
+      sendAdminMessage();
+    }
+  } else {
+    quickList.style.display = 'none';
+  }
+});
 
     const usernameInput = document.getElementById("adminUsername");
     const passwordInput = document.getElementById("adminPassword");
