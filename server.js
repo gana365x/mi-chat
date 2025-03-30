@@ -62,16 +62,10 @@ function incrementPerformance(agentUsername) {
 }
 
 // Función para obtener timestamp en GMT-3
-function getFormattedBuenosAiresTime() {
-  return new Intl.DateTimeFormat('es-AR', {
-    timeZone: 'America/Argentina/Buenos_Aires',
-    hour: '2-digit',
-    minute: '2-digit',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour12: false
-  }).format(new Date());
+function getGMT3Timestamp() {
+  const now = new Date();
+  const gmt3Date = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  return gmt3Date.toISOString(); // ✅ ISO universal, entendible por todos los lenguajes
 }
 
 function getAllChatsSorted() {
