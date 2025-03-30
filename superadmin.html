@@ -16,28 +16,28 @@
       color: #FF3B00;
     }
     .login-box, .main-box {
-  background: #1a1a1a;
-  padding: 20px 30px;
-  border-radius: 12px;
-  max-width: 900px;
-  margin: 40px auto;
-  border: 2px solid #FF3B00;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-}
+      background: #1a1a1a;
+      padding: 20px 30px;
+      border-radius: 12px;
+      max-width: 900px;
+      margin: 40px auto;
+      border: 2px solid #FF3B00;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    }
     input, select {
-  background-color: #1f1f1f;
-  color: white;
-  border: 2px solid #FF3B00;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.2s ease;
-}
-input:focus, select:focus {
-  border-color: #ffa500;
-  background-color: #2a2a2a;
-}
+      background-color: #1f1f1f;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    input:focus, select:focus {
+      border-color: #ffa500;
+      background-color: #2a2a2a;
+    }
     .calendar-icon {
       position: absolute;
       right: 10px;
@@ -50,20 +50,19 @@ input:focus, select:focus {
       display: inline-block;
     }
     button {
-  background: #1f1f1f;
-  color: white;
-  border: 2px solid #FF3B00;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-button:hover {
-  background: #2a2a2a;
-  transform: scale(1.05);
-}
+      background: #1f1f1f;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button:hover {
+      background: #2a2a2a;
+      transform: scale(1.05);
     }
     table {
       width: 100%;
@@ -71,30 +70,84 @@ button:hover {
       border-collapse: collapse;
     }
     th, td {
-  padding: 12px 10px;
-  text-align: left;
-  border-bottom: 1px solid #333;
-  background-color: #1f1f1f;
-  color: #fff;
-}
-th {
-  background-color: #2a2a2a;
-  color: #FF3B00;
-}
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+      background-color: #1f1f1f;
+      color: #fff;
+    }
+    th {
+      background-color: #2a2a2a;
+      color: #FF3B00;
+    }
     .delete-btn {
-  background: #1f1f1f;
-  color: white;
-  border: 2px solid #cc0000;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.delete-btn:hover {
-  background: #330000;
-  transform: scale(1.05);
-}
+      background: #1f1f1f;
+      color: white;
+      border: 2px solid #cc0000;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .delete-btn:hover {
+      background: #330000;
+      transform: scale(1.05);
+    }
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .popup-overlay.active {
+      display: flex;
+    }
+    .popup-box {
+      background: #1a1a1a;
+      padding: 30px 20px;
+      border-radius: 10px;
+      border: 2px solid #FF3B00;
+      box-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
+      width: 90%;
+      max-width: 400px;
+      color: white;
+      text-align: center;
+    }
+    .popup-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .popup-btn {
+      background: #1a1a1a;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+    .popup-btn:hover {
+      background: #2a2a2a;
+      transform: scale(1.1);
+    }
+    .popup-icon {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .popup-text {
+      font-size: 16px;
+      color: #ffae00;
+    }
   </style>
 </head>
 <body>
@@ -117,8 +170,8 @@ th {
     <div id="section-agents">
       <h2>Crear nuevo agente</h2>
       <input type="text" id="newLogin" placeholder="Login del agente">
-<input type="text" id="newName" placeholder="Nombre visible del agente">
-<input type="password" id="newPassword" placeholder="Contraseña">
+      <input type="text" id="newName" placeholder="Nombre visible del agente">
+      <input type="password" id="newPassword" placeholder="Contraseña">
       <button onclick="createAgent()">Crear</button>
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
@@ -157,74 +210,6 @@ th {
 
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
-      // Variables para control de acciones
-let selectedUsernameToDelete = null;
-let selectedUsernameToEdit = null;
-
-// Abrir popup de eliminación
-function openDeletePopup(username) {
-  selectedUsernameToDelete = username;
-  document.getElementById("deletePopup").classList.add("active");
-}
-
-// Cerrar popup de eliminación
-function closeDeletePopup() {
-  selectedUsernameToDelete = null;
-  document.getElementById("deletePopup").classList.remove("active");
-}
-
-// Confirmar eliminación
-function confirmDelete() {
-  if (!selectedUsernameToDelete) return;
-  fetch(`/agents/${selectedUsernameToDelete}`, {
-    method: 'DELETE'
-  })
-  .then(() => {
-    loadAgents();
-    closeDeletePopup();
-  });
-}
-
-// Abrir popup de edición
-function openEditPopup(username, name) {
-  selectedUsernameToEdit = username;
-  document.getElementById("editAgentName").value = name || '';
-  document.getElementById("editAgentPassword").value = '';
-  document.getElementById("editPopup").classList.add("active");
-}
-
-// Cerrar popup de edición
-function closeEditPopup() {
-  selectedUsernameToEdit = null;
-  document.getElementById("editPopup").classList.remove("active");
-}
-
-// Confirmar edición
-function confirmEdit() {
-  const newName = document.getElementById("editAgentName").value.trim();
-  const newPass = document.getElementById("editAgentPassword").value.trim();
-
-  if (!newName) {
-    alert("El nombre no puede estar vacío.");
-    return;
-  }
-
-  const body = { name: newName };
-  if (newPass) body.password = newPass;
-
-  fetch(`/agents/${selectedUsernameToEdit}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  })
-  .then(res => {
-    if (!res.ok) throw new Error();
-    loadAgents();
-    closeEditPopup();
-  })
-  .catch(() => alert("Error al editar agente"));
-}
-
       <!-- Sub-secciones -->
       <div style="margin-top: 20px;">
         <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
@@ -283,60 +268,60 @@ function confirmEdit() {
     }
 
     function loadAgents() {
-  fetch('/agents')
-    .then(res => res.json())
-    .then(agents => {
-      const table = document.getElementById('agentsTable');
-      table.innerHTML = '';
-      agents.forEach(agent => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>
-            <strong>${agent.username}</strong><br>
-            <span style="color: #ccc;">${agent.name || ''}</span>
-          </td>
-          <td style="display: flex; gap: 10px;">
-            <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
-            <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
-          </td>
-        `;
-        table.appendChild(row);
-      });
-    });
-}
+      fetch('/agents')
+        .then(res => res.json())
+        .then(agents => {
+          const table = document.getElementById('agentsTable');
+          table.innerHTML = '';
+          agents.forEach(agent => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>
+                <strong>${agent.username}</strong><br>
+                <span style="color: #ccc;">${agent.name || ''}</span>
+              </td>
+              <td style="display: flex; gap: 10px;">
+                <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
+                <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+              </td>
+            `;
+            table.appendChild(row);
+          });
+        });
+    }
 
     function createAgent() {
-  const login = document.getElementById('newLogin').value.trim();
-  const name = document.getElementById('newName').value.trim();
-  const password = document.getElementById('newPassword').value.trim();
+      const login = document.getElementById('newLogin').value.trim();
+      const name = document.getElementById('newName').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
 
-  if (!login || !name || !password) {
-    document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
-    document.getElementById('createError').style.display = 'block';
-    return;
-  }
+      if (!login || !name || !password) {
+        document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+        document.getElementById('createError').style.display = 'block';
+        return;
+      }
 
-  fetch('/agents', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: login, name, password })
-  })
-  .then(res => {
-    if (!res.ok) return res.json().then(err => { throw err; });
-    return res.json();
-  })
-  .then(() => {
-    document.getElementById('newLogin').value = '';
-    document.getElementById('newName').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('createError').style.display = 'none';
-    loadAgents();
-  })
-  .catch(err => {
-    document.getElementById('createError').textContent = err.message || 'Error al crear agente';
-    document.getElementById('createError').style.display = 'block';
-  });
-}
+      fetch('/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: login, name, password })
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+      })
+      .then(() => {
+        document.getElementById('newLogin').value = '';
+        document.getElementById('newName').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('createError').style.display = 'none';
+        loadAgents();
+      })
+      .catch(err => {
+        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+        document.getElementById('createError').style.display = 'block';
+      });
+    }
 
     function deleteAgent(username) {
       fetch(`/agents/${username}`, {
@@ -434,148 +419,148 @@ function confirmEdit() {
           if (chartInstance) chartInstance.destroy();
 
           chartInstance = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: labels,
-    datasets: [{
-      label: 'Chats Finalizados',
-      data: values,
-      backgroundColor: '#1a1a1a',
-      borderColor: '#FF3B00',
-      borderWidth: 2,
-      borderRadius: 6,
-      hoverBackgroundColor: '#2a2a2a'
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#FF3B00',
-        titleColor: '#fff',
-        bodyColor: '#fff'
-      }
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        grid: {
-          color: '#333'
-        },
-        ticks: {
-          color: '#fff'
-        }
-      },
-      y: {
-        grid: {
-          color: '#333'
-        },
-        ticks: {
-          color: '#fff'
-        }
-      }
-    }
-  }
-});
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Chats Finalizados',
+                data: values,
+                backgroundColor: '#1a1a1a',
+                borderColor: '#FF3B00',
+                borderWidth: 2,
+                borderRadius: 6,
+                hoverBackgroundColor: '#2a2a2a'
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: '#FF3B00',
+                  titleColor: '#fff',
+                  bodyColor: '#fff'
+                }
+              },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  grid: {
+                    color: '#333'
+                  },
+                  ticks: {
+                    color: '#fff'
+                  }
+                },
+                y: {
+                  grid: {
+                    color: '#333'
+                  },
+                  ticks: {
+                    color: '#fff'
+                  }
+                }
+              }
+            }
+          });
         });
     }
-  // Pegá aquí las funciones nuevas:
 
-  let selectedUsernameToDelete = null;
-  let selectedUsernameToEdit = null;
+    let selectedUsernameToDelete = null;
+    let selectedUsernameToEdit = null;
 
-  function openDeletePopup(username) {
-    selectedUsernameToDelete = username;
-    document.getElementById("deletePopup").classList.add("active");
-  }
-
-  function closeDeletePopup() {
-    selectedUsernameToDelete = null;
-    document.getElementById("deletePopup").classList.remove("active");
-  }
-
-  function confirmDelete() {
-    if (!selectedUsernameToDelete) return;
-    fetch(`/agents/${selectedUsernameToDelete}`, {
-      method: 'DELETE'
-    })
-    .then(() => {
-      loadAgents();
-      closeDeletePopup();
-    });
-  }
-
-  function openEditPopup(username, name) {
-    selectedUsernameToEdit = username;
-    document.getElementById("editAgentName").value = name || '';
-    document.getElementById("editAgentPassword").value = '';
-    document.getElementById("editPopup").classList.add("active");
-  }
-
-  function closeEditPopup() {
-    selectedUsernameToEdit = null;
-    document.getElementById("editPopup").classList.remove("active");
-  }
-
-  function confirmEdit() {
-    const newName = document.getElementById("editAgentName").value.trim();
-    const newPass = document.getElementById("editAgentPassword").value.trim();
-
-    if (!newName) {
-      alert("El nombre no puede estar vacío.");
-      return;
+    function openDeletePopup(username) {
+      selectedUsernameToDelete = username;
+      document.getElementById("deletePopup").classList.add("active");
     }
 
-    const body = { name: newName };
-    if (newPass) body.password = newPass;
+    function closeDeletePopup() {
+      selectedUsernameToDelete = null;
+      document.getElementById("deletePopup").classList.remove("active");
+    }
 
-    fetch(`/agents/${selectedUsernameToEdit}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    })
-    .then(res => {
-      if (!res.ok) throw new Error();
-      loadAgents();
-      closeEditPopup();
-    })
-    .catch(() => alert("Error al editar agente"));
-  }
-</script>
+    function confirmDelete() {
+      if (!selectedUsernameToDelete) return;
+      fetch(`/agents/${selectedUsernameToDelete}`, {
+        method: 'DELETE'
+      })
+      .then(() => {
+        loadAgents();
+        closeDeletePopup();
+      });
+    }
+
+    function openEditPopup(username, name) {
+      selectedUsernameToEdit = username;
+      document.getElementById("editAgentName").value = name || '';
+      document.getElementById("editAgentPassword").value = '';
+      document.getElementById("editPopup").classList.add("active");
+    }
+
+    function closeEditPopup() {
+      selectedUsernameToEdit = null;
+      document.getElementById("editPopup").classList.remove("active");
+    }
+
+    function confirmEdit() {
+      const newName = document.getElementById("editAgentName").value.trim();
+      const newPass = document.getElementById("editAgentPassword").value.trim();
+
+      if (!newName) {
+        alert("El nombre no puede estar vacío.");
+        return;
+      }
+
+      const body = { name: newName };
+      if (newPass) body.password = newPass;
+
+      fetch(`/agents/${selectedUsernameToEdit}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        loadAgents();
+        closeEditPopup();
+      })
+      .catch(() => alert("Error al editar agente"));
+    }
+  </script>
+
   <!-- POPUP CONFIRMAR ELIMINACIÓN -->
-<div id="deletePopup" class="popup-overlay">
-  <div class="popup-box">
-    <div class="popup-icon">⚠️</div>
-    <p class="popup-text">¿Seguro que querés eliminar este agente?</p>
-    <div class="popup-actions">
-      <button class="popup-btn confirm" onclick="confirmDelete()">✔</button>
-      <button class="popup-btn cancel" onclick="closeDeletePopup()">✖</button>
+  <div id="deletePopup" class="popup-overlay">
+    <div class="popup-box">
+      <div class="popup-icon">⚠️</div>
+      <p class="popup-text">¿Seguro que querés eliminar este agente?</p>
+      <div class="popup-actions">
+        <button class="popup-btn confirm" onclick="confirmDelete()">✔</button>
+        <button class="popup-btn cancel" onclick="closeDeletePopup()">✖</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- POPUP EDITAR AGENTE -->
-<div id="editPopup" class="popup-overlay">
-  <div class="popup-box">
-    <div class="popup-icon">✏️</div>
-    <p class="popup-text">Editar agente</p>
-<div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-  <input type="text" id="editAgentLogin" placeholder="Nuevo login (opcional)" 
-         style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
-
-  <input type="text" id="editAgentName" placeholder="Nuevo nombre visible" 
-         style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
-
-  <input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" 
-         style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
-</div>
-<div class="popup-actions" style="margin-top: 20px;">
-      <button class="popup-btn confirm" onclick="confirmEdit()">✔</button>
-      <button class="popup-btn cancel" onclick="closeEditPopup()">✖</button>
+  <!-- POPUP EDITAR AGENTE -->
+  <div id="editPopup" class="popup-overlay">
+    <div class="popup-box">
+      <div class="popup-icon">✏️</div>
+      <p class="popup-text">Editar agente</p>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+        <input type="text" id="editAgentLogin" placeholder="Nuevo login (opcional)" 
+               style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+        <input type="text" id="editAgentName" placeholder="Nuevo nombre visible" 
+               style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+        <input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" 
+               style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+      </div>
+      <div class="popup-actions" style="margin-top: 20px;">
+        <button class="popup-btn confirm" onclick="confirmEdit()">✔</button>
+        <button class="popup-btn cancel" onclick="closeEditPopup()">✖</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928a9359c96644e2',t:'MTc0MzM2ODgzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
