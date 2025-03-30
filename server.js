@@ -164,26 +164,33 @@ io.on('connection', (socket) => {
     if (chatHistory[data.userId]) {
       const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
 
-      // ✅ Solo reabrimos el chat si el mensaje viene del usuario
+      // ✅ Solo reabrir si:
+      // 1) estaba cerrado
+      // 2) el mensaje viene del cliente
       if (wasClosed && data.sender === 'User') {
+        // Eliminar todos los mensajes con status cerrado
         chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
-        const openMsg = {
+
+        const reopenMsg = {
           userId: data.userId,
           sender: 'System',
           message: '💬 Chat abierto',
           timestamp: getTimestamp()
         };
-        chatHistory[data.userId].push(openMsg);
+        chatHistory[data.userId].push(reopenMsg);
 
-        // Emitimos a los admin suscritos
+        saveChatHistory();
+
+        const userSocket = userSessions.get(data.userId)?.socket;
+        if (userSocket) userSocket.emit('chat message', reopenMsg);
+
         for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
           if (subscribedUserId === data.userId) {
-            io.to(adminSocketId).emit('admin message', openMsg);
+            io.to(adminSocketId).emit('admin message', reopenMsg);
           }
         }
 
-        // Emitimos a todos los admins la lista actualizada
-        io.emit('user list', getAllChatsSorted());
+        io.emit('user list', getAllChatsSorted()); // actualiza visual del admin
       }
     }
 
@@ -300,7 +307,7 @@ io.on('connection', (socket) => {
   socket.on('agent message', (data) => {
     if (!data.userId || !data.message) return;
     const messageData = { userId: data.userId, sender: 'Agent', message: data.message, timestamp: getTimestamp() };
-    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
+    if (!chatHistory[data.userId]) chatHistory[data.userId].push(messageData);
     chatHistory[data.userId].push(messageData);
     saveChatHistory();
 
