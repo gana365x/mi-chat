@@ -176,7 +176,7 @@
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
       <table>
-        <thead><tr><th>Usuario</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>Usuario</th><th>Nombre</th><th>Acciones</th></tr></thead>
         <tbody id="agentsTable"></tbody>
       </table>
     </div>
@@ -277,7 +277,9 @@
             const row = document.createElement('tr');
             row.innerHTML = `
               <td>
-                <strong>${agent.username}</strong><br>
+                <strong>${agent.username}</strong>
+              </td>
+              <td>
                 <span style="color: #ccc;">${agent.name || ''}</span>
               </td>
               <td style="display: flex; gap: 10px;">
