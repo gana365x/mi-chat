@@ -437,7 +437,15 @@
       fetch('/quick-replies')
         .then(res => res.json())
         .then(data => {
-          currentReplies = data;
+          // Si está vacío o no tiene mínimo 5, rellenar con /1 a /5
+          if (!Array.isArray(data) || data.length < 5) {
+            currentReplies = Array.from({ length: 5 }, (_, i) => ({
+              command: `/${i + 1}`,
+              text: ""
+            }));
+          } else {
+            currentReplies = data;
+          }
           renderPopupReplies(currentReplies);
         });
     }
@@ -454,7 +462,7 @@
         cmdInput.type = "text";
         cmdInput.className = "quick-reply-input";
         cmdInput.style.maxWidth = "80px";
-        cmdInput.value = reply.command || `/c${index + 1}`;
+        cmdInput.value = reply.command || `/${index + 1}`;
         cmdInput.dataset.index = index;
 
         const textInput = document.createElement("input");
@@ -499,23 +507,31 @@
     }
 
     function addQuickReply() {
-      currentReplies.push({ command: `/cmd${currentReplies.length + 1}`, text: "" });
+      currentReplies.push({ command: "/", text: "" });
       renderPopupReplies(currentReplies);
     }
 
     function saveQuickReplies() {
       const items = document.querySelectorAll(".quick-reply-item");
       const updatedReplies = [];
+      let hasError = false;
 
       items.forEach(item => {
         const inputs = item.querySelectorAll("input");
         const command = inputs[0].value.trim();
         const text = inputs[1].value.trim();
 
-        if (!command.startsWith("/")) return; // prevenir comandos inválidos
+        if (!command.startsWith("/")) {
+          alert("Todos los comandos deben comenzar con /");
+          inputs[0].focus();
+          hasError = true;
+          return;
+        }
 
         updatedReplies.push({ command, text });
       });
+
+      if (hasError) return;
 
       fetch('/quick-replies', {
         method: 'POST',
@@ -562,6 +578,5 @@
       actions.appendChild(confirmBox);
     }
   </script>
-
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92817bd47c5ddd1d',t:'MTc0MzI3MzUwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9283d001ca900c0a',t:'MTc0MzI5NzkyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
