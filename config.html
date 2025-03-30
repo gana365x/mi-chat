@@ -179,6 +179,19 @@
     .confirm-btn:hover { color: #00ff00; }
     .cancel-btn:hover { color: red; }
 
+    /* Estilo para el atajo de respuestas rápidas */
+    .quick-reply-item > div:first-child {
+      background-color: #2a2a2a;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-right: 10px;
+      font-weight: bold;
+      color: #FF3B00;
+      width: 40px;
+      text-align: center;
+    }
+
     /* Estilos para el popup */
     .popup-overlay {
       display: none;
@@ -403,6 +416,15 @@
         const item = document.createElement("div");
         item.className = "quick-reply-item";
 
+        // 📌 Atajo fijo a la izquierda
+        const shortcut = document.createElement("div");
+        shortcut.innerText = `/` + (index + 1);
+        shortcut.style.marginRight = "10px";
+        shortcut.style.fontWeight = "bold";
+        shortcut.style.color = "#FF3B00";
+        shortcut.style.width = "40px";
+        shortcut.style.textAlign = "center";
+
         const input = document.createElement("input");
         input.className = "quick-reply-input";
         input.type = "text";
@@ -428,8 +450,10 @@
         actions.appendChild(editBtn);
         actions.appendChild(deleteBtn);
 
+        item.appendChild(shortcut); // primero el atajo
         item.appendChild(input);
         item.appendChild(actions);
+
         list.appendChild(item);
       });
     }
