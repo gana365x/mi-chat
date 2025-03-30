@@ -145,6 +145,13 @@
       border-radius: 6px;
     }
 
+    /* Estilo para campos vacíos */
+    .quick-reply-input:disabled:placeholder-shown {
+      background-color: #2a2a2a;
+      color: #888;
+      font-style: italic;
+    }
+
     .quick-reply-actions {
       display: flex;
       gap: 10px;
@@ -429,6 +436,7 @@
         input.className = "quick-reply-input";
         input.type = "text";
         input.value = reply;
+        input.placeholder = "Escribe una respuesta...";
         input.dataset.index = index;
         input.disabled = true;
 
@@ -459,7 +467,7 @@
     }
 
     function addQuickReply() {
-      currentReplies.push("/" + (currentReplies.length + 1));
+      currentReplies.push(""); // Agregamos un slot vacío
       renderPopupReplies(currentReplies);
     }
 
@@ -500,7 +508,7 @@
       confirmBtn.innerText = "✅";
       confirmBtn.className = "confirm-btn";
       confirmBtn.onclick = () => {
-        currentReplies.splice(index, 1);
+        currentReplies[index] = ""; // Solo borramos el contenido, no el slot
         renderPopupReplies(currentReplies);
       };
 
