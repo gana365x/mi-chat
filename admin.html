@@ -1069,16 +1069,23 @@
                 ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="showFinalizePopup('${user.userId}')">Finalizar</button>`}
               </div>
             </div>
-            console.log("Hora para usuario", user.username, "→", user.lastMessageTime);
-            <div class="hora">${formatTime(user.lastMessageTime)}</div>
-          `;
+            const chatDiv = document.createElement('div');
+chatDiv.classList.add('chat-item');
+// etc.
 
-          chatDiv.onclick = (e) => {
-            if (e.target.classList.contains('finalizar')) return;
-            selectUser(user.userId, user.username);
-          };
-          listContainer.appendChild(chatDiv);
-        }
+console.log("Hora para usuario", user.username, user.lastMessageTime); // <- fuera del innerHTML
+
+chatDiv.innerHTML = `
+  <div class="chat-left">
+    <span class="username">${user.username}</span>
+    <div class="badges">
+      ${user.isClosed
+        ? `<span class="badge cerrado">Cerrado</span>`
+        : `<button class="badge finalizar" onclick="showFinalizePopup('${user.userId}')">Finalizar</button>`}
+    </div>
+  </div>
+  <div class="hora">${formatTime(user.lastMessageTime)}</div>
+`;
       });
     }
 
