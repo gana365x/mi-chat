@@ -124,7 +124,7 @@
       font-size: 14px;
     }
 
-    /* Nuevos estilos para quick replies */
+    /* Estilos para quick replies */
     .quick-reply-item {
       display: flex;
       align-items: center;
@@ -178,10 +178,6 @@
 
     .confirm-btn:hover { color: #00ff00; }
     .cancel-btn:hover { color: red; }
-
-    button + button {
-      margin-top: 10px;
-    }
 
     /* Estilos para el popup */
     .popup-overlay {
@@ -258,15 +254,9 @@
     <div class="form-group">
       <label>Respuestas rápidas (usa /1, /2, etc.)</label>
       <div id="quickRepliesContainer">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <strong>Respuestas Rápidas</strong>
-          <button id="toggleRepliesBtn" style="background: none; color: white; font-size: 18px; border: none; cursor: pointer;">▼</button>
-        </div>
-        <div id="quickRepliesList" style="margin-top: 10px;"></div>
+        <button onclick="openRepliesPopup()">📝 Abrir Respuestas Rápidas</button>
+        <div id="quickMsg" style="margin-top: 10px;"></div>
       </div>
-      <button onclick="addQuickReply()" style="margin-top: 20px;">➕ Agregar Respuesta</button>
-      <button onclick="saveQuickReplies()" style="margin-top: 10px;">💾 Guardar respuestas rápidas</button>
-      <div id="quickMsg"></div>
     </div>
   </div>
 
@@ -274,7 +264,14 @@
   <div id="quickRepliesPopup" class="popup-overlay">
     <div class="popup-box">
       <h3 style="margin-top: 0;">📋 Respuestas rápidas</h3>
-      <div id="popupRepliesList"></div>
+
+      <div id="popupRepliesList" style="margin-bottom: 20px;"></div>
+
+      <div style="display: flex; justify-content: space-between;">
+        <button onclick="addQuickReply()" style="background-color: #444;">➕ Agregar</button>
+        <button onclick="saveQuickReplies()" style="background-color: #FF3B00;">💾 Guardar</button>
+      </div>
+
       <button onclick="closeRepliesPopup()" style="margin-top: 20px;">Cerrar</button>
     </div>
   </div>
@@ -376,135 +373,26 @@
       }
     }
 
+    // Variables y funciones para respuestas rápidas
+    let currentReplies = [];
+
+    function openRepliesPopup() {
+      const popup = document.getElementById("quickRepliesPopup");
+      popup.classList.add("active");
+      loadQuickReplies(); // siempre cargar al abrir
+    }
+
+    function closeRepliesPopup() {
+      document.getElementById("quickRepliesPopup").classList.remove("active");
+    }
+
     function loadQuickReplies() {
       fetch('/quick-replies')
         .then(res => res.json())
         .then(data => {
           currentReplies = data;
-          renderQuickReplies(data);
+          renderPopupReplies(currentReplies);
         });
-    }
-
-    function addQuickReply() {
-      currentReplies.push("/" + (currentReplies.length + 1));
-      renderQuickReplies(currentReplies);
-    }
-
-    let repliesExpanded = false;
-    let currentReplies = [];
-
-    document.getElementById("toggleRepliesBtn").addEventListener("click", () => {
-      openRepliesPopup();
-    });
-
-    function renderQuickReplies(replies) {
-      currentReplies = replies;
-      const list = document.getElementById("quickRepliesList");
-      list.innerHTML = "";
-
-      const visibleReplies = repliesExpanded ? replies : replies.slice(0, 1);
-
-      visibleReplies.forEach((reply, index) => {
-        const item = document.createElement("div");
-        item.className = "quick-reply-item";
-
-        const input = document.createElement("input");
-        input.className = "quick-reply-input";
-        input.type = "text";
-        input.value = reply;
-        input.dataset.index = index;
-        input.disabled = true;
-
-        const actions = document.createElement("div");
-        actions.className = "quick-reply-actions";
-
-        // EDITAR
-        const editBtn = document.createElement("i");
-        editBtn.className = "fas fa-pencil-alt";
-        editBtn.onclick = () => {
-          input.disabled = false;
-          input.focus();
-          input.style.border = "1px solid #FF3B00";
-        };
-
-        // BORRAR
-        const deleteBtn = document.createElement("i");
-        deleteBtn.className = "fas fa-trash";
-        deleteBtn.onclick = () => showDeleteConfirm(index);
-
-        actions.appendChild(editBtn);
-        actions.appendChild(deleteBtn);
-
-        item.appendChild(input);
-        item.appendChild(actions);
-        list.appendChild(item);
-      });
-    }
-
-    function showDeleteConfirm(index) {
-      const list = document.getElementById("quickRepliesList");
-      const item = list.children[index];
-      const actions = item.querySelector(".quick-reply-actions");
-
-      actions.innerHTML = ''; // limpiamos
-
-      const confirmBox = document.createElement("div");
-      confirmBox.className = "confirm-box";
-
-      const confirmBtn = document.createElement("span");
-      confirmBtn.innerText = "✅";
-      confirmBtn.className = "confirm-btn";
-      confirmBtn.onclick = () => {
-        currentReplies.splice(index, 1);
-        renderQuickReplies(currentReplies);
-      };
-
-      const cancelBtn = document.createElement("span");
-      cancelBtn.innerText = "❌";
-      cancelBtn.className = "cancel-btn";
-      cancelBtn.onclick = () => renderQuickReplies(currentReplies);
-
-      confirmBox.appendChild(confirmBtn);
-      confirmBox.appendChild(cancelBtn);
-      actions.appendChild(confirmBox);
-    }
-
-    function saveQuickReplies() {
-      const inputs = document.querySelectorAll(".quick-reply-input");
-      
-      // Habilitar todos para asegurarnos de que sus valores sean tomados
-      inputs.forEach(input => input.disabled = false);
-
-      const newReplies = Array.from(inputs)
-        .map(input => input.value.trim())
-        .filter(Boolean);
-
-      fetch('/quick-replies', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReplies)
-      })
-      .then(res => res.json())
-      .then(() => {
-        document.getElementById("quickMsg").innerHTML = "✅ Respuestas guardadas correctamente";
-        document.getElementById("quickMsg").className = "success";
-        loadQuickReplies(); // refresca
-      })
-      .catch(() => {
-        document.getElementById("quickMsg").innerHTML = "❌ Error al guardar respuestas";
-        document.getElementById("quickMsg").className = "error";
-      });
-    }
-
-    // Funciones para el popup
-    function openRepliesPopup() {
-      const popup = document.getElementById("quickRepliesPopup");
-      popup.classList.add("active");
-      renderPopupReplies(currentReplies);
-    }
-
-    function closeRepliesPopup() {
-      document.getElementById("quickRepliesPopup").classList.remove("active");
     }
 
     function renderPopupReplies(replies) {
@@ -546,6 +434,34 @@
       });
     }
 
+    function addQuickReply() {
+      currentReplies.push("/" + (currentReplies.length + 1));
+      renderPopupReplies(currentReplies);
+    }
+
+    function saveQuickReplies() {
+      const inputs = document.querySelectorAll(".quick-reply-input");
+      inputs.forEach(i => i.disabled = false);
+
+      const newReplies = Array.from(inputs).map(input => input.value.trim()).filter(Boolean);
+
+      fetch('/quick-replies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newReplies)
+      })
+        .then(res => res.json())
+        .then(() => {
+          document.getElementById("quickMsg").innerHTML = "✅ Respuestas guardadas correctamente";
+          document.getElementById("quickMsg").className = "success";
+          closeRepliesPopup();
+        })
+        .catch(() => {
+          document.getElementById("quickMsg").innerHTML = "❌ Error al guardar respuestas";
+          document.getElementById("quickMsg").className = "error";
+        });
+    }
+
     function showDeleteConfirmPopup(index) {
       const list = document.getElementById("popupRepliesList");
       const item = list.children[index];
@@ -573,9 +489,6 @@
       confirmBox.appendChild(cancelBtn);
       actions.appendChild(confirmBox);
     }
-
-    // Cargar las respuestas rápidas al iniciar la página
-    loadQuickReplies();
   </script>
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92817bd47c5ddd1d',t:'MTc0MzI3MzUwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9283d001ca900c0a',t:'MTc0MzI5NzkyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
