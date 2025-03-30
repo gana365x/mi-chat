@@ -462,8 +462,15 @@ app.post('/update-agent-password', (req, res) => {
 });
 
 app.get('/quick-replies', (req, res) => {
-  const replies = fs.existsSync(quickRepliesPath) ? JSON.parse(fs.readFileSync(quickRepliesPath)) : [];
-  res.json(replies);
+  fs.readFile(quickRepliesPath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json([]);
+    try {
+      const replies = JSON.parse(data);
+      res.json(replies);
+    } catch (e) {
+      res.status(500).json([]);
+    }
+  });
 });
 
 app.post('/quick-replies', express.json(), (req, res) => {
