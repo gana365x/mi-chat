@@ -364,21 +364,52 @@
       let start = new Date(), end = new Date();
 
       switch (value) {
-        case "today": start.setHours(0, 0, 0, 0); end.setHours(23, 59, 59, 999); break;
-        case "yesterday": start.setDate(start.getDate() - 1); start.setHours(0, 0, 0, 0); end = new Date(start); end.setHours(23, 59, 59, 999); break;
+        case "today":
+          // Hoy: 00:00 a 23:59 del día actual
+          start.setHours(0, 0, 0, 0);
+          end.setHours(23, 59, 59, 999);
+          break;
+          
+        case "yesterday":
+          // Ayer: 00:00 a 23:59 del día anterior
+          start.setDate(start.getDate() - 1);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(start);
+          end.setHours(23, 59, 59, 999);
+          break;
+          
         case "week":
+          // Esta semana: Lunes 00:00 hasta hoy 23:59
           const day = now.getDay();
-          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Ajuste para que el lunes sea el primer día
           start = new Date(now.setDate(diff));
-          start.setHours(0, 0, 0, 0); end = new Date(); end.setHours(23, 59, 59, 999); break;
-        case "month": start = new Date(now.getFullYear(), now.getMonth(), 1); end = new Date(); end.setHours(23, 59, 59, 999); break;
-        case "lastMonth": start = new Date(now.getFullYear(), now.getMonth() - 1, 1); end = new Date(now.getFullYear(), now.getMonth(), 0); end.setHours(23, 59, 59, 999); break;
+          start.setHours(0, 0, 0, 0);
+          end = new Date();
+          end.setHours(23, 59, 59, 999);
+          break;
+          
+        case "month":
+          // Este mes: 1er día del mes 00:00 hasta hoy 23:59
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          start.setHours(0, 0, 0, 0);
+          end = new Date();
+          end.setHours(23, 59, 59, 999);
+          break;
+          
+        case "lastMonth":
+          // Mes anterior: 1er día del mes anterior 00:00 hasta último día 23:59
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(now.getFullYear(), now.getMonth(), 0);
+          end.setHours(23, 59, 59, 999);
+          break;
       }
 
+      // Formatear fechas para los inputs
       fromDateInput.value = start.toISOString().split('T')[0];
-      fromTimeInput.value = start.toTimeString().slice(0, 5);
+      fromTimeInput.value = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
       toDateInput.value = end.toISOString().split('T')[0];
-      toTimeInput.value = end.toTimeString().slice(0, 5);
+      toTimeInput.value = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
     }
 
     function confirmAndLoadStats() {
