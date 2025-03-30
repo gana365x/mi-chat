@@ -135,7 +135,7 @@ io.on('connection', (socket) => {
         userId,
         sender: 'System',
         message: '💬 Chat iniciado',
-        timestamp: getTimestampWithConfiguredTimezone()
+        timestamp: getTimestamp()
       };
       chatHistory[userId].push(dateMessage);
       saveChatHistory();
@@ -174,7 +174,7 @@ io.on('connection', (socket) => {
   socket.on('chat message', (data) => {
     if (!data.userId || !data.sender || !data.message) return;
 
-    const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: getTimestampWithConfiguredTimezone() };
+    const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: getTimestamp() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
 
@@ -190,7 +190,7 @@ io.on('connection', (socket) => {
       userId: data.userId,
       sender: 'System',
       message: '💬 Chat abierto',
-      timestamp: getTimestampWithConfiguredTimezone()
+      timestamp: getTimestamp()
     };
     chatHistory[data.userId].push(openMsg);
 
@@ -229,7 +229,7 @@ io.on('connection', (socket) => {
         userId: data.userId,
         sender: 'Bot',
         message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
-        timestamp: getTimestampWithConfiguredTimezone()
+        timestamp: getTimestamp()
       };
       chatHistory[data.userId].push(botMsg);
       saveChatHistory();
@@ -257,7 +257,7 @@ io.on('connection', (socket) => {
             <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> _____
           </div>
         `,
-        timestamp: getTimestampWithConfiguredTimezone()
+        timestamp: getTimestamp()
       };
       chatHistory[data.userId].push(retiroMsg);
       saveChatHistory();
@@ -276,7 +276,7 @@ io.on('connection', (socket) => {
       console.error('Datos de imagen incompletos:', data);
       return;
     }
-    const imageData = { userId: data.userId, sender: data.sender, image: data.image, timestamp: getTimestampWithConfiguredTimezone() };
+    const imageData = { userId: data.userId, sender: data.sender, image: data.image, timestamp: getTimestamp() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(imageData);
     saveChatHistory();
@@ -302,7 +302,7 @@ io.on('connection', (socket) => {
       userId: data.userId,
       sender: 'Bot',
       message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!',
-      timestamp: getTimestampWithConfiguredTimezone()
+      timestamp: getTimestamp()
     };
     chatHistory[data.userId].push(botResponse);
     saveChatHistory();
@@ -318,7 +318,7 @@ io.on('connection', (socket) => {
 
   socket.on('agent message', (data) => {
     if (!data.userId || !data.message) return;
-    const messageData = { userId: data.userId, sender: 'Agent', message: data.message, timestamp: getTimestampWithConfiguredTimezone() };
+    const messageData = { userId: data.userId, sender: 'Agent', message: data.message, timestamp: getTimestamp() };
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
     saveChatHistory();
@@ -347,7 +347,7 @@ socket.on('request chat history', (data) => {
     const openMsg = {
       sender: 'System',
       message: '💬 Chat abierto',
-      timestamp: getTimestampWithConfiguredTimezone()
+      timestamp: getTimestamp()
     };
     chatHistory[data.userId].push(openMsg);
     saveChatHistory();
@@ -386,7 +386,7 @@ socket.on('close chat', ({ userId, agentUsername }) => {
   const closeMsg = {
     sender: 'System',
     message: '🔒 Chat cerrado',
-    timestamp: getTimestampWithConfiguredTimezone(),
+    timestamp: getTimestamp(),
     status: 'closed'
   };
   chatHistory[userId].push(closeMsg);
