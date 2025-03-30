@@ -544,13 +544,15 @@ app.post('/quick-replies', express.json(), (req, res) => {
   res.json({ success: true });
 });
 
-// Endpoints para manejar la zona horaria
+// Ruta actualizada para enviar el timezone al frontend
 app.get('/get-timezone', (req, res) => {
   try {
-    const data = JSON.parse(fs.readFileSync(timezoneFile, 'utf-8'));
-    res.json({ timezone: data.timezone });
-  } catch (error) {
-    res.status(500).json({ timezone: "America/Argentina/Buenos_Aires" });
+    const data = fs.readFileSync(timezoneFile, 'utf-8');
+    const config = JSON.parse(data);
+    res.json({ timezone: config.timezone || "UTC" });
+  } catch (e) {
+    console.error('Error leyendo zona horaria:', e.message);
+    res.json({ timezone: "UTC" });
   }
 });
 
