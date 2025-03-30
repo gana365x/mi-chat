@@ -100,16 +100,24 @@
     <!-- Sección de estadísticas -->
     <div id="section-stats" style="display:none;">
       <h2>📊 Estadísticas</h2>
-      <label>Filtrar por:</label>
-      <select id="filterType">
-        <option value="day">Día</option>
-        <option value="week">Semana</option>
-        <option value="month">Mes</option>
-        <option value="year">Año</option>
-        <option value="hour">Hora</option>
-      </select>
-      <input type="date" id="filterDate" />
-      <button onclick="loadStats()">Buscar</button>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
+        <label for="fromDate">De:</label>
+        <input type="datetime-local" id="fromDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+
+        <label for="toDate">A:</label>
+        <input type="datetime-local" id="toDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+
+        <select id="quickRange" onchange="setQuickRange()" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+          <option value="">Elegir el periodo</option>
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+          <option value="lastMonth">Mes anterior</option>
+        </select>
+
+        <button onclick="loadStats()">Mostrar</button>
+      </div>
 
       <div id="statsResults" style="margin-top: 20px;">
         <p>Chats finalizados por agente: <span id="statChats">0</span></p>
@@ -210,10 +218,15 @@
     }
 
     function loadStats() {
-      const type = document.getElementById("filterType").value;
-      const date = document.getElementById("filterDate").value;
+      const from = document.getElementById("fromDate").value;
+      const to = document.getElementById("toDate").value;
 
-      fetch(`/stats?type=${type}&date=${date}`)
+      if (!from || !to) {
+        alert("Debes seleccionar el rango de fechas.");
+        return;
+      }
+
+      fetch(`/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
         .then(res => res.json())
         .then(data => {
           document.getElementById("statChats").textContent = data.chats;
@@ -226,6 +239,49 @@
           console.error("Error al cargar estadísticas:", err);
         });
     }
+
+    function setQuickRange() {
+      const now = new Date();
+      const fromInput = document.getElementById("fromDate");
+      const toInput = document.getElementById("toDate");
+      const value = document.getElementById("quickRange").value;
+
+      let start = new Date(), end = new Date();
+
+      switch (value) {
+        case "today":
+          start.setHours(0, 0, 0, 0);
+          end.setHours(23, 59, 59, 999);
+          break;
+        case "yesterday":
+          start.setDate(start.getDate() - 1);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(start);
+          end.setHours(23, 59, 59, 999);
+          break;
+        case "week":
+          const day = now.getDay();
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+          start = new Date(now.setDate(diff));
+          start.setHours(0, 0, 0, 0);
+          end = new Date();
+          end.setHours(23, 59, 59, 999);
+          break;
+        case "month":
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          end = new Date();
+          end.setHours(23, 59, 59, 999);
+          break;
+        case "lastMonth":
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          end = new Date(now.getFullYear(), now.getMonth(), 0);
+          end.setHours(23, 59, 59, 999);
+          break;
+      }
+
+      fromInput.value = start.toISOString().slice(0, 16);
+      toInput.value = end.toISOString().slice(0, 16);
+    }
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928a0e5c99aebce6',t:'MTc0MzM2MzM4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
