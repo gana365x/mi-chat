@@ -418,10 +418,8 @@
       const from = `${fromDate}T${fromTime}:00`;
       const to = `${toDate}T${toTime}:00`;
 
-      const confirmationMessage = `¿Confirmar el siguiente rango?\nDe: ${fromDate} ${fromTime}\nA: ${toDate} ${toTime}`;
-      if (confirm(confirmationMessage)) {
-        loadStats(from, to);
-      }
+      // Sin confirmación, carga directamente las estadísticas
+      loadStats(from, to);
     }
 
     function loadStats(from, to) {
@@ -511,7 +509,6 @@
         })
         .catch(err => {
           console.error("Error al cargar estadísticas de agentes:", err);
-          // Mostrar todos los agentes con 0 en caso de error o sin datos
           const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
           const values = labels.map(() => 0);
 
