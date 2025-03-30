@@ -101,7 +101,7 @@ function getAllChatsSorted() {
 
 io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
-    let userId = data.userId; // Corrección: quitado el "-U" incorrecto
+    let userId = data.userId;
     const username = data.username;
     if (!username) return;
 
@@ -164,7 +164,8 @@ io.on('connection', (socket) => {
     if (chatHistory[data.userId]) {
       const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
 
-      if (wasClosed) {
+      // ✅ Solo reabrimos el chat si el mensaje viene del usuario
+      if (wasClosed && data.sender === 'User') {
         chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
         const openMsg = {
           userId: data.userId,
@@ -174,12 +175,14 @@ io.on('connection', (socket) => {
         };
         chatHistory[data.userId].push(openMsg);
 
+        // Emitimos a los admin suscritos
         for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
           if (subscribedUserId === data.userId) {
             io.to(adminSocketId).emit('admin message', openMsg);
           }
         }
 
+        // Emitimos a todos los admins la lista actualizada
         io.emit('user list', getAllChatsSorted());
       }
     }
