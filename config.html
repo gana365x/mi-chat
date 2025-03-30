@@ -124,6 +124,61 @@
       font-size: 14px;
     }
 
+    /* Nuevos estilos para quick replies */
+    .quick-reply-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #1f1f1f;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .quick-reply-input {
+      flex: 1;
+      margin-right: 10px;
+      background: #333;
+      border: none;
+      color: white;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .quick-reply-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .quick-reply-actions i {
+      cursor: pointer;
+      font-size: 16px;
+      color: #ccc;
+      transition: color 0.2s ease;
+    }
+
+    .quick-reply-actions i:hover {
+      color: #ff3b00;
+    }
+
+    .confirm-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+      justify-content: flex-end;
+    }
+
+    .confirm-btn, .cancel-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .confirm-btn:hover { color: #00ff00; }
+    .cancel-btn:hover { color: red; }
+
     @media (max-width: 600px) {
       .container {
         padding: 20px;
@@ -170,7 +225,13 @@
 
     <div class="form-group">
       <label>Respuestas rápidas (usa /1, /2, etc.)</label>
-      <div id="quickRepliesList"></div>
+      <div id="quickRepliesContainer">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <strong>Respuestas Rápidas</strong>
+          <button id="toggleRepliesBtn" style="background: none; color: white; font-size: 18px; border: none; cursor: pointer;">▼</button>
+        </div>
+        <div id="quickRepliesList" style="margin-top: 10px;"></div>
+      </div>
       <button onclick="addQuickReply()">➕ Agregar Respuesta</button>
       <button onclick="saveQuickReplies()">💾 Guardar respuestas rápidas</button>
       <div id="quickMsg"></div>
@@ -282,19 +343,6 @@
         });
     }
 
-    function renderQuickReplies(replies) {
-      const list = document.getElementById("quickRepliesList");
-      list.innerHTML = "";
-      replies.forEach((reply, index) => {
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = reply;
-        input.dataset.index = index;
-        input.style.marginBottom = "10px";
-        list.appendChild(input);
-      });
-    }
-
     function addQuickReply() {
       const list = document.getElementById("quickRepliesList");
       const input = document.createElement("input");
@@ -305,34 +353,104 @@
       list.appendChild(input);
     }
 
-    function saveQuickReplies() {
-      const inputs = document.querySelectorAll("#quickRepliesList input");
-      const replies = Array.from(inputs)
-        .map(input => input.value.trim())
-        .filter(value => value && value !== "undefined" && value !== "null");
+    let repliesExpanded = false;
+    let currentReplies = [];
 
-      if (replies.length === 0) {
-        document.getElementById("quickMsg").textContent = "❌ No hay respuestas válidas para guardar";
-        document.getElementById("quickMsg").className = "error";
-        return;
-      }
+    document.getElementById("toggleRepliesBtn").addEventListener("click", () => {
+      repliesExpanded = !repliesExpanded;
+      document.getElementById("toggleRepliesBtn").innerText = repliesExpanded ? '▲' : '▼';
+      renderQuickReplies(currentReplies);
+    });
+
+    function renderQuickReplies(replies) {
+      currentReplies = replies;
+      const list = document.getElementById("quickRepliesList");
+      list.innerHTML = "";
+
+      const visibleReplies = repliesExpanded ? replies : replies.slice(0, 1);
+
+      visibleReplies.forEach((reply, index) => {
+        const item = document.createElement("div");
+        item.className = "quick-reply-item";
+
+        const input = document.createElement("input");
+        input.className = "quick-reply-input";
+        input.type = "text";
+        input.value = reply;
+        input.dataset.index = index;
+        input.disabled = true;
+
+        const actions = document.createElement("div");
+        actions.className = "quick-reply-actions";
+
+        // EDITAR
+        const editBtn = document.createElement("i");
+        editBtn.className = "fas fa-pencil-alt";
+        editBtn.onclick = () => {
+          input.disabled = false;
+          input.focus();
+          input.style.border = "1px solid #FF3B00";
+        };
+
+        // BORRAR
+        const deleteBtn = document.createElement("i");
+        deleteBtn.className = "fas fa-trash";
+        deleteBtn.onclick = () => showDeleteConfirm(index);
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        item.appendChild(input);
+        item.appendChild(actions);
+        list.appendChild(item);
+      });
+    }
+
+    function showDeleteConfirm(index) {
+      const list = document.getElementById("quickRepliesList");
+      const item = list.children[index];
+      const actions = item.querySelector(".quick-reply-actions");
+
+      actions.innerHTML = ''; // limpiamos
+
+      const confirmBox = document.createElement("div");
+      confirmBox.className = "confirm-box";
+
+      const confirmBtn = document.createElement("span");
+      confirmBtn.innerText = "✅";
+      confirmBtn.className = "confirm-btn";
+      confirmBtn.onclick = () => {
+        currentReplies.splice(index, 1);
+        renderQuickReplies(currentReplies);
+      };
+
+      const cancelBtn = document.createElement("span");
+      cancelBtn.innerText = "❌";
+      cancelBtn.className = "cancel-btn";
+      cancelBtn.onclick = () => renderQuickReplies(currentReplies);
+
+      confirmBox.appendChild(confirmBtn);
+      confirmBox.appendChild(cancelBtn);
+      actions.appendChild(confirmBox);
+    }
+
+    function saveQuickReplies() {
+      const list = document.querySelectorAll(".quick-reply-input");
+      const newReplies = Array.from(list).map(input => input.value.trim()).filter(Boolean);
 
       fetch('/quick-replies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(replies)
+        body: JSON.stringify(newReplies)
       })
       .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          document.getElementById("quickMsg").textContent = "✅ Guardado correctamente";
-          document.getElementById("quickMsg").className = "success";
-        } else {
-          throw new Error();
-        }
+      .then(() => {
+        document.getElementById("quickMsg").innerHTML = "✅ Respuestas guardadas correctamente";
+        document.getElementById("quickMsg").className = "success";
+        loadQuickReplies(); // refrescar
       })
       .catch(() => {
-        document.getElementById("quickMsg").textContent = "❌ Error al guardar";
+        document.getElementById("quickMsg").innerHTML = "❌ Error al guardar respuestas";
         document.getElementById("quickMsg").className = "error";
       });
     }
@@ -341,5 +459,5 @@
     loadQuickReplies();
   </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92817bd47c5ddd1d',t:'MTc0MzI3MzUwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92817bd47c5ddd1d',t:'MTc0MzI3MzUwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9283d001ca900c0a',t:'MTc0MzI5NzkyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
