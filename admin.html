@@ -1023,106 +1023,110 @@
 
     // Función para renderizar los mensajes con timestamps ajustados
     function renderChat(messages) {
-      const popupContainer = document.getElementById("popupMessages");
-      const chatContainer = document.getElementById("chatMessages");
-      popupContainer.innerHTML = '';
-      chatContainer.innerHTML = '';
+  const popupContainer = document.getElementById("popupMessages");
+  const chatContainer = document.getElementById("chatMessages");
+  popupContainer.innerHTML = '';
+  chatContainer.innerHTML = '';
 
-      console.log('Renderizando mensajes con timezone:', systemTimezone, 'Mensajes:', messages);
+  console.log('Renderizando mensajes con timezone:', systemTimezone, 'Mensajes:', messages);
 
-      let lastRenderedDate = null;
+  let lastRenderedDate = null;
 
-      messages.forEach(msg => {
-        // Asegurarse de que el timestamp sea válido o asignar uno por defecto
-        let msgDate;
-        if (!msg.timestamp || isNaN(Date.parse(msg.timestamp))) {
-          console.warn("Timestamp inválido o ausente, usando fecha actual:", msg);
-          msgDate = new Date(); // Fecha actual como respaldo
-          msg.timestamp = msgDate.toISOString(); // Actualizar el timestamp
-        } else {
-          msgDate = new Date(msg.timestamp);
-        }
+  messages.forEach(msg => {
+    // Depurar el valor exacto del timestamp
+    console.log('Procesando mensaje con timestamp:', msg.timestamp, 'Tipo:', typeof msg.timestamp);
 
-        const formattedDay = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          year: 'numeric', month: 'numeric', day: 'numeric'
-        }).format(msgDate);
-
-        const now = new Date();
-        const formattedNow = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          year: 'numeric', month: 'numeric', day: 'numeric'
-        }).format(now);
-
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          year: 'numeric', month: 'numeric', day: 'numeric'
-        }).format(yesterday);
-
-        let label = '';
-        if (formattedDay === formattedNow) label = 'Hoy';
-        else if (formattedDay === formattedYesterday) label = 'Ayer';
-        else label = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          day: 'numeric', month: 'long'
-        }).format(msgDate);
-
-        if (formattedDay !== lastRenderedDate) {
-          lastRenderedDate = formattedDay;
-          const dateLabel = document.createElement('div');
-          dateLabel.className = 'date-label';
-          dateLabel.textContent = label;
-          chatContainer.appendChild(dateLabel);
-        }
-
-        if (msg.sender === 'System') {
-          const systemMsg = document.createElement('div');
-          systemMsg.classList.add('bubble', 'system');
-          systemMsg.innerText = msg.message;
-          popupContainer.appendChild(systemMsg.cloneNode(true));
-          chatContainer.appendChild(systemMsg);
-        } else {
-          const div = document.createElement('div');
-          const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
-          div.classList.add("bubble", senderClass);
-
-          let timestamp = msgDate.toLocaleString("es-AR", { timeZone: systemTimezone });
-
-          if (msg.message) {
-            if (msg.sender === "Agent" || msg.sender === "Bot") {
-              div.innerHTML = `<div>${msg.message}</div>`;
-            } else {
-              div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
-            }
-          }
-
-          if (msg.image) {
-            const img = document.createElement("img");
-            img.src = msg.image;
-            img.alt = "imagen enviada";
-            img.style.maxWidth = "200px";
-            img.style.borderRadius = "10px";
-            img.style.marginTop = "5px";
-            img.onclick = () => openImageInNewWindow(msg.image);
-            div.appendChild(img);
-          }
-
-          const time = document.createElement("div");
-          time.className = "timestamp";
-          time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
-          div.appendChild(time);
-
-          popupContainer.appendChild(div.cloneNode(true));
-          chatContainer.appendChild(div);
-        }
-      });
-
-      popupContainer.scrollTop = popupContainer.scrollHeight;
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    // Asegurarse de que el timestamp sea válido o asignar uno por defecto
+    let msgDate;
+    const parsedTimestamp = msg.timestamp ? Date.parse(msg.timestamp) : NaN;
+    if (isNaN(parsedTimestamp)) {
+      console.warn("Timestamp inválido o ausente, usando fecha actual:", msg);
+      msgDate = new Date(); // Fecha actual como respaldo
+      msg.timestamp = msgDate.toISOString(); // Actualizar el timestamp
+    } else {
+      msgDate = new Date(parsedTimestamp);
     }
 
+    const formattedDay = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    }).format(msgDate);
+
+    const now = new Date();
+    const formattedNow = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    }).format(now);
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    }).format(yesterday);
+
+    let label = '';
+    if (formattedDay === formattedNow) label = 'Hoy';
+    else if (formattedDay === formattedYesterday) label = 'Ayer';
+    else label = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      day: 'numeric', month: 'long'
+    }).format(msgDate);
+
+    if (formattedDay !== lastRenderedDate) {
+      lastRenderedDate = formattedDay;
+      const dateLabel = document.createElement('div');
+      dateLabel.className = 'date-label';
+      dateLabel.textContent = label;
+      chatContainer.appendChild(dateLabel);
+    }
+
+    if (msg.sender === 'System') {
+      const systemMsg = document.createElement('div');
+      systemMsg.classList.add('bubble', 'system');
+      systemMsg.innerText = msg.message;
+      popupContainer.appendChild(systemMsg.cloneNode(true));
+      chatContainer.appendChild(systemMsg);
+    } else {
+      const div = document.createElement('div');
+      const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
+      div.classList.add("bubble", senderClass);
+
+      let timestamp = msgDate.toLocaleString("es-AR", { timeZone: systemTimezone });
+
+      if (msg.message) {
+        if (msg.sender === "Agent" || msg.sender === "Bot") {
+          div.innerHTML = `<div>${msg.message}</div>`;
+        } else {
+          div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+        }
+      }
+
+      if (msg.image) {
+        const img = document.createElement("img");
+        img.src = msg.image;
+        img.alt = "imagen enviada";
+        img.style.maxWidth = "200px";
+        img.style.borderRadius = "10px";
+        img.style.marginTop = "5px";
+        img.onclick = () => openImageInNewWindow(msg.image);
+        div.appendChild(img);
+      }
+
+      const time = document.createElement("div");
+      time.className = "timestamp";
+      time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
+      div.appendChild(time);
+
+      popupContainer.appendChild(div.cloneNode(true));
+      chatContainer.appendChild(div);
+    }
+  });
+
+  popupContainer.scrollTop = popupContainer.scrollHeight;
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+    
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
