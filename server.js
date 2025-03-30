@@ -30,7 +30,6 @@ const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const configFilePath = path.join(__dirname, 'config.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
-// Función para obtener timestamp con zona horaria configurable
 function getTimestamp() {
   const defaultTimezone = "America/Argentina/Buenos_Aires";
   let timezone = defaultTimezone;
@@ -55,14 +54,12 @@ function getTimestamp() {
   }
 }
 
-// Inicializar archivos si no existen
 if (!fs.existsSync(historyFilePath)) fs.writeFileSync(historyFilePath, JSON.stringify({}));
 if (!fs.existsSync(performanceFile)) fs.writeFileSync(performanceFile, JSON.stringify({}));
 if (!fs.existsSync(agentsFilePath)) fs.writeFileSync(agentsFilePath, JSON.stringify([]));
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
-// Cargar historial de chat
 try {
   const data = fs.readFileSync(historyFilePath, 'utf-8');
   Object.assign(chatHistory, JSON.parse(data));
@@ -351,7 +348,7 @@ io.on('connection', (socket) => {
       message: '💬 Chat cerrado',
       timestamp: getTimestamp(),
       status: 'closed',
-      agentUsername: agentUsername // Agregar el agente que cerró el chat
+      agentUsername: agentUsername
     };
 
     chatHistory[userId].push(closeMsg);
@@ -520,11 +517,11 @@ app.post('/update-agent-name', (req, res) => {
   }
 
   agents[index].name = newName;
-  if (agents[index].displayName) {
-    agents[index].displayName = newName;
-  }
-  
   fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+
+  // Emitir evento a todos los clientes conectados
+  io.emit('agent name updated', { username, newName });
+
   res.status(200).json({ success: true });
 });
 
@@ -685,15 +682,11 @@ app.get('/stats-agents', (req, res) => {
     const agents = JSON.parse(fs.readFileSync(agentsFilePath, 'utf-8'));
     const chatData = JSON.parse(fs.readFileSync(historyFilePath, 'utf-8'));
 
-    // Crear un mapa para contar chats cerrados por agente en el rango
     const agentStatsMap = {};
-
-    // Inicializar todos los agentes con 0
     agents.forEach(agent => {
       agentStatsMap[agent.username] = 0;
     });
 
-    // Contar chats cerrados en el rango
     Object.values(chatData).forEach(messages => {
       messages.forEach(msg => {
         const msgDate = new Date(msg.timestamp);
@@ -709,7 +702,6 @@ app.get('/stats-agents', (req, res) => {
       });
     });
 
-    // Convertir el mapa en un array para el response
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.displayName || agent.username,
