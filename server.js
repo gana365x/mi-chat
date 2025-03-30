@@ -40,8 +40,17 @@ if (fs.existsSync(configFilePath)) {
 }
 
 function getTimestamp() {
-  const localDate = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-  return localDate.toISOString();
+  const defaultTimezone = "America/Argentina/Buenos_Aires";
+  try {
+    const { timezone } = JSON.parse(fs.readFileSync(path.join(__dirname, 'timezone.json')));
+    const now = new Date();
+    const localDate = new Date(now.toLocaleString('en-US', { timeZone: timezone || defaultTimezone }));
+    return localDate.toISOString();
+  } catch (e) {
+    const now = new Date();
+    const localDate = new Date(now.toLocaleString('en-US', { timeZone: defaultTimezone }));
+    return localDate.toISOString();
+  }
 }
 
 // Inicializar archivos si no existen
