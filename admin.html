@@ -1166,8 +1166,13 @@ function renderChat(messages) {
   let lastRenderedDate = null;
 
   messages.forEach(msg => {
-    const msgDate = new Date(msg.timestamp);
-    const formattedDay = new Intl.DateTimeFormat('es-AR', {
+  if (!msg.timestamp || isNaN(new Date(msg.timestamp))) {
+    console.warn("Mensaje con timestamp inválido:", msg);
+    msg.timestamp = new Date().toISOString(); // Usamos fecha actual por defecto
+  }
+
+  const msgDate = new Date(msg.timestamp);
+  const formattedDay = new Intl.DateTimeFormat('es-AR', {
       timeZone: 'America/Argentina/Buenos_Aires',
       year: 'numeric', month: 'numeric', day: 'numeric'
     }).format(msgDate);
