@@ -1199,14 +1199,17 @@ if (msgDay !== lastRenderedDate) {
 
           let timestamp = 'Sin hora';
 if (msg.timestamp) {
-  const date = new Date(msg.timestamp);
-  if (!isNaN(date)) {
-    timestamp = date.toLocaleTimeString('es-AR', {
+  const utcDate = new Date(msg.timestamp);
+
+  try {
+    timestamp = utcDate.toLocaleTimeString('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false,
-      timeZone: 'America/Argentina/Buenos_Aires'
+      hour12: false
     });
+  } catch (error) {
+    console.error("Error al convertir la hora:", error);
   }
 }
 
