@@ -164,11 +164,10 @@ io.on('connection', (socket) => {
     if (chatHistory[data.userId]) {
       const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
 
-      // ✅ Solo reabrir si:
-      // 1) estaba cerrado
-      // 2) el mensaje viene del cliente
-      if (wasClosed && data.sender === 'User') {
-        // Eliminar todos los mensajes con status cerrado
+      // Verificamos si estaba cerrado y si ya fue reabierto
+      const alreadyReopened = chatHistory[data.userId].some(msg => msg.message === '💬 Chat abierto');
+
+      if (wasClosed && data.sender === 'User' && !alreadyReopened) {
         chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
 
         const reopenMsg = {
@@ -177,8 +176,8 @@ io.on('connection', (socket) => {
           message: '💬 Chat abierto',
           timestamp: getTimestamp()
         };
-        chatHistory[data.userId].push(reopenMsg);
 
+        chatHistory[data.userId].push(reopenMsg);
         saveChatHistory();
 
         const userSocket = userSessions.get(data.userId)?.socket;
@@ -190,7 +189,7 @@ io.on('connection', (socket) => {
           }
         }
 
-        io.emit('user list', getAllChatsSorted()); // actualiza visual del admin
+        io.emit('user list', getAllChatsSorted());
       }
     }
 
