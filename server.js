@@ -91,11 +91,11 @@ function getAllChatsSorted() {
       const username = userSessions.get(userId)?.username || 'Usuario';
       const validMessages = messages.filter(msg => msg.status !== 'closed');
       const lastValidMessage = validMessages[validMessages.length - 1];
-      const lastMessageTime = lastValidMessage?.timestamp || new Date().toISOString(); // Enviar como string ISO
+      const lastMessageTime = lastValidMessage?.timestamp || new Date().toISOString();
       const isClosed = messages.some(msg => msg.status === 'closed');
       return { userId, username, lastMessageTime, isClosed };
     })
-    .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime)); // Comparar como fechas
+    .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
   return users;
 }
 
@@ -162,25 +162,19 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push(messageData);
 
     if (chatHistory[data.userId]) {
-      // Si el chat estaba cerrado y el usuario vuelve a escribir
       const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
       if (wasClosed) {
-        // Removemos el estado cerrado para reactivar el chat
         chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
-
-        // Enviamos un mensaje del sistema para marcar reapertura
         chatHistory[data.userId].push({
           userId: data.userId,
           sender: 'System',
           message: '🔄 El chat fue reabierto por el cliente',
           timestamp: getTimestamp()
         });
-
         saveChatHistory();
         io.emit('user list', getAllChatsSorted());
       }
 
-      // Bloque original para 'Cargar Fichas' o 'Retirar'
       if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
         if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
         chatHistory[data.userId].activeSession = true;
@@ -257,20 +251,14 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push(imageData);
     saveChatHistory();
 
-    console.log(`Imagen recibida del usuario ${data.userId}. Enviando a cliente y agentes...`);
-
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) {
       userSocket.emit('image', imageData);
-      console.log(`Imagen enviada al cliente ${data.userId}`);
-    } else {
-      console.log(`No se encontró socket de usuario para ${data.userId}`);
     }
 
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin image', imageData);
-        console.log(`Imagen enviada al agente con socket ${adminSocketId} para usuario ${data.userId}`);
       }
     }
 
@@ -438,7 +426,12 @@ app.post('/agent-login', (req, res) => {
   const match = agents.find(a => a.username === username && a.password === password);
 
   if (match) {
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ 
+      success: true,
+      username: match.username,
+      name: match.name || match.displayName || match.username, // Compatibilidad con ambos campos
+      type: match.type || 'agent' // Tipo por defecto si no existe
+    });
   }
 
   return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
@@ -446,16 +439,24 @@ app.post('/agent-login', (req, res) => {
 
 app.get('/agents', (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  res.json(agents);
+  // Convertir displayName a name para mantener compatibilidad
+  const formattedAgents = agents.map(agent => ({
+    username: agent.username,
+    name: agent.name || agent.displayName || agent.username,
+    type: agent.type || 'agent'
+  }));
+  res.json(formattedAgents);
 });
 
 app.post('/agents', (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const { username, password } = req.body;
+  const { username, name, password, type = 'agent' } = req.body;
+  
   if (agents.find(a => a.username === username)) {
     return res.status(400).json({ success: false, message: 'Ya existe ese usuario' });
   }
-  agents.push({ username, password });
+  
+  agents.push({ username, name, password, type });
   fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
   res.status(200).json({ success: true });
 });
@@ -464,6 +465,25 @@ app.delete('/agents/:username', (req, res) => {
   let agents = JSON.parse(fs.readFileSync(agentsFilePath));
   const { username } = req.params;
   agents = agents.filter(a => a.username !== username);
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+  res.status(200).json({ success: true });
+});
+
+app.put('/agents/:username', (req, res) => {
+  const { username } = req.params;
+  const { name, password, newUsername } = req.body;
+
+  let agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const index = agents.findIndex(a => a.username === username);
+
+  if (index === -1) {
+    return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+  }
+
+  if (name) agents[index].name = name;
+  if (password) agents[index].password = password;
+  if (newUsername) agents[index].username = newUsername;
+
   fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
   res.status(200).json({ success: true });
 });
@@ -478,9 +498,11 @@ app.get('/get-agent-displayname', (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
   const found = agents.find(a => a.username === username);
   if (found) {
-    res.json({ displayName: found.displayName || username });
+    res.json({ 
+      name: found.name || found.displayName || username // Compatibilidad con ambos campos
+    });
   } else {
-    res.json({ displayName: username });
+    res.json({ name: username });
   }
 });
 
@@ -497,7 +519,12 @@ app.post('/update-agent-name', (req, res) => {
     return res.status(404).json({ success: false, message: 'Agente no encontrado' });
   }
 
-  agents[index].displayName = newName;
+  agents[index].name = newName;
+  // Mantener compatibilidad con displayName si existe
+  if (agents[index].displayName) {
+    agents[index].displayName = newName;
+  }
+  
   fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
   res.status(200).json({ success: true });
 });
@@ -544,7 +571,6 @@ app.post('/quick-replies', express.json(), (req, res) => {
   res.json({ success: true });
 });
 
-// Ruta actualizada para enviar el timezone al frontend
 app.get('/get-timezone', (req, res) => {
   try {
     const data = fs.readFileSync(timezoneFile, 'utf-8');
@@ -562,7 +588,6 @@ app.post('/update-timezone', (req, res) => {
     return res.status(400).json({ success: false, message: "Zona inválida" });
   }
 
-  // Validar que la zona horaria sea una de las permitidas
   const validTimezones = [
     "America/Argentina/Buenos_Aires",
     "America/Mexico_City",
@@ -579,7 +604,6 @@ app.post('/update-timezone', (req, res) => {
   res.json({ success: true });
 });
 
-// Nueva ruta para estadísticas
 app.get('/stats', (req, res) => {
   const { from, to } = req.query;
 
@@ -682,12 +706,15 @@ app.get('/stats-agents', (req, res) => {
         });
       });
 
-      // Si no se encuentra el match exacto, usar performance.json como respaldo
       if (finalizados === 0 && performanceData[username]) {
         finalizados = performanceData[username];
       }
 
-      return { username, finalizados };
+      return { 
+        username, 
+        name: agent.name || agent.displayName || username,
+        finalizados 
+      };
     });
 
     res.json(agentStats);
