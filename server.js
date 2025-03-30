@@ -307,7 +307,7 @@ io.on('connection', (socket) => {
   socket.on('agent message', (data) => {
     if (!data.userId || !data.message) return;
     const messageData = { userId: data.userId, sender: 'Agent', message: data.message, timestamp: getTimestamp() };
-    if (!chatHistory[data.userId]) chatHistory[data.userId].push(messageData);
+    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
     saveChatHistory();
 
@@ -370,12 +370,15 @@ io.on('connection', (socket) => {
     chatHistory[userId] = chatHistory[userId] || [];
 
     const closeMsg = {
+      userId,
       sender: 'System',
-      message: '🔒 Chat cerrado',
+      message: '💬 Chat cerrado',
       timestamp: getTimestamp(),
       status: 'closed'
     };
+
     chatHistory[userId].push(closeMsg);
+    saveChatHistory();
 
     if (userSocket) {
       userSocket.emit('chat message', closeMsg);
