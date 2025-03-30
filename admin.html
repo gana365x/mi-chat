@@ -138,19 +138,20 @@
     }
 
     .chat-view {
-      flex: 1;
-      background: #111;
-      border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      display: none;
-      flex-direction: column;
-      box-sizing: border-box;
-      border: 2px solid #FF3B00;
-      color: white;
-      height: 100vh;
-      overflow: hidden;
-    }
+  flex: 1;
+  background: #111;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  display: none;
+  flex-direction: column;
+  box-sizing: border-box;
+  border: 2px solid #FF3B00;
+  border-bottom: 4px solid #FF3B00; /* 👈 Línea inferior más gruesa y visible */
+  color: white;
+  height: 100vh;
+  overflow: hidden;
+}
 
     .chat-view.active {
       display: flex;
