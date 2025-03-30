@@ -367,36 +367,35 @@
 
       switch (value) {
         case "today":
-          start = new Date(); // Día actual
+          start = new Date();
           end = new Date(start); // Mismo día que start
           break;
           
         case "yesterday":
           start = new Date();
-          start.setDate(start.getDate() - 1); // Día anterior
+          start.setDate(start.getDate() - 1);
           end = new Date(start); // Mismo día que start
           break;
           
         case "week":
           const day = now.getDay();
-          const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Lunes de esta semana
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
           start = new Date(now);
           start.setDate(diff);
-          end = new Date(); // Hasta hoy
+          end = new Date();
           break;
           
         case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1); // 1° del mes
-          end = new Date(); // Hasta hoy
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          end = new Date();
           break;
           
         case "lastMonth":
-          start = new Date(now.getFullYear(), now.getMonth() - 1, 1); // 1° del mes pasado
-          end = new Date(now.getFullYear(), now.getMonth(), 0); // Último día del mes pasado
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          end = new Date(now.getFullYear(), now.getMonth(), 0);
           break;
       }
 
-      // Establecemos las fechas y horas fijas
       fromDateInput.value = start.toISOString().split('T')[0];
       document.getElementById("fromTime").value = '00:00';
       toDateInput.value = end.toISOString().split('T')[0];
@@ -436,11 +435,24 @@
         .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
 
       // Agentes (gráfico)
+      console.log(`Solicitando stats-agents con rango: from=${from}, to=${to}`);
       fetch(`/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
         .then(agentData => {
+          console.log("Datos recibidos de /stats-agents:", agentData);
           const labels = agentData.map(item => item.username);
-          const values = agentData.map(item => item.finalizados);
+          const values = agentData.map(item => item.finalizados || 0);
+          
+          // Si no hay datos, mostramos un gráfico vacío
+          if (!agentData || agentData.length === 0) {
+            console.log("No hay datos para el rango seleccionado, mostrando gráfico vacío.");
+            labels.push("Sin datos");
+            values.push(0);
+          }
+
           const ctx = document.getElementById('chartAgentes').getContext('2d');
 
           if (chartInstance) chartInstance.destroy();
@@ -503,7 +515,39 @@
             }
           });
         })
-        .catch(err => console.error("Error al cargar estadísticas de agentes:", err));
+        .catch(err => {
+          console.error("Error al cargar estadísticas de agentes:", err);
+          // Mostrar gráfico vacío en caso de error
+          const ctx = document.getElementById('chartAgentes').getContext('2d');
+          if (chartInstance) chartInstance.destroy();
+          chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ["Error al cargar"],
+              datasets: [{
+                label: 'Chats Finalizados',
+                data: [0],
+                backgroundColor: '#1a1a1a',
+                borderColor: '#FF3B00',
+                borderWidth: 2,
+                borderRadius: 6,
+                hoverBackgroundColor: '#2a2a2a'
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                datalabels: { display: false }
+              },
+              scales: {
+                x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff' } },
+                y: { grid: { color: '#333' }, ticks: { color: '#fff' } }
+              }
+            }
+          });
+        });
     }
 
     let selectedUsernameToDelete = null;
