@@ -64,9 +64,11 @@ function incrementPerformance(agentUsername) {
 function getAllChatsSorted() {
   const users = Object.entries(chatHistory)
     .map(([userId, messages]) => {
-      const username = userSessions.get(userId)?.username || 'Usuario';
-      const lastMessage = messages[messages.length - 1];
-      const lastMessageTime = lastMessage?.timestamp ? new Date(lastMessage.timestamp) : new Date();
+      const session = userSessions.get(userId);
+      const username = session?.username || 'Usuario';
+      const lastMessageTime = session?.lastMessageTime
+        ? new Date(session.lastMessageTime)
+        : new Date();
       const isClosed = messages.some(msg => msg.status === 'closed');
       return { userId, username, lastMessageTime, isClosed };
     })
@@ -134,6 +136,7 @@ io.on('connection', (socket) => {
     if (!data.userId || !data.sender || !data.message) return;
 
     const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: new Date().toISOString() };
+    userSessions.get(data.userId).lastMessageTime = messageData.timestamp;
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push(messageData);
 
@@ -293,7 +296,7 @@ io.on('connection', (socket) => {
 
     if (userSessions.has(data.userId)) {
       const session = userSessions.get(data.userId);
-      userSessions.set(data.userId, { ...session, socket: null });
+      serSessions.get(data.userId).lastMessageTime = messageData.timestamp;
     }
 
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
