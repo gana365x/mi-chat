@@ -65,19 +65,19 @@
     }
 
     .menu-icon-only {
-  width: 28px;
-  height: 28px;
-  border: 2px solid #FF3B00;
-  border-radius: 6px;
-  margin: 6px auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+      width: 28px;
+      height: 28px;
+      border: 2px solid #FF3B00;
+      border-radius: 6px;
+      margin: 6px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
     .menu-icon-only:hover {
       background-color: #2a2a2a;
@@ -203,26 +203,26 @@
     }
 
     #editBtn,
-#saveBtn,
-#cancelBtn {
-  background-color: #1f1f1f;
-  color: white;
-  border: 2px solid #FF3B00;
-  border-radius: 8px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  transition: all 0.2s ease;
-  margin-left: 8px;
-}
+    #saveBtn,
+    #cancelBtn {
+      background-color: #1f1f1f;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.2s ease;
+      margin-left: 8px;
+    }
 
-#editBtn:hover,
-#saveBtn:hover,
-#cancelBtn:hover {
-  background-color: #2a2a2a;
-  transform: scale(1.05);
-}
+    #editBtn:hover,
+    #saveBtn:hover,
+    #cancelBtn:hover {
+      background-color: #2a2a2a;
+      transform: scale(1.05);
+    }
 
     .chat-messages {
       flex: 1;
@@ -593,19 +593,19 @@
     }
 
     .menu-popup {
-  position: absolute;
-  top: 52px;
-  right: 10px;
-  background: #1f1f1f;
-  border: 1px solid #333;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-  display: none;
-  flex-direction: column;
-  z-index: 9999;
-  width: 80px; /* 👈 Más angosto */
-  padding: 10px 0;
-}
+      position: absolute;
+      top: 52px;
+      right: 10px;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      z-index: 9999;
+      width: 80px; /* 👈 Más angosto */
+      padding: 10px 0;
+    }
 
     .menu-popup.active {
       display: flex;
@@ -642,20 +642,21 @@
     }
 
     .filter-option.selected {
-  border: 2px solid #FF3B00;
-  background-color: #2c2c2c;
-  border-radius: 8px;
-}
+      border: 2px solid #FF3B00;
+      background-color: #2c2c2c;
+      border-radius: 8px;
+    }
 
-.filter-option:hover {
-  background-color: #333;
-  border: 2px solid #FF3B00;
-  border-radius: 8px;
-}
+    .filter-option:hover {
+      background-color: #333;
+      border: 2px solid #FF3B00;
+      border-radius: 8px;
+    }
+
     .filter-option.selected {
-  color: #fff;
-  font-weight: bold;
-}
+      color: #fff;
+      font-weight: bold;
+    }
 
     .popup-overlay {
       display: none;
@@ -735,80 +736,88 @@
     }
 
     @media (max-width: 768px) {
-  body, html {
-    height: 100vh;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-  }
+      body, html {
+        height: 100vh;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+      }
 
-  .menu-popup {
-    top: 42px;
-    right: 8px;
-    width: 52px;          /* ✅ más angosto */
-    padding: 4px 0;       /* ✅ más compacto */
-    border-radius: 8px;
-  }
+      .menu-popup {
+        top: 42px;
+        right: 8px;
+        width: 52px;          /* ✅ más angosto */
+        padding: 4px 0;       /* ✅ más compacto */
+        border-radius: 8px;
+      }
 
-  .menu-icon-only {
-    width: 30px;          /* ✅ más chico */
-    height: 30px;
-    font-size: 14px;
-    margin: 3px auto;     /* ✅ menos espacio entre botones */
-    border-radius: 5px;
-  }
+      .menu-icon-only {
+        width: 30px;          /* ✅ más chico */
+        height: 30px;
+        font-size: 14px;
+        margin: 3px auto;     /* ✅ menos espacio entre botones */
+        border-radius: 5px;
+      }
 
-  .chat-popup {
-    width: 100vw;
-    height: 100vh;
-    bottom: 0;
-    right: 0;
-    border-radius: 0;
-    transform: none;
-  }
+      .chat-popup {
+        width: 100vw;
+        height: 100vh;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+        transform: none;
+      }
 
-  .inbox {
-    width: 100vw;
-    padding: 0 15px;
-    box-sizing: border-box;
-    height: calc(100vh - 44px);
-    overflow-y: hidden;
-  }
+      .inbox {
+        width: 100vw;
+        padding: 0 15px;
+        box-sizing: border-box;
+        height: calc(100vh - 44px);
+        overflow-y: hidden;
+      }
 
-  .topbar {
-    padding-left: 5px;
-    padding-right: 5px;
-  }
+      .topbar {
+        padding-left: 5px;
+        padding-right: 5px;
+      }
 
-  .chat-item {
-    margin: 10px 0;
-    border-radius: 12px;
-    padding: 10px 15px;
-    width: 100%;
-    box-sizing: border-box;
-  }
+      .chat-item {
+        margin: 10px 0;
+        border-radius: 12px;
+        padding: 10px 15px;
+        width: 100%;
+        box-sizing: border-box;
+      }
 
-  .user-list {
-    height: calc(100% - 44px);
-    overflow-y: auto;
-  }
-}
+      .user-list {
+        height: calc(100% - 44px);
+        overflow-y: auto;
+      }
+    }
+
     .popup-edit-icon {
-  background-color: #1f1f1f;
-  color: white;
-  border: 2px solid #FF3B00;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+      background-color: #1f1f1f;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
 
-.popup-edit-icon:hover {
-  background-color: #2a2a2a;
-  transform: scale(1.1);
-}
+    .popup-edit-icon:hover {
+      background-color: #2a2a2a;
+      transform: scale(1.1);
+    }
 
+    #resizer {
+      width: 5px;
+      cursor: col-resize;
+      background-color: #FF3B00;
+      margin: 0;
+      height: 100%;
+    }
   </style>
 </head>
 <body>
@@ -868,6 +877,8 @@
       <ul class="user-list" id="userList"></ul>
     </div>
 
+    <div id="resizer"></div> <!-- 👈 NUEVO SEPARADOR -->
+
     <div class="chat-view" id="chatArea" style="display: none !important;">
       <div class="chat-header" id="chatHeader">
         <div id="chatUser">
@@ -920,15 +931,14 @@
       </div>
     </div>
     <div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
-  <input id="newPopupName" type="text" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" />
-  
-  <button onclick="confirmPopupNameChange()" class="popup-edit-icon" title="Guardar">
-    💾
-  </button>
-  <button onclick="document.getElementById('editNameContainer').style.display='none'" class="popup-edit-icon" title="Cancelar">
-    ❌
-  </button>
-</div>
+      <input id="newPopupName" type="text" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" />
+      <button onclick="confirmPopupNameChange()" class="popup-edit-icon" title="Guardar">
+        💾
+      </button>
+      <button onclick="document.getElementById('editNameContainer').style.display='none'" class="popup-edit-icon" title="Cancelar">
+        ❌
+      </button>
+    </div>
 
     <div id="popupMessages" class="popup-messages"></div>
     <div class="popup-input">
@@ -1617,5 +1627,30 @@
       }
     });
   </script>
+  <script>
+    const resizer = document.getElementById('resizer');
+    const inbox = document.getElementById('userListContainer');
+    const chatView = document.getElementById('chatArea');
+
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', function(e) {
+      isResizing = true;
+      document.body.style.cursor = 'col-resize';
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isResizing) return;
+      const newWidth = e.clientX;
+      if (newWidth < 180 || newWidth > window.innerWidth - 300) return;
+      inbox.style.width = `${newWidth}px`;
+    });
+
+    document.addEventListener('mouseup', function() {
+      isResizing = false;
+      document.body.style.cursor = 'default';
+    });
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9284b992a85a53ab',t:'MTc0MzMwNzQ4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
