@@ -350,7 +350,8 @@ io.on('connection', (socket) => {
       sender: 'System',
       message: '💬 Chat cerrado',
       timestamp: getTimestamp(),
-      status: 'closed'
+      status: 'closed',
+      agentUsername: agentUsername // Agregar el agente que cerró el chat
     };
 
     chatHistory[userId].push(closeMsg);
@@ -429,8 +430,8 @@ app.post('/agent-login', (req, res) => {
     return res.status(200).json({ 
       success: true,
       username: match.username,
-      name: match.name || match.displayName || match.username, // Compatibilidad con ambos campos
-      type: match.type || 'agent' // Tipo por defecto si no existe
+      name: match.name || match.displayName || match.username,
+      type: match.type || 'agent'
     });
   }
 
@@ -439,7 +440,6 @@ app.post('/agent-login', (req, res) => {
 
 app.get('/agents', (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  // Convertir displayName a name para mantener compatibilidad
   const formattedAgents = agents.map(agent => ({
     username: agent.username,
     name: agent.name || agent.displayName || agent.username,
@@ -499,7 +499,7 @@ app.get('/get-agent-displayname', (req, res) => {
   const found = agents.find(a => a.username === username);
   if (found) {
     res.json({ 
-      name: found.name || found.displayName || username // Compatibilidad con ambos campos
+      name: found.name || found.displayName || username
     });
   } else {
     res.json({ name: username });
@@ -520,7 +520,6 @@ app.post('/update-agent-name', (req, res) => {
   }
 
   agents[index].name = newName;
-  // Mantener compatibilidad con displayName si existe
   if (agents[index].displayName) {
     agents[index].displayName = newName;
   }
@@ -684,38 +683,38 @@ app.get('/stats-agents', (req, res) => {
     }
 
     const agents = JSON.parse(fs.readFileSync(agentsFilePath, 'utf-8'));
-    const performanceData = JSON.parse(fs.readFileSync(performanceFile, 'utf-8'));
     const chatData = JSON.parse(fs.readFileSync(historyFilePath, 'utf-8'));
 
-    const agentStats = agents.map(agent => {
-      const username = agent.username;
-      let finalizados = 0;
+    // Crear un mapa para contar chats cerrados por agente en el rango
+    const agentStatsMap = {};
 
-      Object.values(chatData).forEach(messages => {
-        messages.forEach(msg => {
-          const msgDate = new Date(msg.timestamp);
-          if (
-            msg.status === 'closed' &&
-            msg.sender === 'System' &&
-            msgDate >= fromDate &&
-            msgDate <= toDate &&
-            messages.some(m => m.sender === 'Agent' && m.message && m.timestamp && m.timestamp === msg.timestamp && m.agentUsername === username)
-          ) {
-            finalizados++;
-          }
-        });
-      });
-
-      if (finalizados === 0 && performanceData[username]) {
-        finalizados = performanceData[username];
-      }
-
-      return { 
-        username, 
-        name: agent.name || agent.displayName || username,
-        finalizados 
-      };
+    // Inicializar todos los agentes con 0
+    agents.forEach(agent => {
+      agentStatsMap[agent.username] = 0;
     });
+
+    // Contar chats cerrados en el rango
+    Object.values(chatData).forEach(messages => {
+      messages.forEach(msg => {
+        const msgDate = new Date(msg.timestamp);
+        if (
+          msg.status === 'closed' &&
+          msg.sender === 'System' &&
+          msgDate >= fromDate &&
+          msgDate <= toDate &&
+          msg.agentUsername
+        ) {
+          agentStatsMap[msg.agentUsername] = (agentStatsMap[msg.agentUsername] || 0) + 1;
+        }
+      });
+    });
+
+    // Convertir el mapa en un array para el response
+    const agentStats = agents.map(agent => ({
+      username: agent.username,
+      name: agent.name || agent.displayName || agent.username,
+      finalizados: agentStatsMap[agent.username] || 0
+    }));
 
     res.json(agentStats);
   } catch (error) {
