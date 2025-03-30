@@ -176,7 +176,7 @@ io.on('connection', (socket) => {
         chatHistory[data.userId].push(openMsg);
 
         for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-          if (subscribedUser Id === data.userId) {
+          if (subscribedUserId === data.userId) {
             io.to(adminSocketId).emit('admin message', openMsg);
           }
         }
@@ -197,8 +197,8 @@ io.on('connection', (socket) => {
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
 
-    for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-      if (subscribedUser Id === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', messageData);
       }
     }
@@ -214,8 +214,8 @@ io.on('connection', (socket) => {
       saveChatHistory();
       io.emit('user list', getAllChatsSorted());
       if (userSocket) userSocket.emit('chat message', botMsg);
-      for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-        if (subscribedUser Id === data.userId) {
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
           io.to(adminSocketId).emit('admin message', botMsg);
         }
       }
@@ -242,8 +242,8 @@ io.on('connection', (socket) => {
       saveChatHistory();
       io.emit('user list', getAllChatsSorted());
       if (userSocket) userSocket.emit('chat message', retiroMsg);
-      for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-        if (subscribedUser Id === data.userId) {
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
           io.to(adminSocketId).emit('admin message', retiroMsg);
         }
       }
@@ -270,8 +270,8 @@ io.on('connection', (socket) => {
       console.log(`No se encontró socket de usuario para ${data.userId}`);
     }
 
-    for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-      if (subscribedUser Id === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin image', imageData);
         console.log(`Imagen enviada al agente con socket ${adminSocketId} para usuario ${data.userId}`);
       }
@@ -286,8 +286,8 @@ io.on('connection', (socket) => {
     chatHistory[data.userId].push(botResponse);
     saveChatHistory();
     if (userSocket) userSocket.emit('chat message', botResponse);
-    for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-      if (subscribedUser Id === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', botResponse);
       }
     }
@@ -305,8 +305,8 @@ io.on('connection', (socket) => {
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
 
-    for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-      if (subscribedUser Id === data.userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', messageData);
       }
     }
@@ -332,8 +332,8 @@ io.on('connection', (socket) => {
       const userSocket = userSessions.get(data.userId)?.socket;
       if (userSocket) userSocket.emit('chat message', openMsg);
 
-      for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-        if (subscribedUser Id === data.userId) {
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
           io.to(adminSocketId).emit('admin message', openMsg);
         }
       }
@@ -372,8 +372,8 @@ io.on('connection', (socket) => {
       userSocket.emit('chat message', closeMsg);
     }
 
-    for (let [adminSocketId, subscribedUser Id] of adminSubscriptions.entries()) {
-      if (subscribedUser Id === userId) {
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === userId) {
         io.to(adminSocketId).emit('admin message', closeMsg);
       }
     }
@@ -419,12 +419,12 @@ app.post('/admin-login', (req, res) => {
   }
 });
 
-const superAdminUser  = 'superadmin';
+const superAdminUser = 'superadmin';
 const superAdminPass = 'gana365super';
 
 app.post('/superadmin-login', (req, res) => {
   const { username, password } = req.body;
-  if (username === superAdminUser  && password === superAdminPass) {
+  if (username === superAdminUser && password === superAdminPass) {
     res.status(200).json({ success: true });
   } else {
     res.status(401).json({ success: false });
@@ -559,7 +559,7 @@ app.post('/update-timezone', (req, res) => {
   if (!timezone || typeof timezone !== 'string') {
     return res.status(400).json({ success: false, message: "Zona inválida" });
   }
-  
+
   // Validar que la zona horaria sea una de las permitidas
   const validTimezones = [
     "America/Argentina/Buenos_Aires",
