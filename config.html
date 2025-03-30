@@ -115,11 +115,11 @@
       padding: 10px;
       border-radius: 8px;
       margin-bottom: 10px;
+      gap: 10px;
     }
 
     .quick-reply-input {
       flex: 1;
-      margin-right: 10px;
       background: #333;
       border: none;
       color: white;
@@ -168,19 +168,6 @@
     .confirm-btn:hover { color: #00ff00; }
     .cancel-btn:hover { color: red; }
 
-    /* Estilo para el atajo de respuestas rápidas */
-    .quick-reply-item > div:first-child {
-      background-color: #2a2a2a;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 14px;
-      margin-right: 10px;
-      font-weight: bold;
-      color: #FF3B00;
-      width: 40px;
-      text-align: center;
-    }
-
     /* Estilos para el popup */
     .popup-overlay {
       display: none;
@@ -209,16 +196,6 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.6);
     }
 
-    @media (max-width: 600px) {
-      .container {
-        padding: 20px;
-      }
-
-      .header h1 {
-        font-size: 18px;
-      }
-    }
-
     /* Estilos universales para botones */
     button {
       background-color: #1f1f1f !important;
@@ -237,6 +214,16 @@
     button:hover {
       background-color: #2a2a2a !important;
       transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
@@ -270,7 +257,7 @@
     </div>
 
     <div class="form-group">
-      <label>Respuestas rápidas (usa /1, /2, etc.)</label>
+      <label>Respuestas rápidas (usa comandos personalizados)</label>
       <div id="quickRepliesContainer">
         <button onclick="openRepliesPopup()">📝 Abrir Respuestas Rápidas</button>
         <div id="quickMsg" style="margin-top: 10px;"></div>
@@ -421,22 +408,19 @@
         const item = document.createElement("div");
         item.className = "quick-reply-item";
 
-        // 📌 Atajo fijo a la izquierda
-        const shortcut = document.createElement("div");
-        shortcut.innerText = `/` + (index + 1);
-        shortcut.style.marginRight = "10px";
-        shortcut.style.fontWeight = "bold";
-        shortcut.style.color = "#FF3B00";
-        shortcut.style.width = "40px";
-        shortcut.style.textAlign = "center";
+        const cmdInput = document.createElement("input");
+        cmdInput.type = "text";
+        cmdInput.className = "quick-reply-input";
+        cmdInput.style.maxWidth = "80px";
+        cmdInput.value = reply.command || `/c${index + 1}`; // default si no existe
+        cmdInput.dataset.index = index;
 
-        const input = document.createElement("input");
-        input.className = "quick-reply-input";
-        input.type = "text";
-        input.value = reply;
-        input.placeholder = "Escribe una respuesta...";
-        input.dataset.index = index;
-        input.disabled = true;
+        const textInput = document.createElement("input");
+        textInput.className = "quick-reply-input";
+        textInput.type = "text";
+        textInput.value = reply.text || "";
+        textInput.placeholder = "Escribe la respuesta...";
+        textInput.dataset.index = index;
 
         const actions = document.createElement("div");
         actions.className = "quick-reply-actions";
@@ -444,9 +428,9 @@
         const editBtn = document.createElement("i");
         editBtn.className = "fas fa-pencil-alt";
         editBtn.onclick = () => {
-          input.disabled = false;
-          input.focus();
-          input.style.border = "1px solid #FF3B00";
+          textInput.disabled = false;
+          cmdInput.disabled = false;
+          textInput.focus();
         };
 
         const deleteBtn = document.createElement("i");
@@ -456,30 +440,39 @@
         actions.appendChild(editBtn);
         actions.appendChild(deleteBtn);
 
-        item.appendChild(shortcut); // primero el atajo
-        item.appendChild(input);
-        item.appendChild(actions);
+        cmdInput.disabled = true;
+        textInput.disabled = true;
 
+        item.appendChild(cmdInput);
+        item.appendChild(textInput);
+        item.appendChild(actions);
         list.appendChild(item);
       });
     }
 
     function addQuickReply() {
-      currentReplies.push(""); // Agregamos un slot vacío
+      currentReplies.push({ command: `/cmd${currentReplies.length + 1}`, text: "" });
       renderPopupReplies(currentReplies);
     }
 
     function saveQuickReplies() {
-      const inputs = document.querySelectorAll(".quick-reply-input");
-      inputs.forEach(i => i.disabled = false); // aseguramos lectura
+      const items = document.querySelectorAll(".quick-reply-item");
+      const updatedReplies = [];
 
-      // ✅ No eliminamos vacíos, respetamos estructura
-      const newReplies = Array.from(inputs).map(input => input.value);
+      items.forEach(item => {
+        const inputs = item.querySelectorAll("input");
+        const command = inputs[0].value.trim();
+        const text = inputs[1].value.trim();
+
+        if (!command.startsWith("/")) return; // prevenir comandos inválidos
+
+        updatedReplies.push({ command, text });
+      });
 
       fetch('/quick-replies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReplies)
+        body: JSON.stringify(updatedReplies)
       })
         .then(res => res.json())
         .then(() => {
@@ -507,7 +500,7 @@
       confirmBtn.innerText = "✅";
       confirmBtn.className = "confirm-btn";
       confirmBtn.onclick = () => {
-        currentReplies[index] = ""; // Solo borramos el contenido, no el slot
+        currentReplies[index].text = ""; // vaciamos el texto pero dejamos el comando
         renderPopupReplies(currentReplies);
       };
 
