@@ -93,8 +93,8 @@ io.on('connection', (socket) => {
       chatHistory[userId] = [];
       const dateMessage = {
         userId,
-        sender: 'system',
-        message: `📅 Chat iniciado el ${new Date().toLocaleDateString()}`,
+        sender: 'System',
+        message: '💬 Chat iniciado',
         timestamp: new Date().toISOString()
       };
       chatHistory[userId].push(dateMessage);
@@ -300,16 +300,16 @@ io.on('connection', (socket) => {
     if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
     chatHistory[data.userId].push({
       sender: 'System',
-      message: 'Chat cerrado',
-      timestamp: '2000-01-01T00:00:00.000Z',
+      message: '🔒 Chat cerrado',
+      timestamp: new Date().toISOString(),
       status: 'closed'
     });
 
     const systemMsg = {
       userId: data.userId,
       sender: 'System',
-      message: 'Chat cerrado',
-      timestamp: '2000-01-01T00:00:00.000Z',
+      message: '🔒 Chat cerrado',
+      timestamp: new Date().toISOString(),
       status: 'closed'
     };
 
