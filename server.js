@@ -64,8 +64,7 @@ function incrementPerformance(agentUsername) {
 // Función para obtener timestamp en GMT-3
 function getGMT3Timestamp() {
   const now = new Date();
-  const gmt3Offset = -3 * 60 * 60 * 1000; // -3 horas en milisegundos
-  const gmt3Date = new Date(now.getTime() + gmt3Offset);
+  const gmt3Date = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
   return gmt3Date.toISOString();
 }
 
