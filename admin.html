@@ -1069,6 +1069,7 @@
                 ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="showFinalizePopup('${user.userId}')">Finalizar</button>`}
               </div>
             </div>
+            console.log("Hora para usuario", user.username, "→", user.lastMessageTime);
             <div class="hora">${formatTime(user.lastMessageTime)}</div>
           `;
 
@@ -1082,9 +1083,11 @@
     }
 
     function formatTime(dateStr) {
-      const date = new Date(dateStr);
-      return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-    }
+  if (!dateStr) return "--:--";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "--:--"; // fecha inválida
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
     function updateUsername(userId, newUsername) {
       console.log('Actualizando nombre de usuario para', userId, 'a', newUsername);
