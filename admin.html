@@ -1215,13 +1215,12 @@ function renderChat(messages) {
       let timestamp = 'Sin hora';
 if (msg.timestamp) {
   try {
-    const utcDate = new Date(msg.timestamp);
-    timestamp = utcDate.toLocaleString('es-AR', {
+    timestamp = new Intl.DateTimeFormat('es-AR', {
       timeZone: 'America/Argentina/Buenos_Aires',
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
-    });
+    }).format(new Date(msg.timestamp));
   } catch (error) {
     console.error("Error al convertir la hora:", error);
   }
