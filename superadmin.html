@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Super Agente - Gestión de Accesos</title>
   <style>
     body {
@@ -19,7 +19,7 @@
       background: #1e1e1e;
       padding: 20px;
       border-radius: 10px;
-      max-width: 500px;
+      max-width: 900px;
       margin: 40px auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
@@ -75,6 +75,12 @@
     .delete-btn:hover {
       background: #cc0000;
     }
+    .calendar-wrapper {
+      position: relative;
+    }
+    .calendar-wrapper input[type="date"] {
+      padding-right: 30px;
+    }
   </style>
 </head>
 <body>
@@ -107,25 +113,25 @@
       </table>
     </div>
 
-    <!-- Sección de estadísticas -->
+    <!-- Sección estadísticas -->
     <div id="section-stats" style="display:none;">
       <h2>📊 Estadísticas</h2>
       <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
         <label>De:</label>
-        <div class="date-container">
-          <input type="date" id="fromDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
-          <span class="calendar-icon">📅</span>
+        <div class="calendar-wrapper">
+          <input type="date" id="fromDate">
+          <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
         </div>
-        <input type="time" id="fromTime" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+        <input type="time" id="fromTime">
 
         <label>A:</label>
-        <div class="date-container">
-          <input type="date" id="toDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
-          <span class="calendar-icon">📅</span>
+        <div class="calendar-wrapper">
+          <input type="date" id="toDate">
+          <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
         </div>
-        <input type="time" id="toTime" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+        <input type="time" id="toTime">
 
-        <select id="quickRange" onchange="setQuickRange()" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+        <select id="quickRange" onchange="setQuickRange()">
           <option value="">Elegir el periodo</option>
           <option value="today">Hoy</option>
           <option value="yesterday">Ayer</option>
@@ -146,7 +152,7 @@
       </div>
     </div>
 
-    <!-- Sección editar (placeholder) -->
+    <!-- Sección editar -->
     <div id="section-customize" style="display:none;">
       <h2>🎨 Personalizar Estilo</h2>
       <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
@@ -172,7 +178,7 @@
         if (data.success) {
           document.getElementById('loginBox').style.display = 'none';
           document.getElementById('mainBox').style.display = 'block';
-          showSection('agents'); // Mostrar sección de agentes por defecto
+          showSection('agents');
           loadAgents();
         } else {
           throw new Error();
@@ -233,8 +239,7 @@
       document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
       document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
       document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
-      
-      // Establecer valores por defecto al mostrar la sección de estadísticas
+
       if (section === "stats") {
         setDefaultDates();
       }
@@ -242,7 +247,7 @@
 
     function setDefaultDates() {
       const today = new Date();
-      const todayISO = today.toISOString().split('T')[0]; // YYYY-MM-DD
+      const todayISO = today.toISOString().split('T')[0];
       document.getElementById('fromDate').value = todayISO;
       document.getElementById('fromTime').value = '00:00';
       document.getElementById('toDate').value = todayISO;
@@ -330,13 +335,6 @@
           console.error("Error al cargar estadísticas:", err);
         });
     }
-
-    // Ejecutar setDefaultDates al cargar la página si la sección de estadísticas está visible
-    document.addEventListener('DOMContentLoaded', () => {
-      if (document.getElementById('section-stats').style.display === 'block') {
-        setDefaultDates();
-      }
-    });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928a0e5c99aebce6',t:'MTc0MzM2MzM4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
