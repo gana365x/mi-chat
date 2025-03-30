@@ -644,6 +644,59 @@ app.get('/stats', (req, res) => {
   }
 });
 
+app.get('/stats-agents', (req, res) => {
+  const { from, to } = req.query;
+
+  if (!from || !to) {
+    return res.status(400).json({ error: 'Faltan parámetros from y to' });
+  }
+
+  try {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    if (isNaN(fromDate) || isNaN(toDate)) {
+      return res.status(400).json({ error: 'Fechas inválidas' });
+    }
+
+    const agents = JSON.parse(fs.readFileSync(agentsFilePath, 'utf-8'));
+    const performanceData = JSON.parse(fs.readFileSync(performanceFile, 'utf-8'));
+    const chatData = JSON.parse(fs.readFileSync(historyFilePath, 'utf-8'));
+
+    const agentStats = agents.map(agent => {
+      const username = agent.username;
+      let finalizados = 0;
+
+      Object.values(chatData).forEach(messages => {
+        messages.forEach(msg => {
+          const msgDate = new Date(msg.timestamp);
+          if (
+            msg.status === 'closed' &&
+            msg.sender === 'System' &&
+            msgDate >= fromDate &&
+            msgDate <= toDate &&
+            messages.some(m => m.sender === 'Agent' && m.message && m.timestamp && m.timestamp === msg.timestamp && m.agentUsername === username)
+          ) {
+            finalizados++;
+          }
+        });
+      });
+
+      // Si no se encuentra el match exacto, usar performance.json como respaldo
+      if (finalizados === 0 && performanceData[username]) {
+        finalizados = performanceData[username];
+      }
+
+      return { username, finalizados };
+    });
+
+    res.json(agentStats);
+  } catch (error) {
+    console.error('Error al procesar estadísticas por agente:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
