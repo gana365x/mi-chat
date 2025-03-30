@@ -1194,10 +1194,16 @@
     });
 
     socket.on('user list', (users) => {
-      console.log('Lista de usuarios recibida:', users);
-      window.chatUsers = users;
-      renderUserList();
-    });
+  console.log('Lista de usuarios recibida:', users);
+  window.chatUsers = users;
+
+  // Esperamos que timezone esté cargado
+  if (currentTimezone !== "UTC") {
+    renderUserList();
+  } else {
+    setTimeout(() => renderUserList(), 200); // pequeña espera si todavía no está
+  }
+});
 
     function renderUserList() {
       const listContainer = document.getElementById("userList");
