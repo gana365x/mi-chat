@@ -1,151 +1,105 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Super Agente - Gestión de Accesos</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root {
-      --primary-color: #FF3B00;
-      --bg-color: #121212;
-      --box-color: #1e1e1e;
-      --text-color: white;
-    }
-
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background-color: #1a1a1a;
-      border-bottom: 1px solid #333;
-    }
-
-    .top-bar h1 {
-      color: var(--primary-color);
-      font-size: 20px;
-      margin: 0;
-    }
-
-    .hamburger {
-      cursor: pointer;
-      font-size: 20px;
+      background-color: #121212;
       color: white;
+      margin: 0;
+      padding: 20px;
     }
-
-    .popup-menu {
-      display: none;
-      position: absolute;
-      top: 50px;
-      right: 20px;
-      background-color: #222;
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 10px;
-      z-index: 100;
+    h1, h2, h3 {
+      color: #FF3B00;
     }
-
-    .popup-menu button {
-      display: block;
-      width: 100%;
-      background: none;
-      color: white;
-      padding: 8px;
-      border: none;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .popup-menu button:hover {
-      background-color: #333;
-    }
-
-    .main-box, .login-box {
-      background: var(--box-color);
+    .login-box, .main-box {
+      background: #1e1e1e;
       padding: 20px;
       border-radius: 10px;
-      max-width: 800px;
-      margin: 30px auto;
+      max-width: 900px;
+      margin: 40px auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-
-    input, select, button {
+    input, select {
       padding: 10px;
-      margin: 5px;
+      margin: 5px 0;
       border-radius: 5px;
       border: none;
       background: #333;
       color: white;
     }
-
-    button {
-      background-color: var(--primary-color);
-      font-weight: bold;
+    .calendar-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
       cursor: pointer;
     }
-
+    .calendar-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    button {
+      background-color: #FF3B00;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
     button:hover {
       background-color: #d63100;
     }
-
-    .section {
-      margin-top: 30px;
-    }
-
-    canvas {
-      background-color: white;
-      border-radius: 10px;
-    }
-
     table {
       width: 100%;
-      margin-top: 15px;
+      margin-top: 20px;
       border-collapse: collapse;
     }
-
     th, td {
       padding: 10px;
+      text-align: left;
       border-bottom: 1px solid #444;
+    }
+    .delete-btn {
+      background: #aa0000;
+      border: none;
+      padding: 5px 10px;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #cc0000;
     }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <h1>Super Agente</h1>
-    <i class="fas fa-bars hamburger" onclick="togglePopupMenu()"></i>
-    <div id="popupMenu" class="popup-menu">
-      <button onclick="logout()">Desconectar</button>
-    </div>
-  </div>
-
   <div class="login-box" id="loginBox">
+    <h1>Super Agente</h1>
     <input type="text" id="superUsername" placeholder="Usuario">
     <input type="password" id="superPassword" placeholder="Contraseña">
     <button onclick="loginSuperAdmin()">Ingresar</button>
-    <p id="loginError" style="color:red; display:none;">Credenciales inválidas</p>
+    <p id="loginError" style="color: red; display: none;">Credenciales inválidas</p>
   </div>
 
-  <div class="main-box" id="mainBox" style="display:none;">
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-      <button onclick="showSection('agents')">Agentes</button>
-      <button onclick="showSection('stats')">Estadísticas</button>
+  <div class="main-box" id="mainBox" style="display:none">
+    <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+      <button onclick="showSection('agents')">👥 Agentes</button>
+      <button onclick="showSection('stats')">📊 Estadísticas</button>
+      <button onclick="showSection('customize')">🎨 Editar</button>
     </div>
 
-    <div id="section-agents" class="section">
+    <!-- Sección de agentes -->
+    <div id="section-agents">
       <h2>Crear nuevo agente</h2>
       <input type="text" id="newUsername" placeholder="Nuevo usuario">
       <input type="password" id="newPassword" placeholder="Contraseña">
       <button onclick="createAgent()">Crear</button>
+      <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
       <table>
         <thead><tr><th>Usuario</th><th>Acciones</th></tr></thead>
@@ -153,49 +107,64 @@
       </table>
     </div>
 
-    <div id="section-stats" class="section" style="display:none;">
-      <h2>Estadísticas</h2>
-      <div>
-        <label>Desde:</label>
-        <input type="datetime-local" id="from">
-        <label>Hasta:</label>
-        <input type="datetime-local" id="to">
-        <button onclick="loadStats()">Cargar</button>
+    <!-- Sección estadísticas -->
+    <div id="section-stats" style="display:none;">
+      <h2>📊 Estadísticas</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
+        <label>De:</label>
+        <div class="calendar-wrapper">
+          <input type="date" id="fromDate">
+          <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
+        </div>
+        <input type="time" id="fromTime">
+
+        <label>A:</label>
+        <div class="calendar-wrapper">
+          <input type="date" id="toDate">
+          <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
+        </div>
+        <input type="time" id="toTime">
+
+        <select id="quickRange" onchange="setQuickRange()">
+          <option value="">Elegir el periodo</option>
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+          <option value="lastMonth">Mes anterior</option>
+        </select>
+
+        <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
 
-      <div style="margin-top: 30px;">
-        <h3>Estadísticas de Agentes</h3>
-        <div style="margin-top: 30px; height: 200px;">
-  <h3>Estadísticas de Agentes</h3>
-  <div style="height: 100%;">
-    <canvas id="agentChart"></canvas>
-  </div>
-</div>
+      <!-- Sub-secciones -->
+      <div style="margin-top: 20px;">
+        <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
+        <canvas id="chartAgentes" height="150"></canvas>
 
-      <div style="margin-top: 30px;">
-        <h3>Estadísticas de Interacciones</h3>
-        <p>Chats finalizados: <span id="statChats">0</span></p>
-        <p>Mensajes entrantes: <span id="statMessages">0</span></p>
-        <p>Cargar Fichas: <span id="statCargar">0</span></p>
-        <p>Retirar: <span id="statRetiro">0</span></p>
-        <p>Imágenes: <span id="statImagenes">0</span></p>
+        <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
+        <div id="statsResults">
+          <p>Mensajes entrantes: <span id="statMessages">0</span></p>
+          <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
+          <p>Retirar presionado: <span id="statRetiro">0</span></p>
+          <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+        </div>
       </div>
+    </div>
+
+    <!-- Sección editar -->
+    <div id="section-customize" style="display:none;">
+      <h2>🎨 Personalizar Estilo</h2>
+      <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
+      <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
     </div>
   </div>
 
+  <!-- Chart.js desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
-    const loginBox = document.getElementById('loginBox');
-    const mainBox = document.getElementById('mainBox');
-
-    function togglePopupMenu() {
-      const menu = document.getElementById('popupMenu');
-      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function logout() {
-      localStorage.removeItem('superadminLogged');
-      location.reload();
-    }
+    let chartInstance = null;
 
     function loginSuperAdmin() {
       const username = document.getElementById('superUsername').value.trim();
@@ -206,35 +175,34 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
       .then(data => {
         if (data.success) {
-          localStorage.setItem('superadminLogged', 'true');
-          loginBox.style.display = 'none';
-          mainBox.style.display = 'block';
+          document.getElementById('loginBox').style.display = 'none';
+          document.getElementById('mainBox').style.display = 'block';
           showSection('agents');
           loadAgents();
-          loadPerformance();
         } else {
-          document.getElementById('loginError').style.display = 'block';
+          throw new Error();
         }
+      })
+      .catch(() => {
+        document.getElementById('loginError').style.display = 'block';
       });
-    }
-
-    function showSection(section) {
-      document.getElementById('section-agents').style.display = section === 'agents' ? 'block' : 'none';
-      document.getElementById('section-stats').style.display = section === 'stats' ? 'block' : 'none';
     }
 
     function loadAgents() {
       fetch('/agents')
         .then(res => res.json())
-        .then(data => {
+        .then(agents => {
           const table = document.getElementById('agentsTable');
           table.innerHTML = '';
-          data.forEach(agent => {
+          agents.forEach(agent => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${agent.username}</td><td><button onclick="deleteAgent('${agent.username}')">Eliminar</button></td>`;
+            row.innerHTML = `<td>${agent.username}</td><td><button class="delete-btn" onclick="deleteAgent('${agent.username}')">Eliminar</button></td>`;
             table.appendChild(row);
           });
         });
@@ -249,85 +217,173 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       })
-      .then(res => res.json())
-      .then(data => {
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+      })
+      .then(() => {
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('createError').style.display = 'none';
         loadAgents();
-        loadPerformance();
+      })
+      .catch(err => {
+        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+        document.getElementById('createError').style.display = 'block';
       });
     }
 
     function deleteAgent(username) {
-      fetch(`/agents/${username}`, { method: 'DELETE' })
-        .then(() => {
-          loadAgents();
-          loadPerformance();
-        });
+      fetch(`/agents/${username}`, {
+        method: 'DELETE'
+      })
+      .then(() => loadAgents());
     }
 
-    function loadStats() {
-      const from = document.getElementById('from').value;
-      const to = document.getElementById('to').value;
-      if (!from || !to) return alert("Selecciona el rango de fechas completo.");
+    function showSection(section) {
+      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
 
+      if (section === "stats") {
+        setDefaultDates();
+      }
+    }
+
+    function setDefaultDates() {
+      const today = new Date();
+      const todayISO = today.toISOString().split('T')[0];
+      document.getElementById('fromDate').value = todayISO;
+      document.getElementById('fromTime').value = '00:00';
+      document.getElementById('toDate').value = todayISO;
+      document.getElementById('toTime').value = '23:59';
+    }
+
+    function setQuickRange() {
+      const now = new Date();
+      const fromDateInput = document.getElementById("fromDate");
+      const fromTimeInput = document.getElementById("fromTime");
+      const toDateInput = document.getElementById("toDate");
+      const toTimeInput = document.getElementById("toTime");
+      const value = document.getElementById("quickRange").value;
+
+      let start = new Date(), end = new Date();
+
+      switch (value) {
+        case "today": start.setHours(0, 0, 0, 0); end.setHours(23, 59, 59, 999); break;
+        case "yesterday": start.setDate(start.getDate() - 1); start.setHours(0, 0, 0, 0); end = new Date(start); end.setHours(23, 59, 59, 999); break;
+        case "week":
+          const day = now.getDay();
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+          start = new Date(now.setDate(diff));
+          start.setHours(0, 0, 0, 0); end = new Date(); end.setHours(23, 59, 59, 999); break;
+        case "month": start = new Date(now.getFullYear(), now.getMonth(), 1); end = new Date(); end.setHours(23, 59, 59, 999); break;
+        case "lastMonth": start = new Date(now.getFullYear(), now.getMonth() - 1, 1); end = new Date(now.getFullYear(), now.getMonth(), 0); end.setHours(23, 59, 59, 999); break;
+      }
+
+      fromDateInput.value = start.toISOString().split('T')[0];
+      fromTimeInput.value = start.toTimeString().slice(0, 5);
+      toDateInput.value = end.toISOString().split('T')[0];
+      toTimeInput.value = end.toTimeString().slice(0, 5);
+    }
+
+    function confirmAndLoadStats() {
+      const fromDate = document.getElementById("fromDate").value;
+      const fromTime = document.getElementById("fromTime").value;
+      const toDate = document.getElementById("toDate").value;
+      const toTime = document.getElementById("toTime").value;
+
+      if (!fromDate || !fromTime || !toDate || !toTime) {
+        alert("Debes completar todos los campos de fecha y hora.");
+        return;
+      }
+
+      const from = `${fromDate}T${fromTime}:00`;
+      const to = `${toDate}T${toTime}:00`;
+
+      const confirmationMessage = `¿Confirmar el siguiente rango?\nDe: ${fromDate} ${fromTime}\nA: ${toDate} ${toTime}`;
+      if (confirm(confirmationMessage)) {
+        loadStats(from, to);
+      }
+    }
+
+    function loadStats(from, to) {
+      // Interacciones
       fetch(`/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
         .then(res => res.json())
         .then(data => {
-          document.getElementById('statChats').textContent = data.chats;
-          document.getElementById('statMessages').textContent = data.messages;
-          document.getElementById('statCargar').textContent = data.cargarFichas;
-          document.getElementById('statRetiro').textContent = data.retiros;
-          document.getElementById('statImagenes').textContent = data.imagenes;
+          document.getElementById("statMessages").textContent = data.messages;
+          document.getElementById("statCargar").textContent = data.cargarFichas;
+          document.getElementById("statRetiro").textContent = data.retiros;
+          document.getElementById("statImagenes").textContent = data.imagenes;
         });
-    }
 
-    let chart;
-    function loadPerformance() {
-      fetch('/performance')
+      // Agentes
+      fetch(`/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
         .then(res => res.json())
-        .then(data => {
-          const ctx = document.getElementById('agentChart').getContext('2d');
-          const labels = Object.keys(data);
-          const values = Object.values(data);
+        .then(agentData => {
+          const labels = agentData.map(item => item.username);
+          const values = agentData.map(item => item.finalizados);
+          const ctx = document.getElementById('chartAgentes').getContext('2d');
 
-          if (chart) chart.destroy();
+          if (chartInstance) chartInstance.destroy();
 
-          chart = new Chart(ctx, {
+          chartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
-              labels,
+              labels: labels,
               datasets: [{
                 label: 'Chats Finalizados',
                 data: values,
-                backgroundColor: '#FF3B00',
-                borderRadius: 6
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
               }]
             },
             options: {
+  indexAxis: 'y',
   responsive: true,
-  maintainAspectRatio: false,  // Esta línea evita que se expanda infinitamente
-  plugins: {
-    legend: { display: false }
-  },
+  maintainAspectRatio: false,
   scales: {
-    y: {
+    x: {
       beginAtZero: true,
-      ticks: { stepSize: 1 }
+      ticks: {
+        color: '#ccc',
+        font: {
+          size: 12
+        }
+      },
+      grid: {
+        color: 'rgba(255,255,255,0.1)'
+      }
+    },
+    y: {
+      ticks: {
+        color: '#fff',
+        font: {
+          size: 12
+        }
+      },
+      grid: {
+        display: false
+      }
     }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#333',
+      titleColor: '#fff',
+      bodyColor: '#fff'
+    }
+  },
+  layout: {
+    padding: 10
   }
 }
           });
         });
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('superadminLogged') === 'true') {
-        loginBox.style.display = 'none';
-        mainBox.style.display = 'block';
-        showSection('agents');
-        loadAgents();
-        loadPerformance();
-      }
-    });
   </script>
 </body>
 </html>
