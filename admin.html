@@ -1159,10 +1159,7 @@
       let lastRenderedDate = null;
 
       messages.forEach(msg => {
-        const msgDateStr = new Date(msg.timestamp).toLocaleString('es-AR', {
-  timeZone: 'America/Argentina/Buenos_Aires'
-});
-const msgDate = new Date(msgDateStr);
+  const msgDate = new Date(msg.timestamp);
 const msgDay = msgDate.toDateString(); // Ej: "Thu Mar 28 2024"
 
 if (msgDay !== lastRenderedDate) {
