@@ -116,8 +116,9 @@ th {
     <!-- Sección de agentes -->
     <div id="section-agents">
       <h2>Crear nuevo agente</h2>
-      <input type="text" id="newUsername" placeholder="Nuevo usuario">
-      <input type="password" id="newPassword" placeholder="Contraseña">
+      <input type="text" id="newLogin" placeholder="Login del agente">
+<input type="text" id="newName" placeholder="Nombre visible del agente">
+<input type="password" id="newPassword" placeholder="Contraseña">
       <button onclick="createAgent()">Crear</button>
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
@@ -156,6 +157,73 @@ th {
 
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
+      // Variables para control de acciones
+let selectedUsernameToDelete = null;
+let selectedUsernameToEdit = null;
+
+// Abrir popup de eliminación
+function openDeletePopup(username) {
+  selectedUsernameToDelete = username;
+  document.getElementById("deletePopup").classList.add("active");
+}
+
+// Cerrar popup de eliminación
+function closeDeletePopup() {
+  selectedUsernameToDelete = null;
+  document.getElementById("deletePopup").classList.remove("active");
+}
+
+// Confirmar eliminación
+function confirmDelete() {
+  if (!selectedUsernameToDelete) return;
+  fetch(`/agents/${selectedUsernameToDelete}`, {
+    method: 'DELETE'
+  })
+  .then(() => {
+    loadAgents();
+    closeDeletePopup();
+  });
+}
+
+// Abrir popup de edición
+function openEditPopup(username, name) {
+  selectedUsernameToEdit = username;
+  document.getElementById("editAgentName").value = name || '';
+  document.getElementById("editAgentPassword").value = '';
+  document.getElementById("editPopup").classList.add("active");
+}
+
+// Cerrar popup de edición
+function closeEditPopup() {
+  selectedUsernameToEdit = null;
+  document.getElementById("editPopup").classList.remove("active");
+}
+
+// Confirmar edición
+function confirmEdit() {
+  const newName = document.getElementById("editAgentName").value.trim();
+  const newPass = document.getElementById("editAgentPassword").value.trim();
+
+  if (!newName) {
+    alert("El nombre no puede estar vacío.");
+    return;
+  }
+
+  const body = { name: newName };
+  if (newPass) body.password = newPass;
+
+  fetch(`/agents/${selectedUsernameToEdit}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error();
+    loadAgents();
+    closeEditPopup();
+  })
+  .catch(() => alert("Error al editar agente"));
+}
 
       <!-- Sub-secciones -->
       <div style="margin-top: 20px;">
@@ -222,7 +290,13 @@ th {
           table.innerHTML = '';
           agents.forEach(agent => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${agent.username}</td><td><button class="delete-btn" onclick="deleteAgent('${agent.username}')">Eliminar</button></td>`;
+            row.innerHTML = `
+  <td>${agent.username}</td>
+  <td style="display: flex; gap: 10px;">
+    <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
+    <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+  </td>
+`;
             table.appendChild(row);
           });
         });
@@ -396,6 +470,93 @@ th {
 });
         });
     }
-  </script>
+  // Pegá aquí las funciones nuevas:
+
+  let selectedUsernameToDelete = null;
+  let selectedUsernameToEdit = null;
+
+  function openDeletePopup(username) {
+    selectedUsernameToDelete = username;
+    document.getElementById("deletePopup").classList.add("active");
+  }
+
+  function closeDeletePopup() {
+    selectedUsernameToDelete = null;
+    document.getElementById("deletePopup").classList.remove("active");
+  }
+
+  function confirmDelete() {
+    if (!selectedUsernameToDelete) return;
+    fetch(`/agents/${selectedUsernameToDelete}`, {
+      method: 'DELETE'
+    })
+    .then(() => {
+      loadAgents();
+      closeDeletePopup();
+    });
+  }
+
+  function openEditPopup(username, name) {
+    selectedUsernameToEdit = username;
+    document.getElementById("editAgentName").value = name || '';
+    document.getElementById("editAgentPassword").value = '';
+    document.getElementById("editPopup").classList.add("active");
+  }
+
+  function closeEditPopup() {
+    selectedUsernameToEdit = null;
+    document.getElementById("editPopup").classList.remove("active");
+  }
+
+  function confirmEdit() {
+    const newName = document.getElementById("editAgentName").value.trim();
+    const newPass = document.getElementById("editAgentPassword").value.trim();
+
+    if (!newName) {
+      alert("El nombre no puede estar vacío.");
+      return;
+    }
+
+    const body = { name: newName };
+    if (newPass) body.password = newPass;
+
+    fetch(`/agents/${selectedUsernameToEdit}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      loadAgents();
+      closeEditPopup();
+    })
+    .catch(() => alert("Error al editar agente"));
+  }
+</script>
+  <!-- POPUP CONFIRMAR ELIMINACIÓN -->
+<div id="deletePopup" class="popup-overlay">
+  <div class="popup-box">
+    <div class="popup-icon">⚠️</div>
+    <p class="popup-text">¿Seguro que querés eliminar este agente?</p>
+    <div class="popup-actions">
+      <button class="popup-btn confirm" onclick="confirmDelete()">✔</button>
+      <button class="popup-btn cancel" onclick="closeDeletePopup()">✖</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP EDITAR AGENTE -->
+<div id="editPopup" class="popup-overlay">
+  <div class="popup-box">
+    <div class="popup-icon">✏️</div>
+    <p class="popup-text">Editar agente</p>
+    <input type="text" id="editAgentName" placeholder="Nuevo nombre" style="margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;"/>
+    <input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white; margin-top: 10px;"/>
+    <div class="popup-actions" style="margin-top: 20px;">
+      <button class="popup-btn confirm" onclick="confirmEdit()">✔</button>
+      <button class="popup-btn cancel" onclick="closeEditPopup()">✖</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
