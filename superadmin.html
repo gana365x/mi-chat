@@ -24,13 +24,23 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
     input, select {
-      width: 100%;
       padding: 10px;
-      margin: 10px 0;
+      margin: 5px 0;
       border-radius: 5px;
       border: none;
       background: #333;
       color: white;
+    }
+    .date-container {
+      position: relative;
+      display: inline-block;
+    }
+    .calendar-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
     }
     button {
       background-color: #FF3B00;
@@ -101,11 +111,19 @@
     <div id="section-stats" style="display:none;">
       <h2>📊 Estadísticas</h2>
       <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
-        <label for="fromDate">De:</label>
-        <input type="datetime-local" id="fromDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+        <label>De:</label>
+        <div class="date-container">
+          <input type="date" id="fromDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+          <span class="calendar-icon">📅</span>
+        </div>
+        <input type="time" id="fromTime" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
 
-        <label for="toDate">A:</label>
-        <input type="datetime-local" id="toDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+        <label>A:</label>
+        <div class="date-container">
+          <input type="date" id="toDate" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
+          <span class="calendar-icon">📅</span>
+        </div>
+        <input type="time" id="toTime" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
 
         <select id="quickRange" onchange="setQuickRange()" style="background: #333; color: white; border: none; padding: 10px; border-radius: 5px;">
           <option value="">Elegir el periodo</option>
@@ -116,7 +134,7 @@
           <option value="lastMonth">Mes anterior</option>
         </select>
 
-        <button onclick="loadStats()">Mostrar</button>
+        <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
 
       <div id="statsResults" style="margin-top: 20px;">
@@ -215,35 +233,28 @@
       document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
       document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
       document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+      
+      // Establecer valores por defecto al mostrar la sección de estadísticas
+      if (section === "stats") {
+        setDefaultDates();
+      }
     }
 
-    function loadStats() {
-      const from = document.getElementById("fromDate").value;
-      const to = document.getElementById("toDate").value;
-
-      if (!from || !to) {
-        alert("Debes seleccionar el rango de fechas.");
-        return;
-      }
-
-      fetch(`/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("statChats").textContent = data.chats;
-          document.getElementById("statMessages").textContent = data.messages;
-          document.getElementById("statCargar").textContent = data.cargarFichas;
-          document.getElementById("statRetiro").textContent = data.retiros;
-          document.getElementById("statImagenes").textContent = data.imagenes;
-        })
-        .catch(err => {
-          console.error("Error al cargar estadísticas:", err);
-        });
+    function setDefaultDates() {
+      const today = new Date();
+      const todayISO = today.toISOString().split('T')[0]; // YYYY-MM-DD
+      document.getElementById('fromDate').value = todayISO;
+      document.getElementById('fromTime').value = '00:00';
+      document.getElementById('toDate').value = todayISO;
+      document.getElementById('toTime').value = '23:59';
     }
 
     function setQuickRange() {
       const now = new Date();
-      const fromInput = document.getElementById("fromDate");
-      const toInput = document.getElementById("toDate");
+      const fromDateInput = document.getElementById("fromDate");
+      const fromTimeInput = document.getElementById("fromTime");
+      const toDateInput = document.getElementById("toDate");
+      const toTimeInput = document.getElementById("toTime");
       const value = document.getElementById("quickRange").value;
 
       let start = new Date(), end = new Date();
@@ -279,9 +290,53 @@
           break;
       }
 
-      fromInput.value = start.toISOString().slice(0, 16);
-      toInput.value = end.toISOString().slice(0, 16);
+      fromDateInput.value = start.toISOString().split('T')[0];
+      fromTimeInput.value = start.toTimeString().slice(0, 5);
+      toDateInput.value = end.toISOString().split('T')[0];
+      toTimeInput.value = end.toTimeString().slice(0, 5);
     }
+
+    function confirmAndLoadStats() {
+      const fromDate = document.getElementById("fromDate").value;
+      const fromTime = document.getElementById("fromTime").value;
+      const toDate = document.getElementById("toDate").value;
+      const toTime = document.getElementById("toTime").value;
+
+      if (!fromDate || !fromTime || !toDate || !toTime) {
+        alert("Debes completar todos los campos de fecha y hora.");
+        return;
+      }
+
+      const from = `${fromDate}T${fromTime}:00`;
+      const to = `${toDate}T${toTime}:00`;
+
+      const confirmationMessage = `¿Confirmar el siguiente rango?\nDe: ${fromDate} ${fromTime}\nA: ${toDate} ${toTime}`;
+      if (confirm(confirmationMessage)) {
+        loadStats(from, to);
+      }
+    }
+
+    function loadStats(from, to) {
+      fetch(`/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("statChats").textContent = data.chats;
+          document.getElementById("statMessages").textContent = data.messages;
+          document.getElementById("statCargar").textContent = data.cargarFichas;
+          document.getElementById("statRetiro").textContent = data.retiros;
+          document.getElementById("statImagenes").textContent = data.imagenes;
+        })
+        .catch(err => {
+          console.error("Error al cargar estadísticas:", err);
+        });
+    }
+
+    // Ejecutar setDefaultDates al cargar la página si la sección de estadísticas está visible
+    document.addEventListener('DOMContentLoaded', () => {
+      if (document.getElementById('section-stats').style.display === 'block') {
+        setDefaultDates();
+      }
+    });
   </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928a0e5c99aebce6',t:'MTc0MzM2MzM4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
