@@ -579,6 +579,71 @@ app.post('/update-timezone', (req, res) => {
   res.json({ success: true });
 });
 
+// Nueva ruta para estadísticas
+app.get('/stats', (req, res) => {
+  const { from, to } = req.query;
+
+  if (!from || !to) {
+    return res.status(400).json({ error: 'Faltan parámetros from y to' });
+  }
+
+  try {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    if (isNaN(fromDate) || isNaN(toDate)) {
+      return res.status(400).json({ error: 'Fechas inválidas' });
+    }
+
+    const chatData = JSON.parse(fs.readFileSync(historyFilePath, 'utf-8'));
+
+    let chatsClosed = 0;
+    let messagesCount = 0;
+    let cargarFichasCount = 0;
+    let retirosCount = 0;
+    let imagenesCount = 0;
+
+    Object.keys(chatData).forEach(userId => {
+      const messages = chatData[userId];
+      const filteredMessages = messages.filter(msg => {
+        const msgDate = new Date(msg.timestamp);
+        return msgDate >= fromDate && msgDate <= toDate;
+      });
+
+      if (filteredMessages.some(msg => msg.status === 'closed')) {
+        chatsClosed++;
+      }
+
+      messagesCount += filteredMessages.filter(
+        msg => msg.sender === userSessions.get(userId)?.username || (!['Agent', 'System', 'Bot'].includes(msg.sender) && !msg.image)
+      ).length;
+
+      imagenesCount += filteredMessages.filter(
+        msg => msg.image && !['Agent', 'System', 'Bot'].includes(msg.sender)
+      ).length;
+
+      cargarFichasCount += filteredMessages.filter(
+        msg => msg.message === 'Cargar Fichas'
+      ).length;
+
+      retirosCount += filteredMessages.filter(
+        msg => msg.message === 'Retirar'
+      ).length;
+    });
+
+    res.json({
+      chats: chatsClosed,
+      messages: messagesCount,
+      cargarFichas: cargarFichasCount,
+      retiros: retirosCount,
+      imagenes: imagenesCount
+    });
+  } catch (error) {
+    console.error('Error al procesar estadísticas:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
