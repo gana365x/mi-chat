@@ -91,18 +91,17 @@ function getAllChatsSorted() {
       const username = userSessions.get(userId)?.username || 'Usuario';
       const validMessages = messages.filter(msg => msg.status !== 'closed');
       const lastValidMessage = validMessages[validMessages.length - 1];
-      const lastMessageTime = lastValidMessage?.timestamp ? new Date(lastValidMessage.timestamp) : new Date();
+      const lastMessageTime = lastValidMessage?.timestamp || new Date().toISOString(); // Enviar como string ISO
       const isClosed = messages.some(msg => msg.status === 'closed');
       return { userId, username, lastMessageTime, isClosed };
     })
-    .sort((a, b) => b.lastMessageTime - a.lastMessageTime);
-
+    .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime)); // Comparar como fechas
   return users;
 }
 
 io.on('connection', (socket) => {
   socket.on('user joined', (data) => {
-    let userId = data.userId;
+    let-U userId = data.userId;
     const username = data.username;
     if (!username) return;
 
