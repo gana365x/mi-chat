@@ -78,10 +78,18 @@ function incrementPerformance(agentUsername) {
 }
 
 // Función para obtener timestamp en GMT-3
-function getGMT3Timestamp() {
-  const now = new Date();
-  const gmt3Date = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-  return gmt3Date.toISOString(); // ✅ ISO universal, entendible por todos los lenguajes
+function getTimestampWithConfiguredTimezone() {
+  const defaultTimezone = "America/Argentina/Buenos_Aires";
+  try {
+    const { timezone } = JSON.parse(fs.readFileSync(path.join(__dirname, 'timezone.json')));
+    const now = new Date();
+    const localDate = new Date(now.toLocaleString('en-US', { timeZone: timezone || defaultTimezone }));
+    return localDate.toISOString();
+  } catch (e) {
+    const now = new Date();
+    const localDate = new Date(now.toLocaleString('en-US', { timeZone: defaultTimezone }));
+    return localDate.toISOString();
+  }
 }
 
 function getAllChatsSorted() {
