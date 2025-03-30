@@ -283,49 +283,60 @@ function confirmEdit() {
     }
 
     function loadAgents() {
-      fetch('/agents')
-        .then(res => res.json())
-        .then(agents => {
-          const table = document.getElementById('agentsTable');
-          table.innerHTML = '';
-          agents.forEach(agent => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-  <td>${agent.username}</td>
-  <td style="display: flex; gap: 10px;">
-    <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
-    <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
-  </td>
-`;
-            table.appendChild(row);
-          });
-        });
-    }
+  fetch('/agents')
+    .then(res => res.json())
+    .then(agents => {
+      const table = document.getElementById('agentsTable');
+      table.innerHTML = '';
+      agents.forEach(agent => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>
+            <strong>${agent.username}</strong><br>
+            <span style="color: #ccc;">${agent.name || ''}</span>
+          </td>
+          <td style="display: flex; gap: 10px;">
+            <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
+            <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+          </td>
+        `;
+        table.appendChild(row);
+      });
+    });
+}
 
     function createAgent() {
-      const username = document.getElementById('newUsername').value.trim();
-      const password = document.getElementById('newPassword').value.trim();
+  const login = document.getElementById('newLogin').value.trim();
+  const name = document.getElementById('newName').value.trim();
+  const password = document.getElementById('newPassword').value.trim();
 
-      fetch('/agents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => {
-        if (!res.ok) return res.json().then(err => { throw err; });
-        return res.json();
-      })
-      .then(() => {
-        document.getElementById('newUsername').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('createError').style.display = 'none';
-        loadAgents();
-      })
-      .catch(err => {
-        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
-        document.getElementById('createError').style.display = 'block';
-      });
-    }
+  if (!login || !name || !password) {
+    document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+    document.getElementById('createError').style.display = 'block';
+    return;
+  }
+
+  fetch('/agents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: login, name, password })
+  })
+  .then(res => {
+    if (!res.ok) return res.json().then(err => { throw err; });
+    return res.json();
+  })
+  .then(() => {
+    document.getElementById('newLogin').value = '';
+    document.getElementById('newName').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('createError').style.display = 'none';
+    loadAgents();
+  })
+  .catch(err => {
+    document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+    document.getElementById('createError').style.display = 'block';
+  });
+}
 
     function deleteAgent(username) {
       fetch(`/agents/${username}`, {
@@ -550,9 +561,10 @@ function confirmEdit() {
   <div class="popup-box">
     <div class="popup-icon">✏️</div>
     <p class="popup-text">Editar agente</p>
-    <input type="text" id="editAgentName" placeholder="Nuevo nombre" style="margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;"/>
-    <input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white; margin-top: 10px;"/>
-    <div class="popup-actions" style="margin-top: 20px;">
+<input type="text" id="editAgentLogin" placeholder="Nuevo login (opcional)" style="margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;"/>
+<input type="text" id="editAgentName" placeholder="Nuevo nombre visible" style="margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;"/>
+<input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white; margin-top: 10px;"/>
+<div class="popup-actions" style="margin-top: 20px;">
       <button class="popup-btn confirm" onclick="confirmEdit()">✔</button>
       <button class="popup-btn cancel" onclick="closeEditPopup()">✖</button>
     </div>
