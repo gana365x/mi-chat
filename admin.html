@@ -603,7 +603,7 @@
       background: #1f1f1f;
       border: 1px solid #333;
       border-radius: 10px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
       display: none;
       flex-direction: column;
       z-index: 9999;
@@ -1144,9 +1144,7 @@
       })
       .then(res => res.json())
       .then(data => {
-        if (data.superadmin) {
-          window.location.href = "/superadmin.html";
-        } else if (data.success) {
+        if (data.success) {
           localStorage.setItem("adminLoggedIn", "true");
           localStorage.setItem("adminUser", username);
           // Guardar también el nombre visible del agente
@@ -1406,6 +1404,35 @@
       
       if (data.userId === selectedUserId) {
         renderChat(localChatHistory[data.userId]);
+      }
+    });
+
+    // Escuchar actualizaciones de nombre desde config.html
+    socket.on('update username', (data) => {
+      console.log('Evento update username recibido:', data);
+      const { userId, newUsername } = data;
+
+      // Actualizar el nombre del agente conectado en #agentDisplayName si coincide con adminUser
+      const currentAgentUser = localStorage.getItem("adminUser");
+      if (userId === currentAgentUser) {
+        document.getElementById("agentDisplayName").textContent = newUsername;
+        localStorage.setItem("agentDisplayName", newUsername);
+      }
+
+      // Actualizar la lista de usuarios en la bandeja de entrada
+      if (window.chatUsers) {
+        const user = window.chatUsers.find(u => u.userId === userId);
+        if (user) {
+          user.username = newUsername;
+          renderUserList();
+        }
+      }
+
+      // Si el usuario seleccionado es el que cambió su nombre, actualizarlo en el chat
+      if (selectedUserId === userId) {
+        selectedUsername = newUsername;
+        document.getElementById("currentUser").textContent = newUsername;
+        document.getElementById("popupUser").textContent = newUsername;
       }
     });
 
@@ -1729,5 +1756,5 @@
       document.body.style.cursor = 'default';
     });
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928b333beff249f2',t:'MTc0MzM3NTM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
