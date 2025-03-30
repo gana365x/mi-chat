@@ -996,34 +996,34 @@
     let ignoreNextAdminEcho = false;
 
     function submitLogin() {
-      const username = document.getElementById("adminUsername").value.trim();
-      const password = document.getElementById("adminPassword").value.trim();
+  const username = document.getElementById("adminUsername").value.trim();
+  const password = document.getElementById("adminPassword").value.trim();
 
-      fetch('/agent-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.superadmin) {
-          window.location.href = "/superadmin.html";
-        } else if (data.success) {
-          localStorage.setItem("adminLoggedIn", "true");
-          localStorage.setItem("adminUser", username);
-          document.getElementById("loginScreen").style.display = "none";
-          document.querySelector(".admin-container").style.display = "flex";
-          document.getElementById("menuWrapper").style.display = "none";
-          socket.emit('admin connected');
-        } else {
-          throw new Error("Credenciales inválidas");
-        }
-      })
-      .catch(err => {
-        document.getElementById("loginError").style.display = "block";
-        console.error("Login fallido:", err);
-      });
+  fetch('/agent-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.superadmin) {
+      window.location.href = "/superadmin.html";
+    } else if (data.success) {
+      localStorage.setItem("adminLoggedIn", "true");
+      localStorage.setItem("adminUser", username);
+      document.getElementById("loginScreen").style.display = "none";
+      document.querySelector(".admin-container").style.display = "flex";
+      document.getElementById("menuWrapper").style.display = "none";
+      socket.emit('admin connected');
+    } else {
+      throw new Error("Credenciales inválidas");
     }
+  })
+  .catch(err => {
+    document.getElementById("loginError").style.display = "block";
+    console.error("Login fallido:", err);
+  });
+}
 
     async function getDisplayName(username) {
       const response = await fetch('/get-agent-displayname?username=' + encodeURIComponent(username));
@@ -1208,18 +1208,20 @@ function renderChat(messages) {
       div.classList.add("bubble", senderClass);
 
       let timestamp = 'Sin hora';
-      if (msg.timestamp) {
-        const utcDate = new Date(msg.timestamp);
-timestamp = utcDate.toLocaleString('es-AR', {
-  timeZone: 'America/Argentina/Buenos_Aires',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false
-});
-        } catch (error) {
-          console.error("Error al convertir la hora:", error);
-        }
-      }
+      let timestamp = 'Sin hora';
+if (msg.timestamp) {
+  try {
+    const utcDate = new Date(msg.timestamp);
+    timestamp = utcDate.toLocaleString('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  } catch (error) {
+    console.error("Error al convertir la hora:", error);
+  }
+}
 
       if (msg.message) {
         if (msg.sender === "Agent" || msg.sender === "Bot") {
