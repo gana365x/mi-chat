@@ -179,6 +179,10 @@
     .confirm-btn:hover { color: #00ff00; }
     .cancel-btn:hover { color: red; }
 
+    button + button {
+      margin-top: 10px;
+    }
+
     @media (max-width: 600px) {
       .container {
         padding: 20px;
@@ -232,8 +236,8 @@
         </div>
         <div id="quickRepliesList" style="margin-top: 10px;"></div>
       </div>
-      <button onclick="addQuickReply()">➕ Agregar Respuesta</button>
-      <button onclick="saveQuickReplies()">💾 Guardar respuestas rápidas</button>
+      <button onclick="addQuickReply()" style="margin-top: 20px;">➕ Agregar Respuesta</button>
+      <button onclick="saveQuickReplies()" style="margin-top: 10px;">💾 Guardar respuestas rápidas</button>
       <div id="quickMsg"></div>
     </div>
   </div>
@@ -344,13 +348,8 @@
     }
 
     function addQuickReply() {
-      const list = document.getElementById("quickRepliesList");
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = "";
-      input.dataset.index = list.children.length;
-      input.style.marginBottom = "10px";
-      list.appendChild(input);
+      currentReplies.push("/" + (currentReplies.length + 1));
+      renderQuickReplies(currentReplies);
     }
 
     let repliesExpanded = false;
@@ -435,8 +434,14 @@
     }
 
     function saveQuickReplies() {
-      const list = document.querySelectorAll(".quick-reply-input");
-      const newReplies = Array.from(list).map(input => input.value.trim()).filter(Boolean);
+      const inputs = document.querySelectorAll(".quick-reply-input");
+      
+      // Habilitar todos para asegurarnos de que sus valores sean tomados
+      inputs.forEach(input => input.disabled = false);
+
+      const newReplies = Array.from(inputs)
+        .map(input => input.value.trim())
+        .filter(Boolean);
 
       fetch('/quick-replies', {
         method: 'POST',
@@ -447,7 +452,7 @@
       .then(() => {
         document.getElementById("quickMsg").innerHTML = "✅ Respuestas guardadas correctamente";
         document.getElementById("quickMsg").className = "success";
-        loadQuickReplies(); // refrescar
+        loadQuickReplies(); // refresca
       })
       .catch(() => {
         document.getElementById("quickMsg").innerHTML = "❌ Error al guardar respuestas";
