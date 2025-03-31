@@ -46,13 +46,20 @@ const agentSchema = new mongoose.Schema({
 
 const Agent = mongoose.model('Agent', agentSchema);
 
+// ✅ PERFORMANCE SCHEMA
+const performanceSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  count: { type: Number, default: 0 }
+});
+
+const Performance = mongoose.model('Performance', performanceSchema);
+
 // 📦 Variables locales
 const userSessions = new Map();
 const chatHistory = {};
 const adminSubscriptions = new Map();
 
 const historyFilePath = path.join(__dirname, 'chatHistory.json');
-const performanceFile = path.join(__dirname, 'performance.json');
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
@@ -83,7 +90,6 @@ function getTimestamp() {
 
 // Inicialización de archivos
 if (!fs.existsSync(historyFilePath)) fs.writeFileSync(historyFilePath, JSON.stringify({}));
-if (!fs.existsSync(performanceFile)) fs.writeFileSync(performanceFile, JSON.stringify({}));
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
@@ -98,14 +104,15 @@ function saveChatHistory() {
   fs.writeFileSync(historyFilePath, JSON.stringify(chatHistory, null, 2));
 }
 
-function incrementPerformance(agentUsername) {
+async function incrementPerformance(agentUsername) {
   try {
-    const data = JSON.parse(fs.readFileSync(performanceFile, 'utf-8'));
-    if (!data[agentUsername]) data[agentUsername] = 0;
-    data[agentUsername]++;
-    fs.writeFileSync(performanceFile, JSON.stringify(data, null, 2));
-  } catch (e) {
-    console.error('Error al actualizar performance:', e);
+    await Performance.findOneAndUpdate(
+      { username: agentUsername },
+      { $inc: { count: 1 } },
+      { upsert: true, new: true }
+    );
+  } catch (err) {
+    console.error('❌ Error al actualizar performance en MongoDB:', err);
   }
 }
 
@@ -421,9 +428,6 @@ app.use(express.json());
 
 app.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
-
-  // Nota: Este endpoint parece incompleto ya que ADMIN_USERNAME y ADMIN_PASSWORD no están definidos.
-  // Si ya no lo necesitas, puedes eliminarlo o ajustarlo para usar MongoDB.
   return res.status(401).json({ success: false, message: 'Endpoint no configurado' });
 });
 
@@ -565,9 +569,18 @@ app.put('/agents/:username', async (req, res) => {
   }
 });
 
-app.get('/performance', (req, res) => {
-  const data = JSON.parse(fs.readFileSync(performanceFile));
-  res.json(data);
+app.get('/performance', async (req, res) => {
+  try {
+    const data = await Performance.find({});
+    const result = {};
+    data.forEach(p => {
+      result[p.username] = p.count;
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Error al leer performance:', err);
+    res.status(500).json({});
+  }
 });
 
 app.get('/get-agent-displayname', async (req, res) => {
@@ -777,7 +790,7 @@ app.get('/stats-agents', (req, res) => {
         if (
           msg.status === 'closed' &&
           msg.sender === 'System' &&
-          msgDate >= fromDate &&
+          msgDate disputedAttribute >= fromDate &&
           msgDate <= toDate &&
           msg.agentUsername
         ) {
