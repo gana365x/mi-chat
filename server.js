@@ -7,16 +7,6 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 
-// Definimos el esquema solo una vez
-const agentSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  name: String,
-  password: String,
-  type: { type: String, default: 'agent' }
-});
-
-const Agent = mongoose.model('Agent', agentSchema);
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -31,33 +21,68 @@ const io = socketIo(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<mi1q2wkE">@cluster1.jpvbt6k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1';
+
+// 🔒 MONGO CONNECTION
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<mi1q2wkE>@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-  .then(() => {
-    console.log('✅ Conectado a MongoDB Atlas');
-  })
-  .catch((err) => {
-    console.error('❌ Error conectando a MongoDB:', err);
-  });
+.then(() => {
+  console.log('✅ Conectado a MongoDB Atlas');
+})
+.catch((err) => {
+  console.error('❌ Error conectando a MongoDB:', err);
+});
 
+// ✅ AGENT SCHEMA
+const agentSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  name: String,
+  password: String,
+  type: { type: String, default: 'agent' }
+});
+
+const Agent = mongoose.model('Agent', agentSchema);
+
+// 📦 Variables locales
 const userSessions = new Map();
 const chatHistory = {};
 const adminSubscriptions = new Map();
 
 const historyFilePath = path.join(__dirname, 'chatHistory.json');
 const performanceFile = path.join(__dirname, 'performance.json');
+// El siguiente archivo ya no será necesario cuando terminemos de migrar a Mongo:
 const agentsFilePath = path.join(__dirname, 'agents.json');
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const configFilePath = path.join(__dirname, 'config.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
+// 🕒 Función para timestamps con zona horaria
 function getTimestamp() {
   const defaultTimezone = "America/Argentina/Buenos_Aires";
   let timezone = defaultTimezone;
+
+  try {
+    const data = fs.readFileSync(timezoneFile, 'utf-8');
+    const config = JSON.parse(data);
+    if (config.timezone) {
+      timezone = config.timezone;
+    }
+  } catch (e) {
+    console.error("❌ Error leyendo timezone.json:", e.message);
+  }
+
+  try {
+    const now = new Date();
+    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+    return localTime.toISOString();
+  } catch (e) {
+    console.error("❌ Error convirtiendo a zona horaria:", e.message);
+    return new Date().toISOString();
+  }
+}
 
   try {
     const data = fs.readFileSync(timezoneFile, 'utf-8');
