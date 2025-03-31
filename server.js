@@ -48,6 +48,16 @@ const Agent = mongoose.model('Agent', agentSchema);
 
 // ✅ PERFORMANCE SCHEMA
 const performanceSchema = new mongoose.Schema({
+  agentUsername: { type: String, required: true, unique: true },
+  count: { type: Number, default: 0 }
+});
+
+const Performance = mongoose.model('Performance', performanceSchema);
+
+const Agent = mongoose.model('Agent', agentSchema);
+
+// ✅ PERFORMANCE SCHEMA
+const performanceSchema = new mongoose.Schema({
   username: { type: String, required: true },
   count: { type: Number, default: 0 }
 });
