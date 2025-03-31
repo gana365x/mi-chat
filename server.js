@@ -390,7 +390,7 @@ io.on('connection', (socket) => {
   });
 });
 
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 const ADMIN_USERNAME = 'admin';
