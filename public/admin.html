@@ -805,8 +805,8 @@
   }
 
   .inbox {
-    width: calc(100vw - 10px); /* Restamos 10px (5px por lado) */
-    margin: 0 5px; /* Margen de 5px a cada lado */
+    width: calc(100vw - 10px) !important; /* Restamos 10px (5px por lado) */
+    margin: 0 5px !important; /* Margen de 5px a cada lado */
     padding: 0;
     box-sizing: border-box;
     height: 100vh;
@@ -820,7 +820,7 @@
   .user-list {
     flex: 1;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch-;
     padding-bottom: 20px;
   }
 
@@ -1900,6 +1900,9 @@ let isResizing = false;
 document.addEventListener('DOMContentLoaded', () => {
   if (window.innerWidth >= 768) {
     inbox.style.width = '300px'; // Ancho inicial fijo solo en escritorio
+  } else {
+    inbox.style.width = 'calc(100vw - 10px)'; // Forzamos el ancho en móvil
+    inbox.style.margin = '0 5px'; // Forzamos el margen en móvil
   }
 });
 
