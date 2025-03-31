@@ -978,22 +978,29 @@
     let systemTimezone = "UTC";
 
     // Cargar la zona horaria desde el servidor
-    function loadTimezoneFromServer() {
-      return fetch('/get-timezone')
-        .then(res => {
-          if (!res.ok) throw new Error('Respuesta del servidor no OK');
-          return res.json();
-        })
-        .then(data => {
-          systemTimezone = data.timezone || "UTC";
-          console.log("🕒 Zona horaria cargada exitosamente:", systemTimezone);
-        })
-        .catch(err => {
-          console.warn("⚠️ Error al cargar la zona horaria, usando UTC:", err);
-          systemTimezone = "UTC";
-        });
-    }
+    // Cargar la zona horaria desde el servidor
+function loadTimezoneFromServer() {
+  return fetch('/get-timezone')
+    .then(res => {
+      if (!res.ok) throw new Error('Respuesta del servidor no OK');
+      return res.json();
+    })
+    .then(data => {
+      systemTimezone = data.timezone || "UTC";
+      console.log("🕒 Zona horaria cargada exitosamente:", systemTimezone);
+    })
+    .catch(err => {
+      console.warn("⚠️ Error al cargar la zona horaria, usando UTC:", err);
+      systemTimezone = "UTC";
+    });
+}
 
+// Cargar respuestas rápidas
+fetch('/quick-replies')
+  .then(res => res.json())
+  .then(data => {
+    quickReplies = data;
+  });
     const socket = io();
 
     socket.on('connect', () => {
