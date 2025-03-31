@@ -406,7 +406,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     adminSubscriptions.delete(socket.id);
-    for (let [userId, session] of userSessions.entries())(br>      if (session.socket?.id === socket.id) {
+    for (let [userId, session] of userSessions.entries()) {
+      if (session.socket?.id === socket.id) {
         userSessions.set(userId, { ...session, socket: null });
         io.emit('user list', getAllChatsSorted());
         break;
