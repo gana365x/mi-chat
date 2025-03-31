@@ -755,29 +755,31 @@
       to   { opacity: 1; transform: scale(1); }
     }
 
-    @media (max-width: 768px) {
+   @media (max-width: 768px) {
   body, html {
     height: 100vh;
     overflow: hidden;
     position: fixed;
     width: 100%;
+    margin: 0; /* Quitamos márgenes del body */
   }
 
   .inbox {
-    width: 100vw;
+    width: 100vw; /* Fullscreen en móvil */
+    margin: 0; /* Sin márgenes */
     padding: 0;
     box-sizing: border-box;
-    height: 100vh; /* Ocupa toda la pantalla */
-    overflow-y: hidden; /* Sin scroll en el contenedor completo */
+    height: 100vh;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
   }
 
   .user-list {
-    flex: 1; /* Crece para ocupar el espacio disponible */
-    overflow-y: auto; /* Scroll habilitado */
-    -webkit-overflow-scrolling: touch; /* Mejora scroll en móviles */
-    padding-bottom: 20px; /* Espacio extra al final */
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
   }
 }
     
