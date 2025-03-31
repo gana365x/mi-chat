@@ -805,9 +805,9 @@
   }
 
   .inbox {
-    width: calc(100vw - 10px) !important; /* Restamos 10px (5px por lado) */
-    margin: 0 5px !important; /* Margen de 5px a cada lado */
-    padding: 0;
+    width: 100vw; /* Fullscreen */
+    margin: 0;
+    padding: 5px; /* Margen interno de 5px */
     box-sizing: border-box;
     height: 100vh;
     overflow-y: hidden;
@@ -815,12 +815,13 @@
     flex-direction: column;
     border-radius: 0;
     flex: 1;
+    background: #1a1a1a; /* Fondo de la bandeja */
   }
 
   .user-list {
     flex: 1;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch-;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 20px;
   }
 
