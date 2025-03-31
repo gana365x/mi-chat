@@ -393,9 +393,6 @@ io.on('connection', (socket) => {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'gana365';
-
 app.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
 
