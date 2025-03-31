@@ -553,15 +553,17 @@ app.put('/agents/:username', async (req, res) => {
 
 app.get('/performance', async (req, res) => {
   try {
-    const data = await Performance.find({});
+    const allData = await Performance.find({});
     const result = {};
-    data.forEach(p => {
-      result[p.username] = p.count;
+
+    allData.forEach(item => {
+      result[item.agentUsername] = item.count;
     });
+
     res.json(result);
   } catch (err) {
-    console.error('❌ Error al leer performance:', err);
-    res.status(500).json({});
+    console.error('❌ Error al obtener performance:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
 
