@@ -6,6 +6,7 @@ const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const server = http.createServer(app);
@@ -456,6 +457,7 @@ io.on('connection', (socket) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+app.use(cookieParser());
 
 app.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
