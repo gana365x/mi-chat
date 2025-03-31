@@ -1,8 +1,20 @@
 [
-    {
+  {
     "username": "superadmin",
     "password": "$2b$10$PPmpOurglZvAt./WluInmO4ApaAHnXcbnyskCjx/8F4cqXshK5OJ6",
-    "name": "Superadmin",
+    "name": "GOD",
     "type": "superadmin"
+  },
+  {
+    "username": "1",
+    "name": "Pedro",
+    "password": "$2b$10$JAfg9LGZhZXMoCx/HCXBxu2v0XNKTYI7glI/FkEvRCX09fC6Nq7Pq",
+    "type": "agent"
+  },
+  {
+    "username": "2",
+    "name": "Pepito",
+    "password": "$2b$10$WHRxg/QimObtvAu9DSr8teOS1ghXgn4iUrBR6bRnA8vDsdY41Axm.",
+    "type": "agent"
   }
 ]
