@@ -767,16 +767,17 @@
     width: 100vw;
     padding: 0;
     box-sizing: border-box;
-    height: calc(100vh - 40px); /* Ajustamos altura */
+    height: 100vh; /* Ocupa toda la pantalla */
     overflow-y: hidden; /* Sin scroll en el contenedor completo */
     display: flex;
     flex-direction: column;
   }
 
   .user-list {
-    height: auto; /* Quitamos altura fija para que crezca según contenido */
-    overflow-y: auto; /* Habilitamos scroll en la lista */
-    flex: 1; /* Ocupa el espacio disponible */
+    flex: 1; /* Crece para ocupar el espacio disponible */
+    overflow-y: auto; /* Scroll habilitado */
+    -webkit-overflow-scrolling: touch; /* Mejora scroll en móviles */
+    padding-bottom: 20px; /* Espacio extra al final */
   }
 }
     
@@ -1328,7 +1329,7 @@
 
     function selectUser(userId, username) {
   const user = window.chatUsers.find(u => u.userId === userId);
-  if (!user) return; // Evitar errores si no se encuentra el usuario
+  if (!user) return;
   console.log('Usuario seleccionado:', { userId, username });
   selectedUserId = userId;
   selectedUsername = username;
@@ -1347,25 +1348,30 @@
 
   const chatInput = document.getElementById("adminInput");
   const sendButton = document.querySelector("#chatInputArea button");
+  const popupInput = document.getElementById("popupInput");
+  const popupSendButton = document.querySelector("#chatPopup .popup-input button");
   if (user.isClosed) {
     chatInput.disabled = true;
     chatInput.placeholder = "Chat cerrado - Solo lectura";
     sendButton.disabled = true;
+    popupInput.disabled = true;
+    popupInput.placeholder = "Chat cerrado - Solo lectura";
+    popupSendButton.disabled = true;
   } else {
     chatInput.disabled = false;
     chatInput.placeholder = "Escribir mensaje...";
     sendButton.disabled = false;
+    popupInput.disabled = false;
+    popupInput.placeholder = "Escribir mensaje...";
+    popupSendButton.disabled = false;
   }
 
-  // Solo mostrar el chat si no está cerrado
-  if (!user.isClosed || window.innerWidth > 767) {
-    if (window.innerWidth <= 767) {
-      document.getElementById("chatPopup").style.display = "flex";
-      document.getElementById("chatPopup").classList.add("show");
-      document.getElementById("editNameContainer").style.display = "none";
-    } else {
-      document.getElementById("chatArea").classList.add("active");
-    }
+  if (window.innerWidth <= 767) {
+    document.getElementById("chatPopup").style.display = "flex";
+    document.getElementById("chatPopup").classList.add("show");
+    document.getElementById("editNameContainer").style.display = "none";
+  } else {
+    document.getElementById("chatArea").classList.add("active");
   }
 
   socket.emit('request chat history', { userId });
