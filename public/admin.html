@@ -975,164 +975,163 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     // Variable global para la zona horaria
-    // Variable global para la zona horaria
-let systemTimezone = "UTC";
+    let systemTimezone = "UTC";
 
-// Cargar la zona horaria desde el servidor
-function loadTimezoneFromServer() {
-  return fetch('/get-timezone')
-    .then(res => {
-      if (!res.ok) throw new Error('Respuesta del servidor no OK');
-      return res.json();
-    })
-    .then(data => {
-      systemTimezone = data.timezone || "UTC";
-      console.log("🕒 Zona horaria cargada exitosamente:", systemTimezone);
-    })
-    .catch(err => {
-      console.warn("⚠️ Error al cargar la zona horaria, usando UTC:", err);
-      systemTimezone = "UTC";
+    // Cargar la zona horaria desde el servidor
+    function loadTimezoneFromServer() {
+      return fetch('/get-timezone')
+        .then(res => {
+          if (!res.ok) throw new Error('Respuesta del servidor no OK');
+          return res.json();
+        })
+        .then(data => {
+          systemTimezone = data.timezone || "UTC";
+          console.log("🕒 Zona horaria cargada exitosamente:", systemTimezone);
+        })
+        .catch(err => {
+          console.warn("⚠️ Error al cargar la zona horaria, usando UTC:", err);
+          systemTimezone = "UTC";
+        });
+    }
+
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de Socket.IO');
     });
-}
 
-const socket = io();
+    socket.on('connect_error', (error) => {
+      console.error('Error de conexión a Socket.IO:', error);
+    });
 
-socket.on('connect', () => {
-  console.log('Conectado al servidor de Socket.IO');
-});
+    socket.on('error', (error) => {
+      console.error('Error en Socket.IO:', error);
+    });
 
-socket.on('connect_error', (error) => {
-  console.error('Error de conexión a Socket.IO:', error);
-});
+    let selectedUserId = null;
+    let selectedUsername = null;
+    const localChatHistory = {};
+    let currentFilter = "all";
+    let pendingFinalizeUserId = null;
+    let ignoreNextAdminEcho = false;
 
-socket.on('error', (error) => {
-  console.error('Error en Socket.IO:', error);
-});
-
-let selectedUserId = null;
-let selectedUsername = null;
-const localChatHistory = {};
-let currentFilter = "all";
-let pendingFinalizeUserId = null;
-let ignoreNextAdminEcho = false;
-
-// Función para formatear la hora en la lista de usuarios
-function formatTime(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString("es-AR", { timeZone: systemTimezone });
-}
-
-// Función para renderizar los mensajes con timestamps ajustados
-function renderChat(messages) {
-  const popupContainer = document.getElementById("popupMessages");
-  const chatContainer = document.getElementById("chatMessages");
-  popupContainer.innerHTML = '';
-  chatContainer.innerHTML = '';
-
-  console.log('Renderizando mensajes con timezone:', systemTimezone, 'Mensajes:', messages);
-
-  let lastRenderedDate = null;
-
-  messages.forEach(msg => {
-    // Depurar el valor exacto del timestamp
-    console.log('Procesando mensaje con timestamp:', msg.timestamp, 'Tipo:', typeof msg.timestamp);
-
-    // Asegurarse de que el mensaje tenga un timestamp
-    if (!msg.timestamp) {
-      console.warn("Mensaje sin timestamp, asignando fecha actual:", msg);
-      msg.timestamp = new Date().toISOString();
+    // Función para formatear la hora en la lista de usuarios
+    function formatTime(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString("es-AR", { timeZone: systemTimezone });
     }
 
-    // Validar el timestamp
-    const parsedTimestamp = Date.parse(msg.timestamp);
-    let msgDate;
-    if (isNaN(parsedTimestamp)) {
-      console.warn("Timestamp inválido, usando fecha actual:", msg);
-      msgDate = new Date(); // Fecha actual como respaldo
-      msg.timestamp = msgDate.toISOString(); // Actualizar el timestamp
-    } else {
-      msgDate = new Date(parsedTimestamp);
-    }
+    // Función para renderizar los mensajes con timestamps ajustados
+    function renderChat(messages) {
+      const popupContainer = document.getElementById("popupMessages");
+      const chatContainer = document.getElementById("chatMessages");
+      popupContainer.innerHTML = '';
+      chatContainer.innerHTML = '';
 
-    const formattedDay = new Intl.DateTimeFormat('es-AR', {
-      timeZone: systemTimezone,
-      year: 'numeric', month: 'numeric', day: 'numeric'
-    }).format(msgDate);
+      console.log('Renderizando mensajes con timezone:', systemTimezone, 'Mensajes:', messages);
 
-    const now = new Date();
-    const formattedNow = new Intl.DateTimeFormat('es-AR', {
-      timeZone: systemTimezone,
-      year: 'numeric', month: 'numeric', day: 'numeric'
-    }).format(now);
+      let lastRenderedDate = null;
 
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
-      timeZone: systemTimezone,
-      year: 'numeric', month: 'numeric', day: 'numeric'
-    }).format(yesterday);
+      messages.forEach(msg => {
+        // Depurar el valor exacto del timestamp
+        console.log('Procesando mensaje con timestamp:', msg.timestamp, 'Tipo:', typeof msg.timestamp);
 
-    let label = '';
-    if (formattedDay === formattedNow) label = 'Hoy';
-    else if (formattedDay === formattedYesterday) label = 'Ayer';
-    else label = new Intl.DateTimeFormat('es-AR', {
-      timeZone: systemTimezone,
-      day: 'numeric', month: 'long'
-    }).format(msgDate);
-
-    if (formattedDay !== lastRenderedDate) {
-      lastRenderedDate = formattedDay;
-      const dateLabel = document.createElement('div');
-      dateLabel.className = 'date-label';
-      dateLabel.textContent = label;
-      chatContainer.appendChild(dateLabel);
-    }
-
-    if (msg.sender === 'System') {
-      const systemMsg = document.createElement('div');
-      systemMsg.classList.add('bubble', 'system');
-      systemMsg.innerText = msg.message;
-      popupContainer.appendChild(systemMsg.cloneNode(true));
-      chatContainer.appendChild(systemMsg);
-    } else {
-      const div = document.createElement('div');
-      const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
-      div.classList.add("bubble", senderClass);
-
-      let timestamp = msgDate.toLocaleString("es-AR", { timeZone: systemTimezone });
-
-      if (msg.message) {
-        if (msg.sender === "Agent" || msg.sender === "Bot") {
-          div.innerHTML = `<div>${msg.message}</div>`;
-        } else {
-          div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+        // Asegurarse de que el mensaje tenga un timestamp
+        if (!msg.timestamp) {
+          console.warn("Mensaje sin timestamp, asignando fecha actual:", msg);
+          msg.timestamp = new Date().toISOString();
         }
-      }
 
-      if (msg.image) {
-        const img = document.createElement("img");
-        img.src = msg.image;
-        img.alt = "imagen enviada";
-        img.style.maxWidth = "200px";
-        img.style.borderRadius = "10px";
-        img.style.marginTop = "5px";
-        img.onclick = () => openImageInNewWindow(msg.image);
-        div.appendChild(img);
-      }
+        // Validar el timestamp
+        const parsedTimestamp = Date.parse(msg.timestamp);
+        let msgDate;
+        if (isNaN(parsedTimestamp)) {
+          console.warn("Timestamp inválido, usando fecha actual:", msg);
+          msgDate = new Date(); // Fecha actual como respaldo
+          msg.timestamp = msgDate.toISOString(); // Actualizar el timestamp
+        } else {
+          msgDate = new Date(parsedTimestamp);
+        }
 
-      const time = document.createElement("div");
-      time.className = "timestamp";
-      time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
-      div.appendChild(time);
+        const formattedDay = new Intl.DateTimeFormat('es-AR', {
+          timeZone: systemTimezone,
+          year: 'numeric', month: 'numeric', day: 'numeric'
+        }).format(msgDate);
 
-      popupContainer.appendChild(div.cloneNode(true));
-      chatContainer.appendChild(div);
+        const now = new Date();
+        const formattedNow = new Intl.DateTimeFormat('es-AR', {
+          timeZone: systemTimezone,
+          year: 'numeric', month: 'numeric', day: 'numeric'
+        }).format(now);
+
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
+          timeZone: systemTimezone,
+          year: 'numeric', month: 'numeric', day: 'numeric'
+        }).format(yesterday);
+
+        let label = '';
+        if (formattedDay === formattedNow) label = 'Hoy';
+        else if (formattedDay === formattedYesterday) label = 'Ayer';
+        else label = new Intl.DateTimeFormat('es-AR', {
+          timeZone: systemTimezone,
+          day: 'numeric', month: 'long'
+        }).format(msgDate);
+
+        if (formattedDay !== lastRenderedDate) {
+          lastRenderedDate = formattedDay;
+          const dateLabel = document.createElement('div');
+          dateLabel.className = 'date-label';
+          dateLabel.textContent = label;
+          chatContainer.appendChild(dateLabel);
+        }
+
+        if (msg.sender === 'System') {
+          const systemMsg = document.createElement('div');
+          systemMsg.classList.add('bubble', 'system');
+          systemMsg.innerText = msg.message;
+          popupContainer.appendChild(systemMsg.cloneNode(true));
+          chatContainer.appendChild(systemMsg);
+        } else {
+          const div = document.createElement('div');
+          const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
+          div.classList.add("bubble", senderClass);
+
+          let timestamp = msgDate.toLocaleString("es-AR", { timeZone: systemTimezone });
+
+          if (msg.message) {
+            if (msg.sender === "Agent" || msg.sender === "Bot") {
+              div.innerHTML = `<div>${msg.message}</div>`;
+            } else {
+              div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+            }
+          }
+
+          if (msg.image) {
+            const img = document.createElement("img");
+            img.src = msg.image;
+            img.alt = "imagen enviada";
+            img.style.maxWidth = "200px";
+            img.style.borderRadius = "10px";
+            img.style.marginTop = "5px";
+            img.onclick = () => openImageInNewWindow(msg.image);
+            div.appendChild(img);
+          }
+
+          const time = document.createElement("div");
+          time.className = "timestamp";
+          time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
+          div.appendChild(time);
+
+          popupContainer.appendChild(div.cloneNode(true));
+          chatContainer.appendChild(div);
+        }
+      });
+
+      popupContainer.scrollTop = popupContainer.scrollHeight;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
-  });
-
-  popupContainer.scrollTop = popupContainer.scrollHeight;
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
@@ -1172,103 +1171,30 @@ function renderChat(messages) {
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-  const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-  const agentUser = localStorage.getItem("adminUser");
-  const agentDisplayName = localStorage.getItem("agentDisplayName");
+      await loadTimezoneFromServer();
 
-  // Mostrar el nombre del agente (si está disponible)
-  if (agentDisplayName) {
-    document.getElementById("agentDisplayName").textContent = agentDisplayName;
-  } else if (agentUser) {
-    fetch(`/get-agent-displayname?username=${agentUser}`)
-      .then(res => res.json())
-      .then(data => {
-        const displayName = data.name || agentUser;
-        document.getElementById("agentDisplayName").textContent = displayName;
-        localStorage.setItem("agentDisplayName", displayName);
-      })
-      .catch(err => {
-        console.error("Error al obtener el nombre visible del agente:", err);
-        document.getElementById("agentDisplayName").textContent = agentUser;
-      });
-  }
+      const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+      const agentUser = localStorage.getItem("adminUser");
+      const agentDisplayName = localStorage.getItem("agentDisplayName");
 
-  if (isLoggedIn) {
-    document.getElementById("loginScreen").style.display = "none";
-    document.querySelector(".admin-container").style.display = "flex";
-    document.getElementById("menuWrapper").style.display = "none";
-    socket.emit('admin connected');
-
-    // Cargar recursos protegidos solo después de iniciar sesión
-    await loadTimezoneFromServer();
-    fetch('/quick-replies')
-      .then(res => res.json())
-      .then(data => {
-        quickReplies = data;
-      })
-      .catch(err => {
-        console.error("Error al cargar respuestas rápidas:", err);
-        quickReplies = [];
-      });
-  } else {
-    document.getElementById("loginScreen").style.display = "flex";
-    document.querySelector(".admin-container").style.display = "none";
-  }
-});
-
-function submitLogin() {
-  const username = document.getElementById("adminUsername").value.trim();
-  const password = document.getElementById("adminPassword").value.trim();
-
-  fetch('/agent-login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  })
-  .then(res => {
-    if (!res.ok) {
-      return res.json().then(err => {
-        throw new Error(err.message || `Error HTTP: ${res.status}`);
-      });
-    }
-    return res.json();
-  })
-  .then(data => {
-    if (data.success) {
-      localStorage.setItem("adminLoggedIn", "true");
-      localStorage.setItem("adminUser", username);
-      if (data.name) {
-        localStorage.setItem("agentDisplayName", data.name);
+      // Mostrar el nombre del agente (si está disponible)
+      if (agentDisplayName) {
+        document.getElementById("agentDisplayName").textContent = agentDisplayName;
+      } else if (agentUser) {
+        // Si no hay nombre visible guardado, obtenerlo del servidor
+        fetch(`/get-agent-displayname?username=${agentUser}`)
+          .then(res => res.json())
+          .then(data => {
+            const displayName = data.name || agentUser;
+            document.getElementById("agentDisplayName").textContent = displayName;
+            localStorage.setItem("agentDisplayName", displayName);
+          })
+          .catch(err => {
+            console.error("Error al obtener el nombre visible del agente:", err);
+            document.getElementById("agentDisplayName").textContent = agentUser;
+          });
       }
-      if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-      }
-      document.getElementById("loginScreen").style.display = "none";
-      document.querySelector(".admin-container").style.display = "flex";
-      document.getElementById("menuWrapper").style.display = "none";
-      socket.emit('admin connected');
 
-      // Cargar recursos protegidos después de iniciar sesión
-      loadTimezoneFromServer();
-      fetch('/quick-replies')
-        .then(res => res.json())
-        .then(data => {
-          quickReplies = data;
-        })
-        .catch(err => {
-          console.error("Error al cargar respuestas rápidas:", err);
-          quickReplies = [];
-        });
-    } else {
-      throw new Error(data.message || "Credenciales inválidas");
-    }
-  })
-  .catch(err => {
-    document.getElementById("loginError").textContent = err.message;
-    document.getElementById("loginError").style.display = "block";
-    console.error("Login fallido:", err);
-  });
-}
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
         document.querySelector(".admin-container").style.display = "flex";
