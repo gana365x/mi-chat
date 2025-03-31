@@ -409,12 +409,31 @@ app.post('/admin-login', (req, res) => {
 const superAdminUser = 'superadmin';
 const superAdminPass = 'gana365super';
 
-app.post('/superadmin-login', (req, res) => {
+app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
-  if (username === superAdminUser && password === superAdminPass) {
-    res.status(200).json({ success: true });
-  } else {
-    res.status(401).json({ success: false });
+
+  try {
+    const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+    const foundAgent = agents.find(agent => agent.username === username && agent.type === 'superadmin');
+
+    if (!foundAgent) {
+      return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    const isMatch = await bcrypt.compare(password, foundAgent.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
+    }
+
+    res.status(200).json({
+      success: true,
+      name: foundAgent.name,
+      type: foundAgent.type
+    });
+
+  } catch (err) {
+    console.error('❌ Error en login:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
 
