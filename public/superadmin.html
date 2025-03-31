@@ -167,6 +167,89 @@
   <p id="loginError" style="color: #ff5555; display: none; font-size: 12px; text-align: center;">Credenciales inválidas</p>
 </div>
 
+<div class="main-box" id="mainBox" style="display:none">
+  <div id="section-home">
+    <h2>🏠 Bienvenido, Super Agente</h2>
+    <div class="home-buttons">
+      <button onclick="showSection('agents')">👥 Agentes</button>
+      <button onclick="showSection('stats')">📊 Estadísticas</button>
+      <button onclick="showSection('customize')">🎨 Editar</button>
+    </div>
+  </div>
+
+  <!-- Sección de agentes -->
+  <div id="section-agents" style="display:none;">
+    <h2>Crear nuevo agente</h2>
+    <input type="text" id="newLogin" placeholder="Login del agente">
+    <input type="text" id="newName" placeholder="Nombre visible del agente">
+    <input type="password" id="newPassword" placeholder="Contraseña">
+    <button onclick="createAgent()">Crear</button>
+    <p id="createError" style="color: red; display: none;"></p>
+    <h2>Agentes registrados</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Nombre Visible</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="agentsTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Sección estadísticas -->
+  <div id="section-stats" style="display:none;">
+    <h2>📊 Estadísticas</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
+      <label>De:</label>
+      <div class="calendar-wrapper">
+        <input type="date" id="fromDate">
+        <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
+      </div>
+      <input type="time" id="fromTime">
+
+      <label>A:</label>
+      <div class="calendar-wrapper">
+        <input type="date" id="toDate">
+        <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
+      </div>
+      <input type="time" id="toTime">
+
+      <select id="quickRange" onchange="setQuickRange()">
+        <option value="">Elegir el periodo</option>
+        <option value="today">Hoy</option>
+        <option value="yesterday">Ayer</option>
+        <option value="week">Esta semana</option>
+        <option value="month">Este mes</option>
+        <option value="lastMonth">Mes anterior</option>
+      </select>
+
+      <button onclick="confirmAndLoadStats()">Mostrar</button>
+    </div>
+    <!-- Sub-secciones -->
+    <div style="margin-top: 20px;">
+      <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
+      <canvas id="chartAgentes" height="150"></canvas>
+
+      <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
+      <div id="statsResults">
+        <p>Mensajes entrantes: <span id="statMessages">0</span></p>
+        <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
+        <p>Retirar presionado: <span id="statRetiro">0</span></p>
+        <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección editar -->
+  <div id="section-customize" style="display:none;">
+    <h2>🎨 Personalizar Estilo</h2>
+    <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
+    <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
+  </div>
+</div>
+
 <style>
   body {
     background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
@@ -271,7 +354,100 @@
     box-shadow: 0 4px 12px rgba(255, 59, 0, 0.5);
     background: linear-gradient(90deg, #ffa500, #FF3B00);
   }
+
+  .main-box {
+    background: #1a1a1a;
+    padding: 40px;
+    border-radius: 12px;
+    max-width: 600px;
+    margin: 40px auto;
+    border: 2px solid #FF3B00;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  }
+
+  #section-home {
+    text-align: center;
+  }
+
+  #section-home h2 {
+    color: #FF3B00;
+    font-family: 'Poppins', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
+    margin-bottom: 40px;
+  }
+
+  .home-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .home-buttons button {
+    width: 200px;
+    background: linear-gradient(90deg, #FF3B00, #ffa500);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .home-buttons button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(255, 59, 0, 0.5);
+    background: linear-gradient(90deg, #ffa500, #FF3B00);
+  }
 </style>
+
+<script>
+  function loginSuperAdmin() {
+    const username = document.getElementById('superUsername').value.trim();
+    const password = document.getElementById('superPassword').value.trim();
+
+    fetch('/superadmin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        if (data.token) {
+          document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+        }
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('mainBox').style.display = 'block';
+        showSection('home'); // Cambiado para mostrar la sección Home
+        loadAgents();
+      } else {
+        throw new Error();
+      }
+    })
+    .catch(() => {
+      document.getElementById('loginError').style.display = 'block';
+    });
+  }
+
+  function showSection(section) {
+    document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
+    document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+    document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+    document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+
+    if (section === "stats") {
+      setDefaultDates();
+    }
+  }
+</script>
 
   <div class="main-box" id="mainBox" style="display:none">
     <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
