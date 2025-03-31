@@ -755,6 +755,17 @@ app.get('/stats-agents', (req, res) => {
   }
 });
 
+// ⚠️ Ruta temporal para ver el contenido del archivo agents.json en el servidor
+app.get('/descargar-agentes', (req, res) => {
+  try {
+    const filePath = path.resolve(agentsFilePath);
+    res.download(filePath, 'agents.json'); // fuerza la descarga
+  } catch (error) {
+    console.error('❌ Error al descargar agents.json:', error);
+    res.status(500).send('Error al descargar el archivo');
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
