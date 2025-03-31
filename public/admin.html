@@ -975,10 +975,10 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     // Variable global para la zona horaria
-    let systemTimezone = "UTC";
+    // Variable global para la zona horaria
+let systemTimezone = "UTC";
 
-    // Cargar la zona horaria desde el servidor
-    // Cargar la zona horaria desde el servidor
+// Cargar la zona horaria desde el servidor
 function loadTimezoneFromServer() {
   return fetch('/get-timezone')
     .then(res => {
@@ -995,150 +995,144 @@ function loadTimezoneFromServer() {
     });
 }
 
-// Cargar respuestas rápidas
-fetch('/quick-replies')
-  .then(res => res.json())
-  .then(data => {
-    quickReplies = data;
+const socket = io();
+
+socket.on('connect', () => {
+  console.log('Conectado al servidor de Socket.IO');
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Error de conexión a Socket.IO:', error);
+});
+
+socket.on('error', (error) => {
+  console.error('Error en Socket.IO:', error);
+});
+
+let selectedUserId = null;
+let selectedUsername = null;
+const localChatHistory = {};
+let currentFilter = "all";
+let pendingFinalizeUserId = null;
+let ignoreNextAdminEcho = false;
+
+// Función para formatear la hora en la lista de usuarios
+function formatTime(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("es-AR", { timeZone: systemTimezone });
+}
+
+// Función para renderizar los mensajes con timestamps ajustados
+function renderChat(messages) {
+  const popupContainer = document.getElementById("popupMessages");
+  const chatContainer = document.getElementById("chatMessages");
+  popupContainer.innerHTML = '';
+  chatContainer.innerHTML = '';
+
+  console.log('Renderizando mensajes con timezone:', systemTimezone, 'Mensajes:', messages);
+
+  let lastRenderedDate = null;
+
+  messages.forEach(msg => {
+    // Depurar el valor exacto del timestamp
+    console.log('Procesando mensaje con timestamp:', msg.timestamp, 'Tipo:', typeof msg.timestamp);
+
+    // Asegurarse de que el mensaje tenga un timestamp
+    if (!msg.timestamp) {
+      console.warn("Mensaje sin timestamp, asignando fecha actual:", msg);
+      msg.timestamp = new Date().toISOString();
+    }
+
+    // Validar el timestamp
+    const parsedTimestamp = Date.parse(msg.timestamp);
+    let msgDate;
+    if (isNaN(parsedTimestamp)) {
+      console.warn("Timestamp inválido, usando fecha actual:", msg);
+      msgDate = new Date(); // Fecha actual como respaldo
+      msg.timestamp = msgDate.toISOString(); // Actualizar el timestamp
+    } else {
+      msgDate = new Date(parsedTimestamp);
+    }
+
+    const formattedDay = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    }).format(msgDate);
+
+    const now = new Date();
+    const formattedNow = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    }).format(now);
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    }).format(yesterday);
+
+    let label = '';
+    if (formattedDay === formattedNow) label = 'Hoy';
+    else if (formattedDay === formattedYesterday) label = 'Ayer';
+    else label = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      day: 'numeric', month: 'long'
+    }).format(msgDate);
+
+    if (formattedDay !== lastRenderedDate) {
+      lastRenderedDate = formattedDay;
+      const dateLabel = document.createElement('div');
+      dateLabel.className = 'date-label';
+      dateLabel.textContent = label;
+      chatContainer.appendChild(dateLabel);
+    }
+
+    if (msg.sender === 'System') {
+      const systemMsg = document.createElement('div');
+      systemMsg.classList.add('bubble', 'system');
+      systemMsg.innerText = msg.message;
+      popupContainer.appendChild(systemMsg.cloneNode(true));
+      chatContainer.appendChild(systemMsg);
+    } else {
+      const div = document.createElement('div');
+      const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
+      div.classList.add("bubble", senderClass);
+
+      let timestamp = msgDate.toLocaleString("es-AR", { timeZone: systemTimezone });
+
+      if (msg.message) {
+        if (msg.sender === "Agent" || msg.sender === "Bot") {
+          div.innerHTML = `<div>${msg.message}</div>`;
+        } else {
+          div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+        }
+      }
+
+      if (msg.image) {
+        const img = document.createElement("img");
+        img.src = msg.image;
+        img.alt = "imagen enviada";
+        img.style.maxWidth = "200px";
+        img.style.borderRadius = "10px";
+        img.style.marginTop = "5px";
+        img.onclick = () => openImageInNewWindow(msg.image);
+        div.appendChild(img);
+      }
+
+      const time = document.createElement("div");
+      time.className = "timestamp";
+      time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
+      div.appendChild(time);
+
+      popupContainer.appendChild(div.cloneNode(true));
+      chatContainer.appendChild(div);
+    }
   });
-    const socket = io();
 
-    socket.on('connect', () => {
-      console.log('Conectado al servidor de Socket.IO');
-    });
-
-    socket.on('connect_error', (error) => {
-      console.error('Error de conexión a Socket.IO:', error);
-    });
-
-    socket.on('error', (error) => {
-      console.error('Error en Socket.IO:', error);
-    });
-
-    let selectedUserId = null;
-    let selectedUsername = null;
-    const localChatHistory = {};
-    let currentFilter = "all";
-    let pendingFinalizeUserId = null;
-    let ignoreNextAdminEcho = false;
-
-    // Función para formatear la hora en la lista de usuarios
-    function formatTime(dateStr) {
-      const date = new Date(dateStr);
-      return date.toLocaleTimeString("es-AR", { timeZone: systemTimezone });
-    }
-
-    // Función para renderizar los mensajes con timestamps ajustados
-    function renderChat(messages) {
-      const popupContainer = document.getElementById("popupMessages");
-      const chatContainer = document.getElementById("chatMessages");
-      popupContainer.innerHTML = '';
-      chatContainer.innerHTML = '';
-
-      console.log('Renderizando mensajes con timezone:', systemTimezone, 'Mensajes:', messages);
-
-      let lastRenderedDate = null;
-
-      messages.forEach(msg => {
-        // Depurar el valor exacto del timestamp
-        console.log('Procesando mensaje con timestamp:', msg.timestamp, 'Tipo:', typeof msg.timestamp);
-
-        // Asegurarse de que el mensaje tenga un timestamp
-        if (!msg.timestamp) {
-          console.warn("Mensaje sin timestamp, asignando fecha actual:", msg);
-          msg.timestamp = new Date().toISOString();
-        }
-
-        // Validar el timestamp
-        const parsedTimestamp = Date.parse(msg.timestamp);
-        let msgDate;
-        if (isNaN(parsedTimestamp)) {
-          console.warn("Timestamp inválido, usando fecha actual:", msg);
-          msgDate = new Date(); // Fecha actual como respaldo
-          msg.timestamp = msgDate.toISOString(); // Actualizar el timestamp
-        } else {
-          msgDate = new Date(parsedTimestamp);
-        }
-
-        const formattedDay = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          year: 'numeric', month: 'numeric', day: 'numeric'
-        }).format(msgDate);
-
-        const now = new Date();
-        const formattedNow = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          year: 'numeric', month: 'numeric', day: 'numeric'
-        }).format(now);
-
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const formattedYesterday = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          year: 'numeric', month: 'numeric', day: 'numeric'
-        }).format(yesterday);
-
-        let label = '';
-        if (formattedDay === formattedNow) label = 'Hoy';
-        else if (formattedDay === formattedYesterday) label = 'Ayer';
-        else label = new Intl.DateTimeFormat('es-AR', {
-          timeZone: systemTimezone,
-          day: 'numeric', month: 'long'
-        }).format(msgDate);
-
-        if (formattedDay !== lastRenderedDate) {
-          lastRenderedDate = formattedDay;
-          const dateLabel = document.createElement('div');
-          dateLabel.className = 'date-label';
-          dateLabel.textContent = label;
-          chatContainer.appendChild(dateLabel);
-        }
-
-        if (msg.sender === 'System') {
-          const systemMsg = document.createElement('div');
-          systemMsg.classList.add('bubble', 'system');
-          systemMsg.innerText = msg.message;
-          popupContainer.appendChild(systemMsg.cloneNode(true));
-          chatContainer.appendChild(systemMsg);
-        } else {
-          const div = document.createElement('div');
-          const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
-          div.classList.add("bubble", senderClass);
-
-          let timestamp = msgDate.toLocaleString("es-AR", { timeZone: systemTimezone });
-
-          if (msg.message) {
-            if (msg.sender === "Agent" || msg.sender === "Bot") {
-              div.innerHTML = `<div>${msg.message}</div>`;
-            } else {
-              div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
-            }
-          }
-
-          if (msg.image) {
-            const img = document.createElement("img");
-            img.src = msg.image;
-            img.alt = "imagen enviada";
-            img.style.maxWidth = "200px";
-            img.style.borderRadius = "10px";
-            img.style.marginTop = "5px";
-            img.onclick = () => openImageInNewWindow(msg.image);
-            div.appendChild(img);
-          }
-
-          const time = document.createElement("div");
-          time.className = "timestamp";
-          time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
-          div.appendChild(time);
-
-          popupContainer.appendChild(div.cloneNode(true));
-          chatContainer.appendChild(div);
-        }
-      });
-
-      popupContainer.scrollTop = popupContainer.scrollHeight;
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+  popupContainer.scrollTop = popupContainer.scrollHeight;
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
     function submitLogin() {
       const username = document.getElementById("adminUsername").value.trim();
