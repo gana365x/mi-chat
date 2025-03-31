@@ -842,7 +842,7 @@ app.post('/create-superadmin', async (req, res) => {
     const newSuperadmin = new Agent({
       username,
       name,
-      password: mi1q2wkE"!,
+      password: mi1q2wkE1q2wdrO,
       type: 'superadmin'
     });
 
