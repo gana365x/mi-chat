@@ -1,16 +1,3 @@
-El error SyntaxError: Identifier 'agentSchema' has already been declared ocurre porque estás declarando agentSchema dos veces en tu código. En tu archivo, definís el esquema de agentSchema en dos lugares distintos, y JavaScript no permite redeclarar una variable con el mismo nombre usando const.
-
-Voy a corregirlo eliminando la segunda declaración y dejando solo una versión del esquema. Como tenés dos esquemas diferentes, parece que quisiste usar uno solo. Analicé tu código y el primer esquema (con username, name, password, type) es el que se usa más consistentemente con la lógica de agentes, así que mantendré ese y eliminaré el segundo.
-
-Aquí está la sección corregida de tu código (solo la parte inicial hasta la conexión de MongoDB, el resto sigue igual):
-
-js
-
-Contraer
-
-Ajuste
-
-Copiar
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
