@@ -181,7 +181,7 @@
     background: #1a1a1a;
     padding: 30px;
     border-radius: 12px;
-    max-width: 320px; /* Reducido para que sea más compacto */
+    max-width: 320px;
     width: 100%;
     border: 2px solid #FF3B00;
     box-shadow: 0 8px 24px rgba(255, 59, 0, 0.2), inset 0 0 10px rgba(255, 59, 0, 0.1);
@@ -193,15 +193,15 @@
     color: #FF3B00;
     text-align: center;
     font-family: 'Poppins', sans-serif;
-    font-size: 28px; /* Reducido para proporción */
+    font-size: 28px;
     font-weight: 700;
     text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
-    margin-bottom: 20px; /* Reducido el margen */
+    margin-bottom: 20px;
   }
 
   .input-group {
     position: relative;
-    margin-bottom: 20px; /* Reducido el margen entre inputs */
+    margin-bottom: 20px;
   }
 
   .input-group input {
@@ -210,8 +210,8 @@
     color: white;
     border: 2px solid #FF3B00;
     border-radius: 6px;
-    padding: 8px 12px; /* Reducido el padding */
-    font-size: 14px; /* Reducido el tamaño de fuente */
+    padding: 4.8px 7.2px; /* Reducido en un 40% */
+    font-size: 10px; /* Ajustado para legibilidad (original 14px * 0.6 = 8.4px, pero lo subimos a 10px) */
     outline: none;
     transition: all 0.3s ease;
   }
@@ -219,10 +219,10 @@
   .input-group label {
     position: absolute;
     top: 50%;
-    left: 12px;
+    left: 7.2px; /* Ajustado proporcionalmente */
     transform: translateY(-50%);
     color: #888;
-    font-size: 14px; /* Reducido el tamaño de fuente */
+    font-size: 8.4px; /* Reducido en un 40% (original 14px * 0.6) */
     pointer-events: none;
     transition: all 0.3s ease;
   }
@@ -235,28 +235,28 @@
 
   .input-group input:focus + label,
   .input-group input:valid + label {
-    top: -8px; /* Ajustado para el nuevo tamaño */
-    left: 10px;
-    font-size: 10px; /* Reducido el tamaño de la etiqueta */
+    top: -6px; /* Ajustado para el nuevo tamaño */
+    left: 6px;
+    font-size: 6px; /* Reducido en un 40% (original 10px * 0.6) */
     color: #FF3B00;
     background: #1a1a1a;
-    padding: 0 4px;
+    padding: 0 3px;
   }
 
   .button-wrapper {
     display: flex;
-    justify-content: center; /* Centra el botón */
-    margin-top: 10px; /* Reducido el margen superior */
+    justify-content: center;
+    margin-top: 10px;
   }
 
   .login-box button {
-    width: 120px; /* Ancho fijo más pequeño */
+    width: 120px;
     background: linear-gradient(90deg, #FF3B00, #ffa500);
     color: white;
     border: none;
     border-radius: 6px;
-    padding: 8px; /* Reducido el padding */
-    font-size: 14px; /* Reducido el tamaño de fuente */
+    padding: 8px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
