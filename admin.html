@@ -1131,36 +1131,31 @@
     }
 
     function submitLogin() {
-      const username = document.getElementById("adminUsername").value.trim();
-      const password = document.getElementById("adminPassword").value.trim();
+  const username = document.getElementById("adminUsername").value.trim();
+  const password = document.getElementById("adminPassword").value.trim();
 
-      fetch('/agent-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          localStorage.setItem("adminLoggedIn", "true");
-          localStorage.setItem("adminUser", username);
-          if (data.name) {
-            localStorage.setItem("agentDisplayName", data.name);
-          }
-          document.getElementById("loginScreen").style.display = "none";
-          document.querySelector(".admin-container").style.display = "flex";
-          document.getElementById("menuWrapper").style.display = "none";
-          socket.emit('admin connected');
-        } else {
-          throw new Error("Credenciales inválidas");
-        }
-      })
-      .catch(err => {
-        document.getElementById("loginError").style.display = "block";
-        console.error("Login fallido:", err);
-      });
+  fetch('/agent-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Login fallido");
+    return res.json();
+  })
+  .then(data => {
+    if (data.success) {
+      localStorage.setItem("adminUser", username);
+      window.location.href = "admin.html";
+    } else {
+      throw new Error("Credenciales inválidas");
     }
-
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById("loginError").style.display = 'block';
+  });
+}
     document.addEventListener("DOMContentLoaded", async () => {
       await loadTimezoneFromServer();
 
