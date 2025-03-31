@@ -499,10 +499,6 @@ app.delete('/agents/:username', (req, res) => {
   res.status(200).json({ success: true });
 });
 
-app.put('/agents/:username', (req, res) => {
-  const { username } = req.params;
-  const { name, password, newUsername } = req.body;
-
 app.put('/agents/:username', async (req, res) => {
   const { username } = req.params;
   const { name, password, newUsername } = req.body;
