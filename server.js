@@ -23,7 +23,10 @@ const io = socketIo(server, {
 
 const PORT = process.env.PORT || 3000;
 
-// ✅ Función de validación reutilizable
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+
 function validateAuthInput(username, password) {
   if (
     !username ||
@@ -38,7 +41,35 @@ function validateAuthInput(username, password) {
   return true;
 }
 
-// 🔒 MONGO CONNECTION
+function isValidToken(token) {
+  return token === process.env.SECRET_KEY; // Simple por ahora, luego lo mejoramos
+}
+
+// Rutas protegidas
+app.get('/admin.html', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/superadmin.html', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
+});
+
+app.get('/config.html', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'config.html'));
+});
+
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:ped1q2wzerA@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
 
 mongoose.connect(MONGO_URI, {
@@ -52,7 +83,6 @@ mongoose.connect(MONGO_URI, {
   console.error('❌ Error conectando a MongoDB:', err);
 });
 
-// ✅ AGENT SCHEMA
 const agentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   name: String,
@@ -62,7 +92,6 @@ const agentSchema = new mongoose.Schema({
 
 const Agent = mongoose.model('Agent', agentSchema);
 
-// ✅ USERNAME SCHEMA PARA GUARDAR NOMBRES EDITADOS
 const userNameSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
   name: { type: String, required: true }
@@ -70,7 +99,6 @@ const userNameSchema = new mongoose.Schema({
 
 const UserName = mongoose.model('UserName', userNameSchema);
 
-// ✅ PERFORMANCE SCHEMA
 const performanceSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   count: { type: Number, default: 0 }
@@ -78,7 +106,6 @@ const performanceSchema = new mongoose.Schema({
 
 const Performance = mongoose.model('Performance', performanceSchema);
 
-// ✅ CHAT MESSAGE SCHEMA
 const chatMessageSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   sender: { type: String, required: true },
@@ -92,14 +119,12 @@ const chatMessageSchema = new mongoose.Schema({
 
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
-// 📦 Variables locales
 const userSessions = new Map();
 const adminSubscriptions = new Map();
 
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
-// 🕒 Función para timestamps con zona horaria
 function getTimestamp() {
   const defaultTimezone = "America/Argentina/Buenos_Aires";
   let timezone = defaultTimezone;
@@ -124,7 +149,6 @@ function getTimestamp() {
   }
 }
 
-// Inicialización de archivos
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
@@ -455,10 +479,6 @@ io.on('connection', (socket) => {
   });
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-app.use(cookieParser());
-
 app.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
   return res.status(401).json({ success: false, message: 'Endpoint no configurado' });
@@ -482,6 +502,7 @@ app.post('/superadmin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({
       success: true,
       name: agent.name,
@@ -511,6 +532,7 @@ app.post('/agent-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({ 
       success: true,
       username: agent.username,
@@ -524,6 +546,10 @@ app.post('/agent-login', async (req, res) => {
 });
 
 app.get('/agents', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   try {
     const agents = await Agent.find({}, 'username name type');
     const formattedAgents = agents.map(agent => ({
@@ -539,6 +565,10 @@ app.get('/agents', async (req, res) => {
 });
 
 app.post('/agents', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { username, name, password, type = 'agent' } = req.body;
 
   if (!validateAuthInput(username, password) || (name && typeof name !== 'string') || (type && typeof type !== 'string')) {
@@ -568,6 +598,10 @@ app.post('/agents', async (req, res) => {
 });
 
 app.delete('/agents/:username', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { username } = req.params;
 
   try {
@@ -585,6 +619,10 @@ app.delete('/agents/:username', async (req, res) => {
 });
 
 app.put('/agents/:username', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { username } = req.params;
   const { name, password, newUsername } = req.body;
 
@@ -618,6 +656,10 @@ app.put('/agents/:username', async (req, res) => {
 });
 
 app.post('/update-username', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { userId, newUsername } = req.body;
 
   if (!userId || !newUsername) {
@@ -643,6 +685,10 @@ app.post('/update-username', async (req, res) => {
 });
 
 app.get('/performance', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   try {
     const allData = await Performance.find({});
     const result = {};
@@ -659,6 +705,10 @@ app.get('/performance', async (req, res) => {
 });
 
 app.get('/get-agent-displayname', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const username = req.query.username;
   try {
     const agent = await Agent.findOne({ username });
@@ -674,6 +724,10 @@ app.get('/get-agent-displayname', async (req, res) => {
 });
 
 app.post('/update-agent-name', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { username, newName } = req.body;
 
   if (!username || !newName || typeof username !== 'string' || typeof newName !== 'string') {
@@ -699,6 +753,10 @@ app.post('/update-agent-name', async (req, res) => {
 });
 
 app.post('/update-agent-password', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { username, newPassword } = req.body;
 
   if (!username || !newPassword || typeof username !== 'string' || typeof newPassword !== 'string' ||
@@ -725,6 +783,10 @@ app.post('/update-agent-password', async (req, res) => {
 });
 
 app.get('/quick-replies', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   fs.readFile(quickRepliesPath, 'utf8', (err, data) => {
     if (err) return res.status(500).json([]);
     try {
@@ -737,6 +799,10 @@ app.get('/quick-replies', (req, res) => {
 });
 
 app.post('/quick-replies', express.json(), (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const replies = req.body;
   if (!Array.isArray(replies)) {
     return res.status(400).json({ success: false, message: "Formato incorrecto" });
@@ -747,6 +813,10 @@ app.post('/quick-replies', express.json(), (req, res) => {
 });
 
 app.get('/get-timezone', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   try {
     const data = fs.readFileSync(timezoneFile, 'utf-8');
     const config = JSON.parse(data);
@@ -758,6 +828,10 @@ app.get('/get-timezone', (req, res) => {
 });
 
 app.post('/update-timezone', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { timezone } = req.body;
   if (!timezone || typeof timezone !== 'string') {
     return res.status(400).json({ success: false, message: "Zona inválida" });
@@ -780,6 +854,10 @@ app.post('/update-timezone', (req, res) => {
 });
 
 app.get('/stats', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { from, to } = req.query;
 
   if (!from || !to) {
@@ -842,6 +920,10 @@ app.get('/stats', async (req, res) => {
 });
 
 app.get('/stats-agents', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
   const { from, to } = req.query;
 
   if (!from || !to) {
@@ -882,7 +964,6 @@ app.get('/stats-agents', async (req, res) => {
   }
 });
 
-// ✅ Iniciar servidor
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
