@@ -46,6 +46,14 @@ const agentSchema = new mongoose.Schema({
 
 const Agent = mongoose.model('Agent', agentSchema);
 
+// ✅ USERNAME SCHEMA PARA GUARDAR NOMBRES EDITADOS
+const userNameSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  name: { type: String, required: true }
+});
+
+const UserName = mongoose.model('UserName', userNameSchema);
+
 // ✅ PERFORMANCE SCHEMA
 const performanceSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -63,7 +71,7 @@ const chatMessageSchema = new mongoose.Schema({
   timestamp: { type: String, required: true },
   status: String,
   agentUsername: String,
-  username: String // ✅ Nuevo campo para guardar el nombre del usuario
+  username: String
 });
 
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
@@ -127,22 +135,35 @@ async function getAllChatsSorted() {
     }
   ]);
 
-  return lastMessages.map(({ _id, lastMessage }) => ({
-    userId: _id,
-    username: lastMessage.username || userSessions.get(_id)?.username || 'Usuario',
-    lastMessageTime: lastMessage.timestamp,
-    isClosed: lastMessage.status === 'closed'
-  })).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+  return lastMessages.map(async ({ _id, lastMessage }) => {
+    const savedName = await UserName.findOne({ userId: _id });
+    return {
+      userId: _id,
+      username: savedName?.name || lastMessage.username || userSessions.get(_id)?.username || 'Usuario',
+      lastMessageTime: lastMessage.timestamp,
+      isClosed: lastMessage.status === 'closed'
+    };
+  }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 }
 
 io.on('connection', (socket) => {
   socket.on('user joined', async (data) => {
     let userId = data.userId;
-    const username = data.username;
+    let username = data.username;
     if (!username) return;
 
     if (!userId) {
       userId = uuidv4();
+    }
+
+    // 🧠 Buscar nombre editado en Mongo
+    try {
+      const savedName = await UserName.findOne({ userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error buscando nombre editado:", e.message);
     }
 
     userSessions.set(userId, { username, socket });
@@ -560,6 +581,31 @@ app.put('/agents/:username', async (req, res) => {
   } catch (err) {
     console.error('❌ Error actualizando agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
+app.post('/update-username', async (req, res) => {
+  const { userId, newUsername } = req.body;
+
+  if (!userId || !newUsername) {
+    return res.status(400).json({ success: false, message: 'Faltan datos' });
+  }
+
+  try {
+    const existing = await UserName.findOne({ userId });
+
+    if (existing) {
+      existing.name = newUsername;
+      await existing.save();
+    } else {
+      await UserName.create({ userId, name: newUsername });
+    }
+
+    io.emit('user name updated', { userId, newUsername });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('❌ Error al guardar nombre del usuario:', err);
+    return res.status(500).json({ success: false, message: 'Error interno' });
   }
 });
 
