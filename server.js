@@ -231,6 +231,7 @@ io.on('connection', (socket) => {
       await new ChatMessage(dateMessage).save();
     }
   });
+});
 
     try {
       const savedName = await UserName.findOne({ userId });
