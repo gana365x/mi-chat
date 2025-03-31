@@ -554,12 +554,21 @@ app.post('/agents', async (req, res) => {
   }
 });
 
-app.delete('/agents/:username', (req, res) => {
-  let agents = JSON.parse(fs.readFileSync(agentsFilePath));
+app.delete('/agents/:username', async (req, res) => {
   const { username } = req.params;
-  agents = agents.filter(a => a.username !== username);
-  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-  res.status(200).json({ success: true });
+
+  try {
+    const deleted = await Agent.findOneAndDelete({ username });
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+    }
+
+    res.status(200).json({ success: true, message: 'Agente eliminado correctamente' });
+  } catch (err) {
+    console.error('❌ Error eliminando agente:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
 });
 
 app.put('/agents/:username', async (req, res) => {
