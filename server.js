@@ -421,7 +421,7 @@ app.post('/agent-login', (req, res) => {
   const { username, password } = req.body;
 
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const Hindich = agents.find(a => a.username === username && a.password === password);
+  const match = agents.find(a => a.username === username && a.password === password);
 
   if (match) {
     return res.status(200).json({ 
@@ -505,43 +505,24 @@ app.get('/get-agent-displayname', (req, res) => {
 
 app.post('/update-agent-name', (req, res) => {
   const { username, newName } = req.body;
-
-  // Validaciones básicas
-  if (!username || !newName || typeof username !== 'string' || typeof newName !== 'string') {
-    return res.status(400).json({ success: false, message: 'Faltan datos o formato inválido' });
+  if (!username || !newName) {
+    return res.status(400).json({ success: false, message: 'Faltan datos' });
   }
 
-  if (newName.trim().length < 1 || newName.trim().length > 50) {
-    return res.status(400).json({ success: false, message: 'El nombre debe tener entre 1 y 50 caracteres' });
+  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
+  const index = agents.findIndex(a => a.username === username);
+
+  if (index === -1) {
+    return res.status(404).json({ success: false, message: 'Agente no encontrado' });
   }
 
-  try {
-    const agents = JSON.parse(fs.readFileSync(agentsFilePath, 'utf-8'));
-    const index = agents.findIndex(a => a.username === username);
+  agents[index].name = newName;
+  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
 
-    if (index === -1) {
-      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
+  // Emitir evento a todos los clientes conectados
+  io.emit('agent name updated', { username, newName });
 
-    // Actualizar el nombre del agente
-    agents[index].name = newName.trim();
-    fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-
-    // Emitir evento a todos los clientes conectados para actualizar en tiempo real
-    io.emit('agent name updated', { username, newName: newName.trim() });
-
-    // Actualizar el nombre en userSessions si el agente está conectado
-    if (userSessions.has(username)) {
-      const session = userSessions.get(username);
-      userSessions.set(username, { ...session, username: newName.trim() });
-    }
-
-    // Responder con éxito
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Error al actualizar el nombre del agente:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+  res.status(200).json({ success: true });
 });
 
 app.post('/update-agent-password', (req, res) => {
