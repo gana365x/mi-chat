@@ -1238,11 +1238,14 @@
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
 
-      fetch('/agent-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
+      fetch("https://mi-chat-9uti.onrender.com/agent-login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  credentials: "include", // ✅ AGREGÁ ESTA LÍNEA
+  body: JSON.stringify({ username, password })
+});
       .then(res => res.json())
       .then(data => {
         if (data.success) {
