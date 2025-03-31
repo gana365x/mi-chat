@@ -522,7 +522,7 @@ app.post('/agent-login', async (req, res) => {
   }
 
   try {
-    const agent = await Agent.findOne({ username });
+    const agent = await Agent.findOne({ username, type: 'agent' });
     if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
@@ -533,12 +533,7 @@ app.post('/agent-login', async (req, res) => {
     }
 
     res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
-    res.status(200).json({ 
-      success: true,
-      username: agent.username,
-      name: agent.name || agent.username,
-      type: agent.type || 'agent'
-    });
+    res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
@@ -567,7 +562,7 @@ app.get('/agents', async (req, res) => {
 app.post('/agents', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
+    return res  .status(401).json({ success: false, message: 'No autorizado' });
   }
   const { username, name, password, type = 'agent' } = req.body;
 
@@ -582,13 +577,7 @@ app.post('/agents', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAgent = new Agent({
-      username,
-      name,
-      password: hashedPassword,
-      type
-    });
-
+    const newAgent = new Agent({ username, name, password: hashedPassword, type: 'agent' });
     await newAgent.save();
     res.status(201).json({ success: true, message: 'Agente creado exitosamente' });
   } catch (error) {
@@ -817,13 +806,13 @@ app.get('/get-timezone', (req, res) => {
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
   }
+
   try {
-    const data = fs.readFileSync(timezoneFile, 'utf-8');
-    const config = JSON.parse(data);
-    res.json({ timezone: config.timezone || "UTC" });
-  } catch (e) {
-    console.error('Error leyendo zona horaria:', e.message);
-    res.json({ timezone: "UTC" });
+    const timezoneData = fs.readFileSync(timezoneFile, 'utf-8');
+    const config = JSON.parse(timezoneData);
+    res.json({ timezone: config.timezone });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error leyendo la zona horaria' });
   }
 });
 
