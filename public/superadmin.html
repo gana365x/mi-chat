@@ -411,28 +411,31 @@
     const username = document.getElementById('superUsername').value.trim();
     const password = document.getElementById('superPassword').value.trim();
 
-    fetch('/superadmin-login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error();
-      return res.json();
-    })
-    .then(data => {
-      if (data.success) {
-        if (data.token) {
-          document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-        }
-        document.getElementById('loginBox').style.display = 'none';
-        document.getElementById('mainBox').style.display = 'block';
-        showSection('home'); // Cambiado para mostrar la sección Home
-        loadAgents();
-      } else {
-        throw new Error();
-      }
-    })
+    fetch("https://mi-chat-9uti.onrender.com/superadmin-login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  credentials: "include", // ✅ MUY IMPORTANTE
+  body: JSON.stringify({ username, password })
+})
+.then(res => {
+  if (!res.ok) throw new Error();
+  return res.json();
+})
+.then(data => {
+  if (data.success) {
+    // Ya no seteamos manualmente el token porque lo manda el servidor como cookie segura
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('mainBox').style.display = 'block';
+    showSection('home');
+    loadAgents();
+  } else {
+    throw new Error();
+  }
+})
+.catch(err => {
+  console.error("Error de login:", err);
+  alert("❌ Usuario o contraseña incorrectos");
+});
     .catch(() => {
       document.getElementById('loginError').style.display = 'block';
     });
