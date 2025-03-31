@@ -4,6 +4,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
+onst bcrypt = require('bcrypt');
 
 const app = express();
 const server = http.createServer(app);
@@ -445,17 +446,30 @@ app.get('/agents', (req, res) => {
   res.json(formattedAgents);
 });
 
-app.post('/agents', (req, res) => {
+app.post('/agents', async (req, res) => {
   const agents = JSON.parse(fs.readFileSync(agentsFilePath));
   const { username, name, password, type = 'agent' } = req.body;
-  
+
   if (agents.find(a => a.username === username)) {
     return res.status(400).json({ success: false, message: 'Ya existe ese usuario' });
   }
-  
-  agents.push({ username, name, password, type });
-  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-  res.status(200).json({ success: true });
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAgent = {
+      username,
+      name,
+      password: hashedPassword,
+      type
+    };
+
+    agents.push(newAgent);
+    fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+    res.status(201).json({ success: true, message: 'Agente creado exitosamente' });
+  } catch (error) {
+    console.error('❌ Error en la creación del agente:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
 });
 
 app.delete('/agents/:username', (req, res) => {
