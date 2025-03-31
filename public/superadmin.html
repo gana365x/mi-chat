@@ -267,15 +267,19 @@
         return res.json();
       })
       .then(data => {
-        if (data.success) {
-          document.getElementById('loginBox').style.display = 'none';
-          document.getElementById('mainBox').style.display = 'block';
-          showSection('agents');
-          loadAgents();
-        } else {
-          throw new Error();
-        }
-      })
+  if (data.success) {
+    if (data.token) {
+      document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+    }
+
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('mainBox').style.display = 'block';
+    showSection('agents');
+    loadAgents();
+  } else {
+    throw new Error();
+  }
+})
       .catch(() => {
         document.getElementById('loginError').style.display = 'block';
       });
