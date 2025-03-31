@@ -770,26 +770,29 @@
     position: fixed;
     width: 100%;
     margin: 0;
+    padding: 0; /* Quitamos cualquier padding */
   }
 
   .admin-container {
     display: flex;
-    flex-direction: column; /* Aseguramos que sea columna en móvil */
-    width: 100vw;
+    flex-direction: column;
+    width: 100vw; /* Forzamos ancho completo */
     height: 100vh;
-    gap: 0; /* Quitamos el gap para maximizar espacio */
+    margin: 0;
+    padding: 0;
+    gap: 0;
   }
 
   .inbox {
-    width: calc(100vw - 10px); /* Fullscreen con 5px de margen a cada lado */
-    margin: 0 5px; /* Margen pequeño */
+    width: 100vw; /* Ancho completo sin márgenes */
+    margin: 0;
     padding: 0;
     box-sizing: border-box;
     height: 100vh;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
-    border-radius: 0; /* Quitamos bordes redondeados para que se vea más integrado */
+    border-radius: 0;
   }
 
   .user-list {
@@ -800,11 +803,11 @@
   }
 
   #resizer {
-    display: none; /* Ocultamos la línea naranja en móvil */
+    display: none;
   }
 
   .chat-view {
-    display: none !important; /* Aseguramos que no interfiera */
+    display: none !important;
   }
 }
     
