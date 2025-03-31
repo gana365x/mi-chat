@@ -755,38 +755,6 @@ app.get('/stats-agents', (req, res) => {
   }
 });
 
-app.get('/create-superadmin', async (req, res) => {
-  const { username, password } = req.query;
-
-  if (!username || !password) {
-    return res.status(400).send('❌ Faltan datos (username y password)');
-  }
-
-  try {
-    const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-    const exists = agents.find(a => a.username === username);
-
-    if (exists) {
-      return res.status(409).send('⚠️ Ese usuario ya existe');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newSuperadmin = {
-      username,
-      password: hashedPassword,
-      name: 'Superadmin',
-      type: 'superadmin'
-    };
-
-    agents.push(newSuperadmin);
-    fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-    res.send('✅ Superadmin creado exitosamente');
-  } catch (error) {
-    console.error('❌ Error creando superadmin:', error);
-    res.status(500).send('Error interno del servidor');
-  }
-});
-
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
