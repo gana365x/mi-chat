@@ -1266,10 +1266,6 @@
 
     function selectUser(userId, username) {
   const user = window.chatUsers.find(u => u.userId === userId);
-  if (user.isClosed) {
-    console.log('Chat cerrado, no se puede abrir manualmente:', userId);
-    return;
-  }
   console.log('Usuario seleccionado:', { userId, username });
   selectedUserId = userId;
   selectedUsername = username;
@@ -1284,6 +1280,19 @@
   }
   document.getElementById("popupUser").textContent = username;
   document.getElementById("currentUser").textContent = username;
+
+  // Si está cerrado, deshabilitar input y botón
+  const chatInput = document.getElementById("adminInput");
+  const sendButton = document.querySelector("#chatInputArea button");
+  if (user.isClosed) {
+    chatInput.disabled = true;
+    chatInput.placeholder = "Chat cerrado - Solo lectura";
+    sendButton.disabled = true;
+  } else {
+    chatInput.disabled = false;
+    chatInput.placeholder = "Escribir mensaje...";
+    sendButton.disabled = false;
+  }
 
   if (window.innerWidth <= 767) {
     document.getElementById("chatPopup").style.display = "flex";
@@ -1379,6 +1388,9 @@
     if (wasClosed && data.sender !== 'Agent' && data.sender !== 'System' && data.sender !== 'Bot') {
       showFinalizarButton(data.userId);
       if (data.userId === selectedUserId) {
+        document.getElementById("adminInput").disabled = false;
+        document.getElementById("adminInput").placeholder = "Escribir mensaje...";
+        document.querySelector("#chatInputArea button").disabled = false;
         renderChat(localChatHistory[data.userId]);
       } else {
         selectUser(data.userId, selectedUsername || 'Usuario');
