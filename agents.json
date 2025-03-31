@@ -1,17 +1,5 @@
 [
-  {
-    "username": "1",
-    "password": "1",
-    "name": "Agente Uno",
-    "type": "agent"
-  },
-  {
-    "username": "2",
-    "password": "2",
-    "name": "Superadmin",
-    "type": "superadmin"
-  },
-  {
+    {
     "username": "superadmin",
     "password": "$2b$10$PPmpOurglZvAt./WluInmO4ApaAHnXcbnyskCjx/8F4cqXshK5OJ6",
     "name": "Superadmin",
