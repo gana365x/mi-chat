@@ -1178,30 +1178,103 @@ fetch('/quick-replies')
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadTimezoneFromServer();
+  const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+  const agentUser = localStorage.getItem("adminUser");
+  const agentDisplayName = localStorage.getItem("agentDisplayName");
 
-      const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-      const agentUser = localStorage.getItem("adminUser");
-      const agentDisplayName = localStorage.getItem("agentDisplayName");
+  // Mostrar el nombre del agente (si está disponible)
+  if (agentDisplayName) {
+    document.getElementById("agentDisplayName").textContent = agentDisplayName;
+  } else if (agentUser) {
+    fetch(`/get-agent-displayname?username=${agentUser}`)
+      .then(res => res.json())
+      .then(data => {
+        const displayName = data.name || agentUser;
+        document.getElementById("agentDisplayName").textContent = displayName;
+        localStorage.setItem("agentDisplayName", displayName);
+      })
+      .catch(err => {
+        console.error("Error al obtener el nombre visible del agente:", err);
+        document.getElementById("agentDisplayName").textContent = agentUser;
+      });
+  }
 
-      // Mostrar el nombre del agente (si está disponible)
-      if (agentDisplayName) {
-        document.getElementById("agentDisplayName").textContent = agentDisplayName;
-      } else if (agentUser) {
-        // Si no hay nombre visible guardado, obtenerlo del servidor
-        fetch(`/get-agent-displayname?username=${agentUser}`)
-          .then(res => res.json())
-          .then(data => {
-            const displayName = data.name || agentUser;
-            document.getElementById("agentDisplayName").textContent = displayName;
-            localStorage.setItem("agentDisplayName", displayName);
-          })
-          .catch(err => {
-            console.error("Error al obtener el nombre visible del agente:", err);
-            document.getElementById("agentDisplayName").textContent = agentUser;
-          });
+  if (isLoggedIn) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.querySelector(".admin-container").style.display = "flex";
+    document.getElementById("menuWrapper").style.display = "none";
+    socket.emit('admin connected');
+
+    // Cargar recursos protegidos solo después de iniciar sesión
+    await loadTimezoneFromServer();
+    fetch('/quick-replies')
+      .then(res => res.json())
+      .then(data => {
+        quickReplies = data;
+      })
+      .catch(err => {
+        console.error("Error al cargar respuestas rápidas:", err);
+        quickReplies = [];
+      });
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.querySelector(".admin-container").style.display = "none";
+  }
+});
+
+function submitLogin() {
+  const username = document.getElementById("adminUsername").value.trim();
+  const password = document.getElementById("adminPassword").value.trim();
+
+  fetch('/agent-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => {
+        throw new Error(err.message || `Error HTTP: ${res.status}`);
+      });
+    }
+    return res.json();
+  })
+  .then(data => {
+    if (data.success) {
+      localStorage.setItem("adminLoggedIn", "true");
+      localStorage.setItem("adminUser", username);
+      if (data.name) {
+        localStorage.setItem("agentDisplayName", data.name);
       }
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+      }
+      document.getElementById("loginScreen").style.display = "none";
+      document.querySelector(".admin-container").style.display = "flex";
+      document.getElementById("menuWrapper").style.display = "none";
+      socket.emit('admin connected');
 
+      // Cargar recursos protegidos después de iniciar sesión
+      loadTimezoneFromServer();
+      fetch('/quick-replies')
+        .then(res => res.json())
+        .then(data => {
+          quickReplies = data;
+        })
+        .catch(err => {
+          console.error("Error al cargar respuestas rápidas:", err);
+          quickReplies = [];
+        });
+    } else {
+      throw new Error(data.message || "Credenciales inválidas");
+    }
+  })
+  .catch(err => {
+    document.getElementById("loginError").textContent = err.message;
+    document.getElementById("loginError").style.display = "block";
+    console.error("Login fallido:", err);
+  });
+}
       if (isLoggedIn) {
         document.getElementById("loginScreen").style.display = "none";
         document.querySelector(".admin-container").style.display = "flex";
