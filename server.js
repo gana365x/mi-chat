@@ -135,7 +135,7 @@ async function getAllChatsSorted() {
     }
   ]);
 
-  return lastMessages.map(async ({ _id, lastMessage }) => {
+  const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
     const savedName = await UserName.findOne({ userId: _id });
     return {
       userId: _id,
@@ -143,7 +143,9 @@ async function getAllChatsSorted() {
       lastMessageTime: lastMessage.timestamp,
       isClosed: lastMessage.status === 'closed'
     };
-  }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+  }));
+
+  return sortedChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 }
 
 io.on('connection', (socket) => {
