@@ -1171,40 +1171,70 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadTimezoneFromServer();
+  await loadTimezoneFromServer();
 
-      const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-      const agentUser = localStorage.getItem("adminUser");
-      const agentDisplayName = localStorage.getItem("agentDisplayName");
+  const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+  const agentUser = localStorage.getItem("adminUser");
+  const agentDisplayName = localStorage.getItem("agentDisplayName");
 
-      // Mostrar el nombre del agente (si está disponible)
-      if (agentDisplayName) {
-        document.getElementById("agentDisplayName").textContent = agentDisplayName;
-      } else if (agentUser) {
-        // Si no hay nombre visible guardado, obtenerlo del servidor
-        fetch(`/get-agent-displayname?username=${agentUser}`)
-          .then(res => res.json())
-          .then(data => {
-            const displayName = data.name || agentUser;
-            document.getElementById("agentDisplayName").textContent = displayName;
-            localStorage.setItem("agentDisplayName", displayName);
-          })
-          .catch(err => {
-            console.error("Error al obtener el nombre visible del agente:", err);
-            document.getElementById("agentDisplayName").textContent = agentUser;
-          });
-      }
+  if (agentDisplayName) {
+    document.getElementById("agentDisplayName").textContent = agentDisplayName;
+  } else if (agentUser) {
+    fetch(`/get-agent-displayname?username=${agentUser}`)
+      .then(res => res.json())
+      .then(data => {
+        const displayName = data.name || agentUser;
+        document.getElementById("agentDisplayName").textContent = displayName;
+        localStorage.setItem("agentDisplayName", displayName);
+      })
+      .catch(err => {
+        console.error("Error al obtener el nombre visible del agente:", err);
+        document.getElementById("agentDisplayName").textContent = agentUser;
+      });
+  }
 
-      if (isLoggedIn) {
-        document.getElementById("loginScreen").style.display = "none";
-        document.querySelector(".admin-container").style.display = "flex";
-        document.getElementById("menuWrapper").style.display = "none";
-        socket.emit('admin connected');
+  if (isLoggedIn) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.querySelector(".admin-container").style.display = "flex";
+    document.getElementById("menuWrapper").style.display = "none";
+    socket.emit('admin connected');
+
+    const lastUserId = sessionStorage.getItem('lastUserId');
+    const lastUsername = sessionStorage.getItem('lastUsername');
+    const lastUserClosed = sessionStorage.getItem('lastUserClosed') === 'true';
+
+    if (lastUserId && lastUsername) {
+      selectedUserId = lastUserId;
+      selectedUsername = lastUsername;
+      document.getElementById("currentUser").textContent = lastUsername;
+      document.getElementById("popupUser").textContent = lastUsername;
+
+      const chatInput = document.getElementById("adminInput");
+      const sendButton = document.querySelector("#chatInputArea button");
+      if (lastUserClosed) {
+        chatInput.disabled = true;
+        chatInput.placeholder = "Chat cerrado - Solo lectura";
+        sendButton.disabled = true;
       } else {
-        document.getElementById("loginScreen").style.display = "flex";
-        document.querySelector(".admin-container").style.display = "none";
+        chatInput.disabled = false;
+        chatInput.placeholder = "Escribir mensaje...";
+        sendButton.disabled = false;
       }
-    });
+
+      if (window.innerWidth <= 767) {
+        document.getElementById("chatPopup").style.display = "flex";
+        document.getElementById("chatPopup").classList.add("show");
+      } else {
+        document.getElementById("chatArea").classList.add("active");
+      }
+
+      socket.emit('request chat history', { userId: lastUserId });
+    }
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.querySelector(".admin-container").style.display = "none";
+  }
+});
 
     socket.on('user list', (users) => {
       console.log('Lista de usuarios recibida:', users);
@@ -1276,12 +1306,12 @@
       div.classList.add('active');
       sessionStorage.setItem('lastUserId', userId);
       sessionStorage.setItem('lastUsername', username);
+      sessionStorage.setItem('lastUserClosed', user.isClosed.toString());
     }
   }
   document.getElementById("popupUser").textContent = username;
   document.getElementById("currentUser").textContent = username;
 
-  // Si está cerrado, deshabilitar input y botón
   const chatInput = document.getElementById("adminInput");
   const sendButton = document.querySelector("#chatInputArea button");
   if (user.isClosed) {
