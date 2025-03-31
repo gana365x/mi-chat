@@ -513,14 +513,19 @@ app.post('/agent-login', async (req, res) => {
   }
 });
 
-app.get('/agents', (req, res) => {
-  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const formattedAgents = agents.map(agent => ({
-    username: agent.username,
-    name: agent.name || agent.displayName || agent.username,
-    type: agent.type || 'agent'
-  }));
-  res.json(formattedAgents);
+app.get('/agents', async (req, res) => {
+  try {
+    const agents = await Agent.find({}, 'username name type');
+    const formattedAgents = agents.map(agent => ({
+      username: agent.username,
+      name: agent.name || agent.username,
+      type: agent.type || 'agent'
+    }));
+    res.json(formattedAgents);
+  } catch (err) {
+    console.error('❌ Error al obtener agentes:', err);
+    res.status(500).json({ success: false, message: 'Error al obtener agentes' });
+  }
 });
 
 app.post('/agents', async (req, res) => {
