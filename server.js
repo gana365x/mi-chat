@@ -450,43 +450,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('request chat history', async (data) => {
-    if (!data.userId) return;
-    adminSubscriptions.set(socket.id, data.userId);
+  if (!data.userId) return;
+  adminSubscriptions.set(socket.id, data.userId);
 
-    const lastMsg = await ChatMessage.findOne({ userId: data.userId }).sort({ timestamp: -1 });
-    if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
-      let username = userSessions.get(data.userId)?.username || 'Usuario';
-      try {
-        const savedName = await UserName.findOne({ userId: data.userId });
-        if (savedName) {
-          username = savedName.name;
-        }
-      } catch (e) {
-        console.error("❌ Error obteniendo nombre del usuario:", e.message);
-      }
-
-      const openMsg = {
-        userId: data.userId,
-        sender: 'System',
-        message: '💬 Chat abierto',
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(openMsg).save();
-
-      const userSocket = userSessions.get(data.userId)?.socket;
-      if (userSocket) userSocket.emit('chat message', openMsg);
-
-      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-        if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', openMsg);
-        }
-      }
-    }
-
-    const history = await ChatMessage.find({ userId: data.userId }).sort({ timestamp: 1 });
-    socket.emit('chat history', { userId: data.userId, messages: history });
-  });
+  const history = await ChatMessage.find({ userId: data.userId }).sort({ timestamp: 1 });
+  socket.emit('chat history', { userId: data.userId, messages: history });
+});
 
   socket.on('close chat', async ({ userId, agentUsername }) => {
     const userSocket = userSessions.get(userId)?.socket;
