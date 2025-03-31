@@ -102,7 +102,6 @@ function getTimestamp() {
     console.error("❌ Error convirtiendo a zona horaria:", e.message);
     return new Date().toISOString();
   }
-}
 
 if (!fs.existsSync(historyFilePath)) fs.writeFileSync(historyFilePath, JSON.stringify({}));
 if (!fs.existsSync(performanceFile)) fs.writeFileSync(performanceFile, JSON.stringify({}));
