@@ -585,6 +585,32 @@ app.post('/agent-login', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
+app.post('/agents', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
+
+  const { username, name, password } = req.body;
+
+  if (!validateAuthInput(username, password)) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAgent = new Agent({ username, name, password: hashedPassword, type: 'agent' });
+    await newAgent.save();
+    res.status(201).json({ success: true });
+  } catch (err) {
+    if (err.code === 11000) {
+      res.status(400).json({ success: false, message: 'Usuario ya existe' });
+    } else {
+      console.error('❌ Error creando agente:', err);
+      res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+  }
+});
 
 app.delete('/agents/:username', async (req, res) => {
   const token = req.cookies.token;
