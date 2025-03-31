@@ -10,7 +10,6 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 
-// Depurar las variables de entorno
 console.log("MONGO_URI:", process.env.MONGO_URI);
 console.log("SECRET_KEY:", process.env.SECRET_KEY);
 console.log("PORT:", process.env.PORT);
@@ -49,10 +48,9 @@ function validateAuthInput(username, password) {
 }
 
 function isValidToken(token) {
-  return token === process.env.SECRET_KEY; // Simple por ahora, luego lo mejoramos
+  return token === process.env.SECRET_KEY;
 }
 
-// Rutas protegidas
 app.get('/admin.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
@@ -184,9 +182,10 @@ async function getAllChatsSorted() {
 
   const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
     const savedName = await UserName.findOne({ userId: _id });
+    const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
     return {
       userId: _id,
-      username: savedName?.name || lastMessage.username || userSessions.get(_id)?.username || 'Usuario',
+      username: username,
       lastMessageTime: lastMessage.timestamp,
       isClosed: lastMessage.status === 'closed'
     };
@@ -233,22 +232,35 @@ io.on('connection', (socket) => {
   });
 
   socket.on('update username', async ({ userId, newUsername }) => {
-    if (userSessions.has(userId)) {
-      const session = userSessions.get(userId);
-      userSessions.set(userId, { ...session, username: newUsername });
-
-      await ChatMessage.updateMany(
-        { userId },
-        { $set: { username: newUsername } }
-      );
-
-      const userSocket = session.socket;
-      if (userSocket) {
-        userSocket.emit('update username cookie', { newUsername });
+    try {
+      const existing = await UserName.findOne({ userId });
+      if (existing) {
+        existing.name = newUsername;
+        await existing.save();
+      } else {
+        await UserName.create({ userId, name: newUsername });
       }
 
+      if (userSessions.has(userId)) {
+        const session = userSessions.get(userId);
+        userSessions.set(userId, { ...session, username: newUsername });
+
+        await ChatMessage.updateMany(
+          { userId },
+          { $set: { username: newUsername } }
+        );
+
+        const userSocket = session.socket;
+        if (userSocket) {
+          userSocket.emit('update username cookie', { newUsername });
+        }
+      }
+
+      io.emit('update username', { userId, newUsername });
       io.emit('user list', await getAllChatsSorted());
       console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
+    } catch (err) {
+      console.error('❌ Error al actualizar nombre del usuario:', err);
     }
   });
 
@@ -260,12 +272,22 @@ io.on('connection', (socket) => {
   socket.on('chat message', async (data) => {
     if (!data.userId || !data.sender || !data.message) return;
 
+    let username = userSessions.get(data.userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId: data.userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+    }
+
     const messageData = {
       userId: data.userId,
       sender: data.sender,
       message: data.message,
       timestamp: getTimestamp(),
-      username: userSessions.get(data.userId)?.username || 'Usuario'
+      username: username
     };
     await new ChatMessage(messageData).save();
 
@@ -277,7 +299,7 @@ io.on('connection', (socket) => {
         sender: 'System',
         message: '🔄 El chat fue reabierto por el cliente',
         timestamp: getTimestamp(),
-        username: userSessions.get(data.userId)?.username || 'Usuario'
+        username: username
       };
       await new ChatMessage(reopenMsg).save();
       io.emit('user list', await getAllChatsSorted());
@@ -298,7 +320,7 @@ io.on('connection', (socket) => {
         sender: 'Bot',
         message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
         timestamp: getTimestamp(),
-        username: userSessions.get(data.userId)?.username || 'Usuario'
+        username: username
       };
       await new ChatMessage(botMsg).save();
       io.emit('user list', await getAllChatsSorted());
@@ -326,7 +348,7 @@ io.on('connection', (socket) => {
           </div>
         `,
         timestamp: getTimestamp(),
-        username: userSessions.get(data.userId)?.username || 'Usuario'
+        username: username
       };
       await new ChatMessage(retiroMsg).save();
       io.emit('user list', await getAllChatsSorted());
@@ -344,12 +366,23 @@ io.on('connection', (socket) => {
       console.error('Datos de imagen incompletos:', data);
       return;
     }
+
+    let username = userSessions.get(data.userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId: data.userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+    }
+
     const imageData = {
       userId: data.userId,
       sender: data.sender,
       image: data.image,
       timestamp: getTimestamp(),
-      username: userSessions.get(data.userId)?.username || 'Usuario'
+      username: username
     };
     await new ChatMessage(imageData).save();
 
@@ -369,7 +402,7 @@ io.on('connection', (socket) => {
       sender: 'Bot',
       message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!',
       timestamp: getTimestamp(),
-      username: userSessions.get(data.userId)?.username || 'Usuario'
+      username: username
     };
     await new ChatMessage(botResponse).save();
     if (userSocket) userSocket.emit('chat message', botResponse);
@@ -384,12 +417,23 @@ io.on('connection', (socket) => {
 
   socket.on('agent message', async (data) => {
     if (!data.userId || !data.message) return;
+
+    let username = userSessions.get(data.userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId: data.userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+    }
+
     const messageData = {
       userId: data.userId,
       sender: 'Agent',
       message: data.message,
       timestamp: getTimestamp(),
-      username: userSessions.get(data.userId)?.username || 'Usuario'
+      username: username
     };
     await new ChatMessage(messageData).save();
 
@@ -411,12 +455,22 @@ io.on('connection', (socket) => {
 
     const lastMsg = await ChatMessage.findOne({ userId: data.userId }).sort({ timestamp: -1 });
     if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
+      let username = userSessions.get(data.userId)?.username || 'Usuario';
+      try {
+        const savedName = await UserName.findOne({ userId: data.userId });
+        if (savedName) {
+          username = savedName.name;
+        }
+      } catch (e) {
+        console.error("❌ Error obteniendo nombre del usuario:", e.message);
+      }
+
       const openMsg = {
         userId: data.userId,
         sender: 'System',
         message: '💬 Chat abierto',
         timestamp: getTimestamp(),
-        username: userSessions.get(data.userId)?.username || 'Usuario'
+        username: username
       };
       await new ChatMessage(openMsg).save();
 
@@ -449,6 +503,16 @@ io.on('connection', (socket) => {
       userSessions.set(userId, { ...session, socket: null });
     }
 
+    let username = userSessions.get(userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+    }
+
     const closeMsg = {
       userId,
       sender: 'System',
@@ -456,7 +520,7 @@ io.on('connection', (socket) => {
       timestamp: getTimestamp(),
       status: 'closed',
       agentUsername: agentUsername,
-      username: userSessions.get(userId)?.username || 'Usuario'
+      username: username
     };
     await new ChatMessage(closeMsg).save();
 
