@@ -482,22 +482,35 @@ app.post('/superadmin-login', async (req, res) => {
   }
 });
 
-app.post('/agent-login', (req, res) => {
+app.post('/agent-login', async (req, res) => {
   const { username, password } = req.body;
 
-  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const match = agents.find(a => a.username === username && a.password === password);
-
-  if (match) {
-    return res.status(200).json({ 
-      success: true,
-      username: match.username,
-      name: match.name || match.displayName || match.username,
-      type: match.type || 'agent'
-    });
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Faltan datos' });
   }
 
-  return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+  try {
+    const agent = await Agent.findOne({ username });
+    if (!agent) {
+      return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    const isMatch = await bcrypt.compare(password, agent.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
+    }
+
+    res.status(200).json({ 
+      success: true,
+      username: agent.username,
+      name: agent.name || agent.username,
+      type: agent.type || 'agent'
+    });
+
+  } catch (err) {
+    console.error('❌ Error en login de agente:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
 });
 
 app.get('/agents', (req, res) => {
