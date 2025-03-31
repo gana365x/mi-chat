@@ -650,9 +650,9 @@
     <button onclick="closeErrorPopup()">OK</button>
   </div>
 
-  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-1n1T9A38gGeG2U0qfN/kLEgXIoUpix4St+F0HyY/xUKRW0LFHw9VXrHVyLcdJqmw" crossorigin="anonymous"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
-    const socket = io("https://mi-chat-9uti.onrender.com");
+    const socket = io("https://mi-chat-gln5.vercel.app");
 
     socket.on('connect', () => {
       console.log('Conectado al servidor de Socket.IO');
