@@ -761,18 +761,27 @@
     overflow: hidden;
     position: fixed;
     width: 100%;
-    margin: 0; /* Quitamos márgenes del body */
+    margin: 0;
+  }
+
+  .admin-container {
+    display: flex;
+    flex-direction: column; /* Aseguramos que sea columna en móvil */
+    width: 100vw;
+    height: 100vh;
+    gap: 0; /* Quitamos el gap para maximizar espacio */
   }
 
   .inbox {
-    width: 100vw; /* Fullscreen en móvil */
-    margin: 0; /* Sin márgenes */
+    width: calc(100vw - 10px); /* Fullscreen con 5px de margen a cada lado */
+    margin: 0 5px; /* Margen pequeño */
     padding: 0;
     box-sizing: border-box;
     height: 100vh;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
+    border-radius: 0; /* Quitamos bordes redondeados para que se vea más integrado */
   }
 
   .user-list {
@@ -780,6 +789,14 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 20px;
+  }
+
+  #resizer {
+    display: none; /* Ocultamos la línea naranja en móvil */
+  }
+
+  .chat-view {
+    display: none !important; /* Aseguramos que no interfiera */
   }
 }
     
