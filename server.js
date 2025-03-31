@@ -48,17 +48,7 @@ const Agent = mongoose.model('Agent', agentSchema);
 
 // ✅ PERFORMANCE SCHEMA
 const performanceSchema = new mongoose.Schema({
-  agentUsername: { type: String, required: true, unique: true },
-  count: { type: Number, default: 0 }
-});
-
-const Performance = mongoose.model('Performance', performanceSchema);
-
-const Agent = mongoose.model('Agent', agentSchema);
-
-// ✅ PERFORMANCE SCHEMA
-const performanceSchema = new mongoose.Schema({
-  username: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
   count: { type: Number, default: 0 }
 });
 
@@ -115,17 +105,13 @@ if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify(
 
 async function incrementPerformance(agentUsername) {
   try {
-    const existing = await Performance.findOne({ agentUsername });
-
-    if (existing) {
-      existing.count++;
-      await existing.save();
-    } else {
-      const newEntry = new Performance({ agentUsername, count: 1 });
-      await newEntry.save();
-    }
+    await Performance.findOneAndUpdate(
+      { username: agentUsername },
+      { $inc: { count: 1 } },
+      { upsert: true, new: true }
+    );
   } catch (err) {
-    console.error('❌ Error actualizando performance:', err);
+    console.error('❌ Error al actualizar performance en MongoDB:', err);
   }
 }
 
@@ -202,8 +188,7 @@ io.on('connection', (socket) => {
     if (!data.userId || !data.sender || !data.message) return;
 
     const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: getTimestamp() };
-    const chatMsg = new ChatMessage(messageData);
-    await chatMsg.save();
+    await new ChatMessage(messageData).save();
 
     const wasClosed = await ChatMessage.findOne({ userId: data.userId, status: 'closed' });
     if (wasClosed) {
@@ -332,6 +317,7 @@ io.on('connection', (socket) => {
     const lastMsg = await ChatMessage.findOne({ userId: data.userId }).sort({ timestamp: -1 });
     if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
       const openMsg = {
+        userId: data.userId,
         sender: 'System',
         message: '💬 Chat abierto',
         timestamp: getTimestamp()
@@ -557,7 +543,7 @@ app.get('/performance', async (req, res) => {
     const result = {};
 
     allData.forEach(item => {
-      result[item.agentUsername] = item.count;
+      result[item.username] = item.count;
     });
 
     res.json(result);
