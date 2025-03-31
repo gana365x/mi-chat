@@ -566,29 +566,27 @@ app.put('/agents/:username', async (req, res) => {
   const { username } = req.params;
   const { name, password, newUsername } = req.body;
 
-  let agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const index = agents.findIndex(a => a.username === username);
-
-  if (index === -1) {
-    return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-  }
-
-  if (name) agents[index].name = name;
-
-  if (password) {
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      agents[index].password = hashedPassword;
-    } catch (err) {
-      console.error('❌ Error al encriptar la nueva contraseña:', err);
-      return res.status(500).json({ success: false, message: 'Error al actualizar contraseña' });
+  try {
+    const agent = await Agent.findOne({ username });
+    if (!agent) {
+      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
     }
+
+    if (name) agent.name = name;
+    if (newUsername) agent.username = newUsername;
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      agent.password = hashedPassword;
+    }
+
+    await agent.save();
+    res.status(200).json({ success: true, message: 'Agente actualizado correctamente' });
+
+  } catch (err) {
+    console.error('❌ Error actualizando agente:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
-
-  if (newUsername) agents[index].username = newUsername;
-
-  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-  res.status(200).json({ success: true });
 });
 
 app.get('/performance', (req, res) => {
