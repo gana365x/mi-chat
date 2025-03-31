@@ -419,35 +419,35 @@
   </style>
 
   <script>
-    function loginSuperAdmin() {
-      const username = document.getElementById('superUsername').value.trim();
-      const password = document.getElementById('superPassword').value.trim();
+   function loginSuperAdmin() {
+  const username = document.getElementById('superUsername').value.trim();
+  const password = document.getElementById('superPassword').value.trim();
 
-      fetch("https://mi-chat-9uti.onrender.com/superadmin-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => {
-        if (data.success) {
-          document.getElementById('loginBox').style.display = 'none';
-          document.getElementById('mainBox').style.display = 'block';
-          showSection('home');
-          loadAgents();
-        } else {
-          throw new Error();
-        }
-      })
-      .catch(err => {
-        console.error("Error de login:", err);
-        alert("❌ Usuario o contraseña incorrectos");
-      });
+  fetch("https://mi-chat-9uti.onrender.com/superadmin-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error();
+    return res.json();
+  })
+  .then(data => {
+    if (data.success) {
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('mainBox').style.display = 'block';
+      showSection('agents'); // Esto podría estar como 'agents' o algo más
+      loadAgents();
+    } else {
+      throw new Error();
     }
+  })
+  .catch(err => {
+    console.error("Error de login:", err);
+    alert("❌ Usuario o contraseña incorrectos");
+  });
+}
 
     function showSection(section) {
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
