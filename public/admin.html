@@ -1265,31 +1265,36 @@
     }
 
     function selectUser(userId, username) {
-      console.log('Usuario seleccionado:', { userId, username });
-      selectedUserId = userId;
-      selectedUsername = username;
-      const userList = document.getElementById('userList').children;
-      for (let div of userList) {
-        div.classList.remove('active');
-        if (div.dataset.userId === userId) {
-          div.classList.add('active');
-          sessionStorage.setItem('lastUserId', userId);
-          sessionStorage.setItem('lastUsername', username);
-        }
-      }
-      document.getElementById("popupUser").textContent = username;
-      document.getElementById("currentUser").textContent = username;
-
-      if (window.innerWidth <= 767) {
-        document.getElementById("chatPopup").style.display = "flex";
-        document.getElementById("chatPopup").classList.add("show");
-        document.getElementById("editNameContainer").style.display = "none";
-      } else {
-        document.getElementById("chatArea").classList.add("active");
-      }
-
-      socket.emit('request chat history', { userId });
+  const user = window.chatUsers.find(u => u.userId === userId);
+  if (user.isClosed) {
+    console.log('Chat cerrado, no se puede abrir manualmente:', userId);
+    return;
+  }
+  console.log('Usuario seleccionado:', { userId, username });
+  selectedUserId = userId;
+  selectedUsername = username;
+  const userList = document.getElementById('userList').children;
+  for (let div of userList) {
+    div.classList.remove('active');
+    if (div.dataset.userId === userId) {
+      div.classList.add('active');
+      sessionStorage.setItem('lastUserId', userId);
+      sessionStorage.setItem('lastUsername', username);
     }
+  }
+  document.getElementById("popupUser").textContent = username;
+  document.getElementById("currentUser").textContent = username;
+
+  if (window.innerWidth <= 767) {
+    document.getElementById("chatPopup").style.display = "flex";
+    document.getElementById("chatPopup").classList.add("show");
+    document.getElementById("editNameContainer").style.display = "none";
+  } else {
+    document.getElementById("chatArea").classList.add("active");
+  }
+
+  socket.emit('request chat history', { userId });
+}
 
     function sendPopupMessage() {
       const input = document.getElementById("popupInput");
@@ -1342,53 +1347,50 @@
     });
 
     socket.on('admin message', (data) => {
-      console.log('Mensaje recibido en tiempo real:', data);
+  console.log('Mensaje recibido en tiempo real:', data);
 
-      if (ignoreNextAdminEcho) {
-        ignoreNextAdminEcho = false;
-        return;
-      }
+  if (ignoreNextAdminEcho) {
+    ignoreNextAdminEcho = false;
+    return;
+  }
 
-      // Permitir mensajes del sistema sin userId
-      if (!data || !data.sender || !data.message) {
-        console.error('Mensaje recibido inválido, falta sender o message:', data);
-        return;
-      }
+  if (!data || !data.sender || !data.message) {
+    console.error('Mensaje recibido inválido, falta sender o message:', data);
+    return;
+  }
 
-      // Si no es un mensaje del sistema, requerir userId
-      if (data.sender !== 'System' && !data.userId) {
-        console.error('Mensaje recibido inválido, falta userId:', data);
-        return;
-      }
+  if (data.sender !== 'System' && !data.userId) {
+    console.error('Mensaje recibido inválido, falta userId:', data);
+    return;
+  }
 
-      // Asegurarse de que el mensaje tenga un timestamp
-      const timestamp = data.timestamp || new Date().toISOString();
+  const timestamp = data.timestamp || new Date().toISOString();
 
-      if (data.userId && !localChatHistory[data.userId]) {
-        localChatHistory[data.userId] = [];
-      }
+  if (data.userId && !localChatHistory[data.userId]) {
+    localChatHistory[data.userId] = [];
+  }
 
-      if (data.userId) {
-        localChatHistory[data.userId].push({ sender: data.sender, message: data.message, timestamp });
-    
-        const chatElement = document.querySelector(`div[data-user-id="${data.userId}"]`);
-        const wasClosed = chatElement && chatElement.querySelector('.cerrado');
+  if (data.userId) {
+    localChatHistory[data.userId].push({ sender: data.sender, message: data.message, timestamp });
 
-        if (wasClosed) {
-          showFinalizarButton(data.userId);
-        }
+    const chatElement = document.querySelector(`div[data-user-id="${data.userId}"]`);
+    const wasClosed = chatElement && chatElement.querySelector('.cerrado');
 
-        if (data.userId === selectedUserId) {
-          renderChat(localChatHistory[data.userId]);
-        }
+    if (wasClosed && data.sender !== 'Agent' && data.sender !== 'System' && data.sender !== 'Bot') {
+      showFinalizarButton(data.userId);
+      if (data.userId === selectedUserId) {
+        renderChat(localChatHistory[data.userId]);
       } else {
-        // Manejar mensajes del sistema sin userId
-        if (selectedUserId && localChatHistory[selectedUserId]) {
-          localChatHistory[selectedUserId].push({ sender: data.sender, message: data.message, timestamp });
-          renderChat(localChatHistory[selectedUserId]);
-        }
+        selectUser(data.userId, selectedUsername || 'Usuario');
       }
-    });
+    } else if (data.userId === selectedUserId) {
+      renderChat(localChatHistory[data.userId]);
+    }
+  } else if (selectedUserId && localChatHistory[selectedUserId]) {
+    localChatHistory[selectedUserId].push({ sender: data.sender, message: data.message, timestamp });
+    renderChat(localChatHistory[selectedUserId]);
+  }
+});
 
     socket.on('admin image', (data) => {
       console.log('Imagen recibida en tiempo real:', data);
