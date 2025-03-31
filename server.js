@@ -853,6 +853,9 @@ app.post('/create-superadmin', async (req, res) => {
     console.error('❌ Error creando superadmin:', err);
     res.status(500).json({ success: false, message: 'Error interno' });
   }
+
+  app.get('/', (req, res) => {
+  res.send('Servidor funcionando ✅');
 });
 
 server.listen(PORT, () => {
