@@ -21,7 +21,7 @@ const server = http.createServer(app);
 // Definimos los orígenes permitidos
 const allowedOrigins = [
   "http://localhost:3000", // Para pruebas locales
-  "https://mi-chat-gln5.vercel.app/" // Tu frontend en Vercel
+  "https://mi-chat-gln5.vercel.app" // Tu frontend en Vercel
 ];
 
 // Configuración de CORS para Express
