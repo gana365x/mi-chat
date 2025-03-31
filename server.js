@@ -26,7 +26,7 @@ const allowedOrigins = [
 
 // Configuración de CORS para Express
 app.use(cors({
-  origin: allowedOrigins,
+  origin: ["https://mi-chat-gln5.vercel.app"],
   credentials: true
 }));
 
