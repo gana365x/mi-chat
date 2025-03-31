@@ -1274,6 +1274,12 @@
     document.addEventListener("DOMContentLoaded", async () => {
   await loadTimezoneFromServer();
 
+  // Adjuntar el event listener al botón de login
+  const loginButton = document.getElementById("loginButton");
+  if (loginButton) {
+    loginButton.addEventListener("click", submitLogin);
+  }
+
   const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
   const agentUser = localStorage.getItem("adminUser");
   const agentDisplayName = localStorage.getItem("agentDisplayName");
