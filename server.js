@@ -171,6 +171,7 @@ async function incrementPerformance(agentUsername) {
 
 async function getAllChatsSorted() {
   const lastMessages = await ChatMessage.aggregate([
+    { $match: { sender: { $ne: 'System' } } }, // Excluir mensajes del sistema
     { $sort: { timestamp: -1 } },
     {
       $group: {
@@ -183,11 +184,12 @@ async function getAllChatsSorted() {
   const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
     const savedName = await UserName.findOne({ userId: _id });
     const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
+    const isClosed = await ChatMessage.findOne({ userId: _id, status: 'closed' });
     return {
       userId: _id,
       username: username,
       lastMessageTime: lastMessage.timestamp,
-      isClosed: lastMessage.status === 'closed'
+      isClosed: !!isClosed
     };
   }));
 
@@ -458,56 +460,53 @@ io.on('connection', (socket) => {
 });
 
   socket.on('close chat', async ({ userId, agentUsername }) => {
-    const userSocket = userSessions.get(userId)?.socket;
-    if (userSocket) {
-      userSocket.emit('chat closed', { userId });
+  const userSocket = userSessions.get(userId)?.socket;
+  if (userSocket) {
+    userSocket.emit('chat closed', { userId });
+  }
+
+  if (agentUsername) {
+    await incrementPerformance(agentUsername);
+  }
+
+  if (userSessions.has(userId)) {
+    const session = userSessions.get(userId);
+    userSessions.set(userId, { ...session, socket: null });
+  }
+
+  let username = userSessions.get(userId)?.username || 'Usuario';
+  try {
+    const savedName = await UserName.findOne({ userId });
+    if (savedName) {
+      username = savedName.name;
     }
+  } catch (e) {
+    console.error("❌ Error obteniendo nombre del usuario:", e.message);
+  }
 
-    if (agentUsername) {
-      await incrementPerformance(agentUsername);
+  const closeMsg = {
+    userId,
+    sender: 'System',
+    message: '💬 Chat cerrado',
+    timestamp: getTimestamp(),
+    status: 'closed',
+    agentUsername: agentUsername,
+    username: username
+  };
+  await new ChatMessage(closeMsg).save();
+
+  if (userSocket) {
+    userSocket.emit('chat message', closeMsg);
+  }
+
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === userId) {
+      io.to(adminSocketId).emit('admin message', closeMsg);
     }
+  }
 
-    if (userSessions.has(userId)) {
-      const session = userSessions.get(userId);
-      userSessions.set(userId, { ...session, socket: null });
-    }
-
-    let username = userSessions.get(userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
-
-    const closeMsg = {
-      userId,
-      sender: 'System',
-      message: '💬 Chat cerrado',
-      timestamp: getTimestamp(),
-      status: 'closed',
-      agentUsername: agentUsername,
-      username: username
-    };
-    await new ChatMessage(closeMsg).save();
-
-    if (userSocket) {
-      userSocket.emit('chat message', closeMsg);
-    }
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === userId) {
-        io.to(adminSocketId).emit('admin message', closeMsg);
-      }
-    }
-
-    io.emit('user list', await getAllChatsSorted());
-
-    const history = await ChatMessage.find({ userId });
-    io.emit('chat history', { userId, messages: history });
-  });
+  io.emit('user list', await getAllChatsSorted());
+});
 
   socket.on('disconnect', async () => {
     adminSubscriptions.delete(socket.id);
