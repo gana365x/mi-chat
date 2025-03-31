@@ -6,7 +6,14 @@ const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
+const agentSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  name: String,
+  password: String,
+  type: { type: String, default: 'agent' }
+});
 
+const Agent = mongoose.model('Agent', agentSchema);
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -26,11 +33,22 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<mi1q2wkE">@
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() => {
-  console.log('✅ Conectado a MongoDB Atlas');
-}).catch((err) => {
-  console.error('❌ Error conectando a MongoDB:', err);
 });
+
+const agentSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Agent = mongoose.model('Agent', agentSchema);
+
+mongoose.connection
+  .then(() => {
+    console.log('✅ Conectado a MongoDB Atlas');
+  })
+  .catch((err) => {
+    console.error('❌ Error conectando a MongoDB:', err);
+  });
 const userSessions = new Map();
 const chatHistory = {};
 const adminSubscriptions = new Map();
