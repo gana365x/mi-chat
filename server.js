@@ -5,6 +5,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +21,16 @@ const io = socketIo(server, {
 });
 
 const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<mi1q2wkE">@cluster1.jpvbt6k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1';
+
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('✅ Conectado a MongoDB Atlas');
+}).catch((err) => {
+  console.error('❌ Error conectando a MongoDB:', err);
+});
 const userSessions = new Map();
 const chatHistory = {};
 const adminSubscriptions = new Map();
