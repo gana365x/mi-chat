@@ -62,7 +62,8 @@ const chatMessageSchema = new mongoose.Schema({
   image: String,
   timestamp: { type: String, required: true },
   status: String,
-  agentUsername: String
+  agentUsername: String,
+  username: String // ✅ Nuevo campo para guardar el nombre del usuario
 });
 
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
@@ -128,7 +129,7 @@ async function getAllChatsSorted() {
 
   return lastMessages.map(({ _id, lastMessage }) => ({
     userId: _id,
-    username: userSessions.get(_id)?.username || 'Usuario',
+    username: lastMessage.username || userSessions.get(_id)?.username || 'Usuario',
     lastMessageTime: lastMessage.timestamp,
     isClosed: lastMessage.status === 'closed'
   })).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
@@ -153,7 +154,8 @@ io.on('connection', (socket) => {
         userId,
         sender: 'System',
         message: '💬 Chat iniciado',
-        timestamp: getTimestamp()
+        timestamp: getTimestamp(),
+        username: username
       };
       await new ChatMessage(dateMessage).save();
     }
@@ -187,7 +189,13 @@ io.on('connection', (socket) => {
   socket.on('chat message', async (data) => {
     if (!data.userId || !data.sender || !data.message) return;
 
-    const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: getTimestamp() };
+    const messageData = {
+      userId: data.userId,
+      sender: data.sender,
+      message: data.message,
+      timestamp: getTimestamp(),
+      username: userSessions.get(data.userId)?.username || 'Usuario'
+    };
     await new ChatMessage(messageData).save();
 
     const wasClosed = await ChatMessage.findOne({ userId: data.userId, status: 'closed' });
@@ -197,7 +205,8 @@ io.on('connection', (socket) => {
         userId: data.userId,
         sender: 'System',
         message: '🔄 El chat fue reabierto por el cliente',
-        timestamp: getTimestamp()
+        timestamp: getTimestamp(),
+        username: userSessions.get(data.userId)?.username || 'Usuario'
       };
       await new ChatMessage(reopenMsg).save();
       io.emit('user list', await getAllChatsSorted());
@@ -217,7 +226,8 @@ io.on('connection', (socket) => {
         userId: data.userId,
         sender: 'Bot',
         message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
-        timestamp: getTimestamp()
+        timestamp: getTimestamp(),
+        username: userSessions.get(data.userId)?.username || 'Usuario'
       };
       await new ChatMessage(botMsg).save();
       io.emit('user list', await getAllChatsSorted());
@@ -244,7 +254,8 @@ io.on('connection', (socket) => {
             <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong> _____
           </div>
         `,
-        timestamp: getTimestamp()
+        timestamp: getTimestamp(),
+        username: userSessions.get(data.userId)?.username || 'Usuario'
       };
       await new ChatMessage(retiroMsg).save();
       io.emit('user list', await getAllChatsSorted());
@@ -262,7 +273,13 @@ io.on('connection', (socket) => {
       console.error('Datos de imagen incompletos:', data);
       return;
     }
-    const imageData = { userId: data.userId, sender: data.sender, image: data.image, timestamp: getTimestamp() };
+    const imageData = {
+      userId: data.userId,
+      sender: data.sender,
+      image: data.image,
+      timestamp: getTimestamp(),
+      username: userSessions.get(data.userId)?.username || 'Usuario'
+    };
     await new ChatMessage(imageData).save();
 
     const userSocket = userSessions.get(data.userId)?.socket;
@@ -280,7 +297,8 @@ io.on('connection', (socket) => {
       userId: data.userId,
       sender: 'Bot',
       message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!',
-      timestamp: getTimestamp()
+      timestamp: getTimestamp(),
+      username: userSessions.get(data.userId)?.username || 'Usuario'
     };
     await new ChatMessage(botResponse).save();
     if (userSocket) userSocket.emit('chat message', botResponse);
@@ -295,7 +313,13 @@ io.on('connection', (socket) => {
 
   socket.on('agent message', async (data) => {
     if (!data.userId || !data.message) return;
-    const messageData = { userId: data.userId, sender: 'Agent', message: data.message, timestamp: getTimestamp() };
+    const messageData = {
+      userId: data.userId,
+      sender: 'Agent',
+      message: data.message,
+      timestamp: getTimestamp(),
+      username: userSessions.get(data.userId)?.username || 'Usuario'
+    };
     await new ChatMessage(messageData).save();
 
     const userSocket = userSessions.get(data.userId)?.socket;
@@ -320,7 +344,8 @@ io.on('connection', (socket) => {
         userId: data.userId,
         sender: 'System',
         message: '💬 Chat abierto',
-        timestamp: getTimestamp()
+        timestamp: getTimestamp(),
+        username: userSessions.get(data.userId)?.username || 'Usuario'
       };
       await new ChatMessage(openMsg).save();
 
@@ -359,7 +384,8 @@ io.on('connection', (socket) => {
       message: '💬 Chat cerrado',
       timestamp: getTimestamp(),
       status: 'closed',
-      agentUsername: agentUsername
+      agentUsername: agentUsername,
+      username: userSessions.get(userId)?.username || 'Usuario'
     };
     await new ChatMessage(closeMsg).save();
 
