@@ -231,32 +231,6 @@ io.on('connection', (socket) => {
       await new ChatMessage(dateMessage).save();
     }
   });
-});
-
-    try {
-      const savedName = await UserName.findOne({ userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error buscando nombre editado:", e.message);
-    }
-
-    userSessions.set(userId, { username, socket });
-    socket.emit('session', { userId, username });
-
-    const existingChat = await ChatMessage.findOne({ userId });
-    if (!existingChat) {
-      const dateMessage = {
-        userId,
-        sender: 'System',
-        message: '💬 Chat iniciado',
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(dateMessage).save();
-    }
-  });
 
   socket.on('update username', async ({ userId, newUsername }) => {
     if (userSessions.has(userId)) {
