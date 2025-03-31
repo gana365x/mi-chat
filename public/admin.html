@@ -772,13 +772,13 @@
     position: fixed;
     width: 100%;
     margin: 0;
-    padding: 0; /* Quitamos cualquier padding */
+    padding: 0;
   }
 
   .admin-container {
     display: flex;
     flex-direction: column;
-    width: 100vw; /* Forzamos ancho completo */
+    width: 100vw;
     height: 100vh;
     margin: 0;
     padding: 0;
@@ -786,9 +786,9 @@
   }
 
   .inbox {
-    width: 100vw; /* Ancho completo sin márgenes */
+    width: 100vw; /* Ancho completo */
     margin: 0;
-    padding: 0;
+    padding: 0; /* Quitamos el padding que causaba márgenes */
     box-sizing: border-box;
     height: 100vh;
     overflow-y: hidden;
@@ -804,6 +804,18 @@
     padding-bottom: 20px;
   }
 
+  .topbar {
+    padding: 12px 16px; /* Restauramos padding del topbar */
+  }
+
+  .chat-item {
+    margin: 10px 0;
+    border-radius: 12px;
+    padding: 10px 15px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   #resizer {
     display: none;
   }
@@ -811,32 +823,32 @@
   .chat-view {
     display: none !important;
   }
+
+  .menu-popup {
+    top: 42px;
+    right: 8px;
+    width: 52px;
+    padding: 4px 0;
+    border-radius: 8px;
+  }
+
+  .menu-icon-only {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    margin: 3px auto;
+    border-radius: 5px;
+  }
+
+  .chat-popup {
+    width: 100vw;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+    transform: none;
+  }
 }
-    
-      .menu-popup {
-        top: 42px;
-        right: 8px;
-        width: 52px;
-        padding: 4px 0;
-        border-radius: 8px;
-      }
-
-      .menu-icon-only {
-        width: 30px;
-        height: 30px;
-        font-size: 14px;
-        margin: 3px auto;
-        border-radius: 5px;
-      }
-
-      .chat-popup {
-        width: 100vw;
-        height: 100vh;
-        bottom: 0;
-        right: 0;
-        border-radius: 0;
-        transform: none;
-      }
 
       .inbox {
         width: 100vw;
