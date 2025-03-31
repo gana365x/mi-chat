@@ -115,13 +115,17 @@ if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify(
 
 async function incrementPerformance(agentUsername) {
   try {
-    await Performance.findOneAndUpdate(
-      { username: agentUsername },
-      { $inc: { count: 1 } },
-      { upsert: true, new: true }
-    );
+    const existing = await Performance.findOne({ agentUsername });
+
+    if (existing) {
+      existing.count++;
+      await existing.save();
+    } else {
+      const newEntry = new Performance({ agentUsername, count: 1 });
+      await newEntry.save();
+    }
   } catch (err) {
-    console.error('❌ Error al actualizar performance en MongoDB:', err);
+    console.error('❌ Error actualizando performance:', err);
   }
 }
 
