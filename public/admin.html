@@ -1219,13 +1219,12 @@
         chatInput.disabled = false;
         chatInput.placeholder = "Escribir mensaje...";
         sendButton.disabled = false;
-      }
-
-      if (window.innerWidth <= 767) {
-        document.getElementById("chatPopup").style.display = "flex";
-        document.getElementById("chatPopup").classList.add("show");
-      } else {
-        document.getElementById("chatArea").classList.add("active");
+        if (window.innerWidth <= 767) {
+          document.getElementById("chatPopup").style.display = "flex";
+          document.getElementById("chatPopup").classList.add("show");
+        } else {
+          document.getElementById("chatArea").classList.add("active");
+        }
       }
 
       socket.emit('request chat history', { userId: lastUserId });
@@ -1296,6 +1295,7 @@
 
     function selectUser(userId, username) {
   const user = window.chatUsers.find(u => u.userId === userId);
+  if (!user) return; // Evitar errores si no se encuentra el usuario
   console.log('Usuario seleccionado:', { userId, username });
   selectedUserId = userId;
   selectedUsername = username;
@@ -1324,12 +1324,15 @@
     sendButton.disabled = false;
   }
 
-  if (window.innerWidth <= 767) {
-    document.getElementById("chatPopup").style.display = "flex";
-    document.getElementById("chatPopup").classList.add("show");
-    document.getElementById("editNameContainer").style.display = "none";
-  } else {
-    document.getElementById("chatArea").classList.add("active");
+  // Solo mostrar el chat si no está cerrado
+  if (!user.isClosed || window.innerWidth > 767) {
+    if (window.innerWidth <= 767) {
+      document.getElementById("chatPopup").style.display = "flex";
+      document.getElementById("chatPopup").classList.add("show");
+      document.getElementById("editNameContainer").style.display = "none";
+    } else {
+      document.getElementById("chatArea").classList.add("active");
+    }
   }
 
   socket.emit('request chat history', { userId });
