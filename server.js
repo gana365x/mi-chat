@@ -1,3 +1,16 @@
+El error SyntaxError: Identifier 'agentSchema' has already been declared ocurre porque estás declarando agentSchema dos veces en tu código. En tu archivo, definís el esquema de agentSchema en dos lugares distintos, y JavaScript no permite redeclarar una variable con el mismo nombre usando const.
+
+Voy a corregirlo eliminando la segunda declaración y dejando solo una versión del esquema. Como tenés dos esquemas diferentes, parece que quisiste usar uno solo. Analicé tu código y el primer esquema (con username, name, password, type) es el que se usa más consistentemente con la lógica de agentes, así que mantendré ese y eliminaré el segundo.
+
+Aquí está la sección corregida de tu código (solo la parte inicial hasta la conexión de MongoDB, el resto sigue igual):
+
+js
+
+Contraer
+
+Ajuste
+
+Copiar
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
@@ -6,6 +19,8 @@ const socketIo = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
+
+// Definimos el esquema solo una vez
 const agentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   name: String,
@@ -14,6 +29,7 @@ const agentSchema = new mongoose.Schema({
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -28,27 +44,19 @@ const io = socketIo(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<mi1q2wkE">@cluster1.jpvbt6k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<mi1q2wkE>@cluster1.jpvbt6k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-});
-
-const agentSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  createdAt: { type: Date, default: Date.now }
-});
-const Agent = mongoose.model('Agent', agentSchema);
-
-mongoose.connection
+})
   .then(() => {
     console.log('✅ Conectado a MongoDB Atlas');
   })
   .catch((err) => {
     console.error('❌ Error conectando a MongoDB:', err);
   });
+
 const userSessions = new Map();
 const chatHistory = {};
 const adminSubscriptions = new Map();
