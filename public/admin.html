@@ -1151,6 +1151,11 @@
           if (data.name) {
             localStorage.setItem("agentDisplayName", data.name);
           }
+
+          // 👉 AÑADIR ESTO:
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+      }
           document.getElementById("loginScreen").style.display = "none";
           document.querySelector(".admin-container").style.display = "flex";
           document.getElementById("menuWrapper").style.display = "none";
