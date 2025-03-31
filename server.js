@@ -9,6 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const cors = require("cors"); // Agregado
 
 console.log("MONGO_URI:", process.env.MONGO_URI);
 console.log("SECRET_KEY:", process.env.SECRET_KEY);
@@ -16,9 +17,23 @@ console.log("PORT:", process.env.PORT);
 
 const app = express();
 const server = http.createServer(app);
+
+// Definimos los orígenes permitidos
+const allowedOrigins = [
+  "http://localhost:3000", // Para pruebas locales
+  "https://mi-chat-six.vercel.app" // Tu frontend en Vercel
+];
+
+// Configuración de CORS para Express
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
+// Configuración de Socket.IO con CORS
 const io = socketIo(server, {
   cors: {
-    origin: '*',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
     credentials: true
@@ -171,7 +186,7 @@ async function incrementPerformance(agentUsername) {
 
 async function getAllChatsSorted() {
   const lastMessages = await ChatMessage.aggregate([
-    { $match: { sender: { $ne: 'System' } } }, // Excluir mensajes del sistema
+    { $match: { sender: { $ne: 'System' } } },
     { $sort: { timestamp: -1 } },
     {
       $group: {
@@ -452,61 +467,61 @@ io.on('connection', (socket) => {
   });
 
   socket.on('request chat history', async (data) => {
-  if (!data.userId) return;
-  adminSubscriptions.set(socket.id, data.userId);
+    if (!data.userId) return;
+    adminSubscriptions.set(socket.id, data.userId);
 
-  const history = await ChatMessage.find({ userId: data.userId }).sort({ timestamp: 1 });
-  socket.emit('chat history', { userId: data.userId, messages: history });
-});
+    const history = await ChatMessage.find({ userId: data.userId }).sort({ timestamp: 1 });
+    socket.emit('chat history', { userId: data.userId, messages: history });
+  });
 
   socket.on('close chat', async ({ userId, agentUsername }) => {
-  const userSocket = userSessions.get(userId)?.socket;
-  if (userSocket) {
-    userSocket.emit('chat closed', { userId });
-  }
-
-  if (agentUsername) {
-    await incrementPerformance(agentUsername);
-  }
-
-  if (userSessions.has(userId)) {
-    const session = userSessions.get(userId);
-    userSessions.set(userId, { ...session, socket: null });
-  }
-
-  let username = userSessions.get(userId)?.username || 'Usuario';
-  try {
-    const savedName = await UserName.findOne({ userId });
-    if (savedName) {
-      username = savedName.name;
+    const userSocket = userSessions.get(userId)?.socket;
+    if (userSocket) {
+      userSocket.emit('chat closed', { userId });
     }
-  } catch (e) {
-    console.error("❌ Error obteniendo nombre del usuario:", e.message);
-  }
 
-  const closeMsg = {
-    userId,
-    sender: 'System',
-    message: '💬 Chat cerrado',
-    timestamp: getTimestamp(),
-    status: 'closed',
-    agentUsername: agentUsername,
-    username: username
-  };
-  await new ChatMessage(closeMsg).save();
-
-  if (userSocket) {
-    userSocket.emit('chat message', closeMsg);
-  }
-
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === userId) {
-      io.to(adminSocketId).emit('admin message', closeMsg);
+    if (agentUsername) {
+      await incrementPerformance(agentUsername);
     }
-  }
 
-  io.emit('user list', await getAllChatsSorted());
-});
+    if (userSessions.has(userId)) {
+      const session = userSessions.get(userId);
+      userSessions.set(userId, { ...session, socket: null });
+    }
+
+    let username = userSessions.get(userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+    }
+
+    const closeMsg = {
+      userId,
+      sender: 'System',
+      message: '💬 Chat cerrado',
+      timestamp: getTimestamp(),
+      status: 'closed',
+      agentUsername: agentUsername,
+      username: username
+    };
+    await new ChatMessage(closeMsg).save();
+
+    if (userSocket) {
+      userSocket.emit('chat message', closeMsg);
+    }
+
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === userId) {
+        io.to(adminSocketId).emit('admin message', closeMsg);
+      }
+    }
+
+    io.emit('user list', await getAllChatsSorted());
+  });
 
   socket.on('disconnect', async () => {
     adminSubscriptions.delete(socket.id);
