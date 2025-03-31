@@ -23,7 +23,7 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 
 // 🔒 MONGO CONNECTION
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<mi1q2wkE>@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:<ped1q2wzerA>@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
