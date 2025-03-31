@@ -54,12 +54,23 @@ const performanceSchema = new mongoose.Schema({
 
 const Performance = mongoose.model('Performance', performanceSchema);
 
+// ✅ CHAT MESSAGE SCHEMA
+const chatMessageSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  sender: { type: String, required: true },
+  message: String,
+  image: String,
+  timestamp: { type: String, required: true },
+  status: String,
+  agentUsername: String
+});
+
+const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
+
 // 📦 Variables locales
 const userSessions = new Map();
-const chatHistory = {};
 const adminSubscriptions = new Map();
 
-const historyFilePath = path.join(__dirname, 'chatHistory.json');
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
@@ -89,20 +100,8 @@ function getTimestamp() {
 }
 
 // Inicialización de archivos
-if (!fs.existsSync(historyFilePath)) fs.writeFileSync(historyFilePath, JSON.stringify({}));
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
-
-try {
-  const data = fs.readFileSync(historyFilePath, 'utf-8');
-  Object.assign(chatHistory, JSON.parse(data));
-} catch (e) {
-  console.error('Error al leer el historial:', e);
-}
-
-function saveChatHistory() {
-  fs.writeFileSync(historyFilePath, JSON.stringify(chatHistory, null, 2));
-}
 
 async function incrementPerformance(agentUsername) {
   try {
@@ -116,22 +115,27 @@ async function incrementPerformance(agentUsername) {
   }
 }
 
-function getAllChatsSorted() {
-  const users = Object.entries(chatHistory)
-    .map(([userId, messages]) => {
-      const username = userSessions.get(userId)?.username || 'Usuario';
-      const validMessages = messages.filter(msg => msg.status !== 'closed');
-      const lastValidMessage = validMessages[validMessages.length - 1];
-      const lastMessageTime = lastValidMessage?.timestamp || new Date().toISOString();
-      const isClosed = messages.some(msg => msg.status === 'closed');
-      return { userId, username, lastMessageTime, isClosed };
-    })
-    .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-  return users;
+async function getAllChatsSorted() {
+  const lastMessages = await ChatMessage.aggregate([
+    { $sort: { timestamp: -1 } },
+    {
+      $group: {
+        _id: "$userId",
+        lastMessage: { $first: "$$ROOT" }
+      }
+    }
+  ]);
+
+  return lastMessages.map(({ _id, lastMessage }) => ({
+    userId: _id,
+    username: userSessions.get(_id)?.username || 'Usuario',
+    lastMessageTime: lastMessage.timestamp,
+    isClosed: lastMessage.status === 'closed'
+  })).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 }
 
 io.on('connection', (socket) => {
-  socket.on('user joined', (data) => {
+  socket.on('user joined', async (data) => {
     let userId = data.userId;
     const username = data.username;
     if (!username) return;
@@ -143,77 +147,61 @@ io.on('connection', (socket) => {
     userSessions.set(userId, { username, socket });
     socket.emit('session', { userId, username });
 
-    if (!chatHistory[userId]) {
-      chatHistory[userId] = [];
+    const existingChat = await ChatMessage.findOne({ userId });
+    if (!existingChat) {
       const dateMessage = {
         userId,
         sender: 'System',
         message: '💬 Chat iniciado',
         timestamp: getTimestamp()
       };
-      chatHistory[userId].push(dateMessage);
-      saveChatHistory();
+      await new ChatMessage(dateMessage).save();
     }
   });
 
-  socket.on('update username', ({ userId, newUsername }) => {
+  socket.on('update username', async ({ userId, newUsername }) => {
     if (userSessions.has(userId)) {
       const session = userSessions.get(userId);
       userSessions.set(userId, { ...session, username: newUsername });
 
-      if (chatHistory[userId]) {
-        chatHistory[userId] = chatHistory[userId].map(msg => ({
-          ...msg,
-          username: newUsername
-        }));
-      }
-
-      saveChatHistory();
+      await ChatMessage.updateMany(
+        { userId },
+        { $set: { username: newUsername } }
+      );
 
       const userSocket = session.socket;
       if (userSocket) {
         userSocket.emit('update username cookie', { newUsername });
       }
 
-      io.emit('user list', getAllChatsSorted());
+      io.emit('user list', await getAllChatsSorted());
       console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
     }
   });
 
-  socket.on('admin connected', () => {
+  socket.on('admin connected', async () => {
     socket.join('admins');
-    socket.emit('user list', getAllChatsSorted());
+    socket.emit('user list', await getAllChatsSorted());
   });
 
-  socket.on('chat message', (data) => {
+  socket.on('chat message', async (data) => {
     if (!data.userId || !data.sender || !data.message) return;
 
     const messageData = { userId: data.userId, sender: data.sender, message: data.message, timestamp: getTimestamp() };
-    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
-    chatHistory[data.userId].push(messageData);
+    const chatMsg = new ChatMessage(messageData);
+    await chatMsg.save();
 
-    if (chatHistory[data.userId]) {
-      const wasClosed = chatHistory[data.userId].some(msg => msg.status === 'closed');
-      if (wasClosed) {
-        chatHistory[data.userId] = chatHistory[data.userId].filter(msg => msg.status !== 'closed');
-        chatHistory[data.userId].push({
-          userId: data.userId,
-          sender: 'System',
-          message: '🔄 El chat fue reabierto por el cliente',
-          timestamp: getTimestamp()
-        });
-        saveChatHistory();
-        io.emit('user list', getAllChatsSorted());
-      }
-
-      if (data.message === 'Cargar Fichas' || data.message === 'Retirar') {
-        if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
-        chatHistory[data.userId].activeSession = true;
-        saveChatHistory();
-        io.emit('user list', getAllChatsSorted());
-      } else {
-        saveChatHistory();
-      }
+    const wasClosed = await ChatMessage.findOne({ userId: data.userId, status: 'closed' });
+    if (wasClosed) {
+      await ChatMessage.deleteMany({ userId: data.userId, status: 'closed' });
+      const reopenMsg = {
+        userId: data.userId,
+        sender: 'System',
+        message: '🔄 El chat fue reabierto por el cliente',
+        timestamp: getTimestamp()
+      };
+      await new ChatMessage(reopenMsg).save();
+      io.emit('user list', await getAllChatsSorted());
     }
 
     const userSocket = userSessions.get(data.userId)?.socket;
@@ -232,9 +220,8 @@ io.on('connection', (socket) => {
         message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
         timestamp: getTimestamp()
       };
-      chatHistory[data.userId].push(botMsg);
-      saveChatHistory();
-      io.emit('user list', getAllChatsSorted());
+      await new ChatMessage(botMsg).save();
+      io.emit('user list', await getAllChatsSorted());
       if (userSocket) userSocket.emit('chat message', botMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
@@ -260,9 +247,8 @@ io.on('connection', (socket) => {
         `,
         timestamp: getTimestamp()
       };
-      chatHistory[data.userId].push(retiroMsg);
-      saveChatHistory();
-      io.emit('user list', getAllChatsSorted());
+      await new ChatMessage(retiroMsg).save();
+      io.emit('user list', await getAllChatsSorted());
       if (userSocket) userSocket.emit('chat message', retiroMsg);
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
@@ -272,15 +258,13 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('image', (data) => {
+  socket.on('image', async (data) => {
     if (!data.userId || !data.sender || !data.image) {
       console.error('Datos de imagen incompletos:', data);
       return;
     }
     const imageData = { userId: data.userId, sender: data.sender, image: data.image, timestamp: getTimestamp() };
-    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
-    chatHistory[data.userId].push(imageData);
-    saveChatHistory();
+    await new ChatMessage(imageData).save();
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) {
@@ -299,8 +283,7 @@ io.on('connection', (socket) => {
       message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!',
       timestamp: getTimestamp()
     };
-    chatHistory[data.userId].push(botResponse);
-    saveChatHistory();
+    await new ChatMessage(botResponse).save();
     if (userSocket) userSocket.emit('chat message', botResponse);
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
@@ -308,15 +291,13 @@ io.on('connection', (socket) => {
       }
     }
 
-    io.emit('user list', getAllChatsSorted());
+    io.emit('user list', await getAllChatsSorted());
   });
 
-  socket.on('agent message', (data) => {
+  socket.on('agent message', async (data) => {
     if (!data.userId || !data.message) return;
     const messageData = { userId: data.userId, sender: 'Agent', message: data.message, timestamp: getTimestamp() };
-    if (!chatHistory[data.userId]) chatHistory[data.userId] = [];
-    chatHistory[data.userId].push(messageData);
-    saveChatHistory();
+    await new ChatMessage(messageData).save();
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -327,23 +308,21 @@ io.on('connection', (socket) => {
       }
     }
 
-    io.emit('user list', getAllChatsSorted());
+    io.emit('user list', await getAllChatsSorted());
   });
 
-  socket.on('request chat history', (data) => {
+  socket.on('request chat history', async (data) => {
     if (!data.userId) return;
     adminSubscriptions.set(socket.id, data.userId);
-    chatHistory[data.userId] = chatHistory[data.userId] || [];
 
-    const lastMsg = chatHistory[data.userId][chatHistory[data.userId].length - 1];
+    const lastMsg = await ChatMessage.findOne({ userId: data.userId }).sort({ timestamp: -1 });
     if (!lastMsg || lastMsg.message !== '💬 Chat abierto') {
       const openMsg = {
         sender: 'System',
         message: '💬 Chat abierto',
         timestamp: getTimestamp()
       };
-      chatHistory[data.userId].push(openMsg);
-      saveChatHistory();
+      await new ChatMessage(openMsg).save();
 
       const userSocket = userSessions.get(data.userId)?.socket;
       if (userSocket) userSocket.emit('chat message', openMsg);
@@ -355,26 +334,24 @@ io.on('connection', (socket) => {
       }
     }
 
-    const history = chatHistory[data.userId] || [];
+    const history = await ChatMessage.find({ userId: data.userId }).sort({ timestamp: 1 });
     socket.emit('chat history', { userId: data.userId, messages: history });
   });
 
-  socket.on('close chat', ({ userId, agentUsername }) => {
+  socket.on('close chat', async ({ userId, agentUsername }) => {
     const userSocket = userSessions.get(userId)?.socket;
     if (userSocket) {
       userSocket.emit('chat closed', { userId });
     }
 
     if (agentUsername) {
-      incrementPerformance(agentUsername);
+      await incrementPerformance(agentUsername);
     }
 
     if (userSessions.has(userId)) {
       const session = userSessions.get(userId);
       userSessions.set(userId, { ...session, socket: null });
     }
-
-    chatHistory[userId] = chatHistory[userId] || [];
 
     const closeMsg = {
       userId,
@@ -384,9 +361,7 @@ io.on('connection', (socket) => {
       status: 'closed',
       agentUsername: agentUsername
     };
-
-    chatHistory[userId].push(closeMsg);
-    saveChatHistory();
+    await new ChatMessage(closeMsg).save();
 
     if (userSocket) {
       userSocket.emit('chat message', closeMsg);
@@ -398,25 +373,18 @@ io.on('connection', (socket) => {
       }
     }
 
-    if (chatHistory[userId]) {
-      chatHistory[userId].activeSession = false;
-    }
+    io.emit('user list', await getAllChatsSorted());
 
-    saveChatHistory();
-    io.emit('user list', getAllChatsSorted());
-
-    io.emit('chat history', {
-      userId,
-      messages: chatHistory[userId]
-    });
+    const history = await ChatMessage.find({ userId });
+    io.emit('chat history', { userId, messages: history });
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     adminSubscriptions.delete(socket.id);
     for (let [userId, session] of userSessions.entries()) {
       if (session.socket?.id === socket.id) {
         userSessions.set(userId, { ...session, socket: null });
-        io.emit('user list', getAllChatsSorted());
+        io.emit('user list', await getAllChatsSorted());
         break;
       }
     }
@@ -702,7 +670,7 @@ app.post('/update-timezone', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/stats', (req, res) => {
+app.get('/stats', async (req, res) => {
   const { from, to } = req.query;
 
   if (!from || !to) {
@@ -717,7 +685,9 @@ app.get('/stats', (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    const chatData = JSON.parse(fs.readFileSync(historyFilePath, 'utf-8'));
+    const messages = await ChatMessage.find({
+      timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
+    });
 
     let chatsClosed = 0;
     let messagesCount = 0;
@@ -725,33 +695,29 @@ app.get('/stats', (req, res) => {
     let retirosCount = 0;
     let imagenesCount = 0;
 
-    Object.keys(chatData).forEach(userId => {
-      const messages = chatData[userId];
-      const filteredMessages = messages.filter(msg => {
-        const msgDate = new Date(msg.timestamp);
-        return msgDate >= fromDate && msgDate <= toDate;
-      });
-
-      if (filteredMessages.some(msg => msg.status === 'closed')) {
+    const userIds = [...new Set(messages.map(msg => msg.userId))];
+    for (const userId of userIds) {
+      const userMessages = messages.filter(msg => msg.userId === userId);
+      if (userMessages.some(msg => msg.status === 'closed')) {
         chatsClosed++;
       }
 
-      messagesCount += filteredMessages.filter(
+      messagesCount += userMessages.filter(
         msg => msg.sender === userSessions.get(userId)?.username || (!['Agent', 'System', 'Bot'].includes(msg.sender) && !msg.image)
       ).length;
 
-      imagenesCount += filteredMessages.filter(
+      imagenesCount += userMessages.filter(
         msg => msg.image && !['Agent', 'System', 'Bot'].includes(msg.sender)
       ).length;
 
-      cargarFichasCount += filteredMessages.filter(
+      cargarFichasCount += userMessages.filter(
         msg => msg.message === 'Cargar Fichas'
       ).length;
 
-      retirosCount += filteredMessages.filter(
+      retirosCount += userMessages.filter(
         msg => msg.message === 'Retirar'
       ).length;
-    });
+    }
 
     res.json({
       chats: chatsClosed,
@@ -766,7 +732,7 @@ app.get('/stats', (req, res) => {
   }
 });
 
-app.get('/stats-agents', (req, res) => {
+app.get('/stats-agents', async (req, res) => {
   const { from, to } = req.query;
 
   if (!from || !to) {
@@ -781,35 +747,26 @@ app.get('/stats-agents', (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    const chatData = JSON.parse(fs.readFileSync(historyFilePath, 'utf-8'));
+    const closedMessages = await ChatMessage.find({
+      status: 'closed',
+      sender: 'System',
+      timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
+    });
 
     const agentStatsMap = {};
-    Object.values(chatData).forEach(messages => {
-      messages.forEach(msg => {
-        const msgDate = new Date(msg.timestamp);
-        if (
-          msg.status === 'closed' &&
-          msg.sender === 'System' &&
-          msgDate disputedAttribute >= fromDate &&
-          msgDate <= toDate &&
-          msg.agentUsername
-        ) {
-          agentStatsMap[msg.agentUsername] = (agentStatsMap[msg.agentUsername] || 0) + 1;
-        }
-      });
+    closedMessages.forEach(msg => {
+      if (msg.agentUsername) {
+        agentStatsMap[msg.agentUsername] = (agentStatsMap[msg.agentUsername] || 0) + 1;
+      }
     });
 
-    Agent.find({}, 'username name').then(agents => {
-      const agentStats = agents.map(agent => ({
-        username: agent.username,
-        name: agent.name || agent.username,
-        finalizados: agentStatsMap[agent.username] || 0
-      }));
-      res.json(agentStats);
-    }).catch(error => {
-      console.error('Error al obtener agentes:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
-    });
+    const agents = await Agent.find({}, 'username name');
+    const agentStats = agents.map(agent => ({
+      username: agent.username,
+      name: agent.name || agent.username,
+      finalizados: agentStatsMap[agent.username] || 0
+    }));
+    res.json(agentStats);
   } catch (error) {
     console.error('Error al procesar estadísticas por agente:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
