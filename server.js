@@ -22,6 +22,21 @@ const io = socketIo(server, {
 
 const PORT = process.env.PORT || 3000;
 
+// ✅ Función de validación reutilizable
+function validateAuthInput(username, password) {
+  if (
+    !username ||
+    !password ||
+    typeof username !== 'string' ||
+    typeof password !== 'string' ||
+    username.length < 3 ||
+    password.length < 4
+  ) {
+    return false;
+  }
+  return true;
+}
+
 // 🔒 MONGO CONNECTION
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:ped1q2wzerA@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
 
@@ -450,7 +465,7 @@ app.post('/admin-login', (req, res) => {
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
+  if (!validateAuthInput(username, password)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
@@ -479,7 +494,7 @@ app.post('/superadmin-login', async (req, res) => {
 app.post('/agent-login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
+  if (!validateAuthInput(username, password)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
@@ -524,8 +539,7 @@ app.get('/agents', async (req, res) => {
 app.post('/agents', async (req, res) => {
   const { username, name, password, type = 'agent' } = req.body;
 
-  if (!username || !password || typeof username !== 'string' || typeof password !== 'string' ||
-      (name && typeof name !== 'string') || (type && typeof type !== 'string')) {
+  if (!validateAuthInput(username, password) || (name && typeof name !== 'string') || (type && typeof type !== 'string')) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
