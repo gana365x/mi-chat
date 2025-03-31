@@ -53,10 +53,7 @@ const adminSubscriptions = new Map();
 
 const historyFilePath = path.join(__dirname, 'chatHistory.json');
 const performanceFile = path.join(__dirname, 'performance.json');
-// El siguiente archivo ya no será necesario cuando terminemos de migrar a Mongo:
-const agentsFilePath = path.join(__dirname, 'agents.json');
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
-const configFilePath = path.join(__dirname, 'config.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
 // 🕒 Función para timestamps con zona horaria
@@ -84,28 +81,9 @@ function getTimestamp() {
   }
 }
 
-  try {
-    const data = fs.readFileSync(timezoneFile, 'utf-8');
-    const config = JSON.parse(data);
-    if (config.timezone) {
-      timezone = config.timezone;
-    }
-  } catch (e) {
-    console.error("❌ Error leyendo timezone.json:", e.message);
-  }
-
-  try {
-    const now = new Date();
-    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-    return localTime.toISOString();
-  } catch (e) {
-    console.error("❌ Error convirtiendo a zona horaria:", e.message);
-    return new Date().toISOString();
-  }
-
+// Inicialización de archivos
 if (!fs.existsSync(historyFilePath)) fs.writeFileSync(historyFilePath, JSON.stringify({}));
 if (!fs.existsSync(performanceFile)) fs.writeFileSync(performanceFile, JSON.stringify({}));
-if (!fs.existsSync(agentsFilePath)) fs.writeFileSync(agentsFilePath, JSON.stringify([]));
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
@@ -428,8 +406,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     adminSubscriptions.delete(socket.id);
-    for (let [userId, session] of userSessions.entries()) {
-      if (session.socket?.id === socket.id) {
+    for (let [userId, session] of userSessions.entries())(br>      if (session.socket?.id === socket.id) {
         userSessions.set(userId, { ...session, socket: null });
         io.emit('user list', getAllChatsSorted());
         break;
@@ -444,38 +421,30 @@ app.use(express.json());
 app.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
 
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    return res.status(200).json({ success: true });
-  } else {
-    return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
-  }
+  // Nota: Este endpoint parece incompleto ya que ADMIN_USERNAME y ADMIN_PASSWORD no están definidos.
+  // Si ya no lo necesitas, puedes eliminarlo o ajustarlo para usar MongoDB.
+  return res.status(401).json({ success: false, message: 'Endpoint no configurado' });
 });
-
-const superAdminUser = 'superadmin';
-const superAdminPass = 'gana365super';
 
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-    const foundAgent = agents.find(agent => agent.username === username && agent.type === 'superadmin');
-
-    if (!foundAgent) {
+    const agent = await Agent.findOne({ username, type: 'superadmin' });
+    if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    const isMatch = await bcrypt.compare(password, foundAgent.password);
+    const isMatch = await bcrypt.compare(password, agent.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
     res.status(200).json({
       success: true,
-      name: foundAgent.name,
-      type: foundAgent.type
+      name: agent.name,
+      type: agent.type
     });
-
   } catch (err) {
     console.error('❌ Error en login:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
@@ -506,7 +475,6 @@ app.post('/agent-login', async (req, res) => {
       name: agent.name || agent.username,
       type: agent.type || 'agent'
     });
-
   } catch (err) {
     console.error('❌ Error en login de agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
@@ -529,24 +497,23 @@ app.get('/agents', async (req, res) => {
 });
 
 app.post('/agents', async (req, res) => {
-  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
   const { username, name, password, type = 'agent' } = req.body;
 
-  if (agents.find(a => a.username === username)) {
-    return res.status(400).json({ success: false, message: 'Ya existe ese usuario' });
-  }
-
   try {
+    const existingAgent = await Agent.findOne({ username });
+    if (existingAgent) {
+      return res.status(400).json({ success: false, message: 'Ya existe ese usuario' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAgent = {
+    const newAgent = new Agent({
       username,
       name,
       password: hashedPassword,
       type
-    };
+    });
 
-    agents.push(newAgent);
-    fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
+    await newAgent.save();
     res.status(201).json({ success: true, message: 'Agente creado exitosamente' });
   } catch (error) {
     console.error('❌ Error en la creación del agente:', error);
@@ -591,7 +558,6 @@ app.put('/agents/:username', async (req, res) => {
 
     await agent.save();
     res.status(200).json({ success: true, message: 'Agente actualizado correctamente' });
-
   } catch (err) {
     console.error('❌ Error actualizando agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
@@ -603,59 +569,68 @@ app.get('/performance', (req, res) => {
   res.json(data);
 });
 
-app.get('/get-agent-displayname', (req, res) => {
+app.get('/get-agent-displayname', async (req, res) => {
   const username = req.query.username;
-  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const found = agents.find(a => a.username === username);
-  if (found) {
-    res.json({ 
-      name: found.name || found.displayName || username
-    });
-  } else {
-    res.json({ name: username });
+  try {
+    const agent = await Agent.findOne({ username });
+    if (agent) {
+      res.json({ name: agent.name || agent.username });
+    } else {
+      res.json({ name: username });
+    }
+  } catch (err) {
+    console.error('❌ Error obteniendo nombre:', err);
+    res.status(500).json({ name: username });
   }
 });
 
-app.post('/update-agent-name', (req, res) => {
+app.post('/update-agent-name', async (req, res) => {
   const { username, newName } = req.body;
   if (!username || !newName) {
     return res.status(400).json({ success: false, message: 'Faltan datos' });
   }
 
-  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const index = agents.findIndex(a => a.username === username);
+  try {
+    const agent = await Agent.findOneAndUpdate(
+      { username },
+      { name: newName },
+      { new: true }
+    );
+    if (!agent) {
+      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+    }
 
-  if (index === -1) {
-    return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+    io.emit('agent name updated', { username, newName });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('❌ Error actualizando nombre:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
-
-  agents[index].name = newName;
-  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-
-  // Emitir evento a todos los clientes conectados
-  io.emit('agent name updated', { username, newName });
-
-  res.status(200).json({ success: true });
 });
 
-app.post('/update-agent-password', (req, res) => {
+app.post('/update-agent-password', async (req, res) => {
   const { username, newPassword } = req.body;
 
   if (!username || !newPassword || newPassword.length < 4 || newPassword.length > 16) {
     return res.status(400).json({ success: false, message: 'Contraseña inválida' });
   }
 
-  const agents = JSON.parse(fs.readFileSync(agentsFilePath));
-  const index = agents.findIndex(agent => agent.username === username);
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const agent = await Agent.findOneAndUpdate(
+      { username },
+      { password: hashedPassword },
+      { new: true }
+    );
+    if (!agent) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
 
-  if (index === -1) {
-    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('❌ Error actualizando contraseña:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
-
-  agents[index].password = newPassword;
-  fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
-
-  return res.status(200).json({ success: true });
 });
 
 app.get('/quick-replies', (req, res) => {
@@ -792,14 +767,9 @@ app.get('/stats-agents', (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    const agents = JSON.parse(fs.readFileSync(agentsFilePath, 'utf-8'));
     const chatData = JSON.parse(fs.readFileSync(historyFilePath, 'utf-8'));
 
     const agentStatsMap = {};
-    agents.forEach(agent => {
-      agentStatsMap[agent.username] = 0;
-    });
-
     Object.values(chatData).forEach(messages => {
       messages.forEach(msg => {
         const msgDate = new Date(msg.timestamp);
@@ -815,13 +785,17 @@ app.get('/stats-agents', (req, res) => {
       });
     });
 
-    const agentStats = agents.map(agent => ({
-      username: agent.username,
-      name: agent.name || agent.displayName || agent.username,
-      finalizados: agentStatsMap[agent.username] || 0
-    }));
-
-    res.json(agentStats);
+    Agent.find({}, 'username name').then(agents => {
+      const agentStats = agents.map(agent => ({
+        username: agent.username,
+        name: agent.name || agent.username,
+        finalizados: agentStatsMap[agent.username] || 0
+      }));
+      res.json(agentStats);
+    }).catch(error => {
+      console.error('Error al obtener agentes:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    });
   } catch (error) {
     console.error('Error al procesar estadísticas por agente:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -855,7 +829,7 @@ app.post('/create-superadmin', async (req, res) => {
   }
 });
 
-// ✅ Asegurate de tener esto bien cerrado
+// ✅ Iniciar servidor
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
