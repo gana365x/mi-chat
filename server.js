@@ -503,6 +503,10 @@ app.put('/agents/:username', (req, res) => {
   const { username } = req.params;
   const { name, password, newUsername } = req.body;
 
+app.put('/agents/:username', async (req, res) => {
+  const { username } = req.params;
+  const { name, password, newUsername } = req.body;
+
   let agents = JSON.parse(fs.readFileSync(agentsFilePath));
   const index = agents.findIndex(a => a.username === username);
 
@@ -511,7 +515,17 @@ app.put('/agents/:username', (req, res) => {
   }
 
   if (name) agents[index].name = name;
-  if (password) agents[index].password = password;
+
+  if (password) {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      agents[index].password = hashedPassword;
+    } catch (err) {
+      console.error('❌ Error al encriptar la nueva contraseña:', err);
+      return res.status(500).json({ success: false, message: 'Error al actualizar contraseña' });
+    }
+  }
+
   if (newUsername) agents[index].username = newUsername;
 
   fs.writeFileSync(agentsFilePath, JSON.stringify(agents, null, 2));
