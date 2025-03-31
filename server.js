@@ -559,29 +559,29 @@ app.get('/agents', async (req, res) => {
   }
 });
 
-app.post('/agents', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res  .status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { username, name, password, type = 'agent' } = req.body;
+app.post('/agent-login', async (req, res) => {
+  const { username, password } = req.body;
 
-  if (!validateAuthInput(username, password) || (name && typeof name !== 'string') || (type && typeof type !== 'string')) {
+  if (!validateAuthInput(username, password)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
   try {
-    const existingAgent = await Agent.findOne({ username });
-    if (existingAgent) {
-      return res.status(400).json({ success: false, message: 'Ya existe ese usuario' });
+    const agent = await Agent.findOne({ username, type: 'agent' });
+    if (!agent) {
+      return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newAgent = new Agent({ username, name, password: hashedPassword, type: 'agent' });
-    await newAgent.save();
-    res.status(201).json({ success: true, message: 'Agente creado exitosamente' });
-  } catch (error) {
-    console.error('❌ Error en la creación del agente:', error);
+    const isMatch = await bcrypt.compare(password, agent.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
+    }
+
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
+
+    res.status(200).json({ success: true, name: agent.name, username: agent.username });
+  } catch (err) {
+    console.error('❌ Error en login de agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
