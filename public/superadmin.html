@@ -168,9 +168,17 @@
 </div>
 
 <div class="main-box" id="mainBox" style="display:none">
-  <div id="section-home">
+  <div id="section-main" style="display:none;">
+    <h2>🏠 Página Principal</h2>
+    <div class="info-box">
+      <p>Bienvenido a la página principal de Super Agente. Aquí podrás encontrar información general y acceder a las diferentes secciones del sistema.</p>
+    </div>
+  </div>
+
+  <div id="section-home" style="display:none;">
     <h2>🏠 Bienvenido, Super Agente</h2>
     <div class="home-buttons">
+      <button onclick="showSection('main')">🏠 Página Principal</button>
       <button onclick="showSection('agents')">👥 Agentes</button>
       <button onclick="showSection('stats')">📊 Estadísticas</button>
       <button onclick="showSection('customize')">🎨 Editar</button>
@@ -359,10 +367,34 @@
     background: #1a1a1a;
     padding: 40px;
     border-radius: 12px;
-    max-width: 600px;
-    margin: 40px auto;
+    width: 80%;
+    margin: 40px 10%;
     border: 2px solid #FF3B00;
     box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  }
+
+  #section-main {
+    text-align: center;
+  }
+
+  #section-main h2 {
+    color: #FF3B00;
+    font-family: 'Poppins', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
+    margin-bottom: 30px;
+  }
+
+  .info-box {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #FF3B00;
+    color: #fff;
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto;
   }
 
   #section-home {
@@ -404,6 +436,51 @@
     background: linear-gradient(90deg, #ffa500, #FF3B00);
   }
 </style>
+
+<script>
+  function loginSuperAdmin() {
+    const username = document.getElementById('superUsername').value.trim();
+    const password = document.getElementById('superPassword').value.trim();
+
+    fetch('/superadmin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        if (data.token) {
+          document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+        }
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('mainBox').style.display = 'block';
+        showSection('main');
+        loadAgents();
+      } else {
+        throw new Error();
+      }
+    })
+    .catch(() => {
+      document.getElementById('loginError').style.display = 'block';
+    });
+  }
+
+  function showSection(section) {
+    document.getElementById("section-main").style.display = (section === "main") ? "block" : "none";
+    document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
+    document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+    document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+    document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+
+    if (section === "stats") {
+      setDefaultDates();
+    }
+  }
+</script>
 
 <script>
   function loginSuperAdmin() {
