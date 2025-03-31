@@ -1245,33 +1245,30 @@
   },
   credentials: "include", // ✅ AGREGÁ ESTA LÍNEA
   body: JSON.stringify({ username, password })
-});
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          localStorage.setItem("adminLoggedIn", "true");
-          localStorage.setItem("adminUser", username);
-          // Guardar también el nombre visible del agente
-          if (data.name) {
-            localStorage.setItem("agentDisplayName", data.name);
-          }
-
-          // 👉 AÑADIR ESTO:
+})
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      localStorage.setItem("adminLoggedIn", "true");
+      localStorage.setItem("adminUser", username);
+      if (data.name) {
+        localStorage.setItem("agentDisplayName", data.name);
+      }
       if (data.token) {
         document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
       }
-          document.getElementById("loginScreen").style.display = "none";
-          document.querySelector(".admin-container").style.display = "flex";
-          document.getElementById("menuWrapper").style.display = "none";
-          socket.emit('admin connected');
-        } else {
-          throw new Error("Credenciales inválidas");
-        }
-      })
-      .catch(err => {
-        document.getElementById("loginError").style.display = "block";
-        console.error("Login fallido:", err);
-      });
+      document.getElementById("loginScreen").style.display = "none";
+      document.querySelector(".admin-container").style.display = "flex";
+      document.getElementById("menuWrapper").style.display = "none";
+      socket.emit('admin connected');
+    } else {
+      throw new Error("Credenciales inválidas");
+    }
+  })
+  .catch(err => {
+    document.getElementById("loginError").style.display = "block";
+    console.error("Login fallido:", err);
+  });
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
