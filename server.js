@@ -158,7 +158,6 @@ io.on('connection', (socket) => {
       userId = uuidv4();
     }
 
-    // 🧠 Buscar nombre editado en Mongo
     try {
       const savedName = await UserName.findOne({ userId });
       if (savedName) {
@@ -451,6 +450,10 @@ app.post('/admin-login', (req, res) => {
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
 
+  if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
+  }
+
   try {
     const agent = await Agent.findOne({ username, type: 'superadmin' });
     if (!agent) {
@@ -476,8 +479,8 @@ app.post('/superadmin-login', async (req, res) => {
 app.post('/agent-login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ success: false, message: 'Faltan datos' });
+  if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
   try {
@@ -521,6 +524,11 @@ app.get('/agents', async (req, res) => {
 app.post('/agents', async (req, res) => {
   const { username, name, password, type = 'agent' } = req.body;
 
+  if (!username || !password || typeof username !== 'string' || typeof password !== 'string' ||
+      (name && typeof name !== 'string') || (type && typeof type !== 'string')) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
+  }
+
   try {
     const existingAgent = await Agent.findOne({ username });
     if (existingAgent) {
@@ -563,6 +571,13 @@ app.delete('/agents/:username', async (req, res) => {
 app.put('/agents/:username', async (req, res) => {
   const { username } = req.params;
   const { name, password, newUsername } = req.body;
+
+  if ((!name && !password && !newUsername) || 
+      (name && typeof name !== 'string') || 
+      (password && typeof password !== 'string') || 
+      (newUsername && typeof newUsername !== 'string')) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
+  }
 
   try {
     const agent = await Agent.findOne({ username });
@@ -644,8 +659,9 @@ app.get('/get-agent-displayname', async (req, res) => {
 
 app.post('/update-agent-name', async (req, res) => {
   const { username, newName } = req.body;
-  if (!username || !newName) {
-    return res.status(400).json({ success: false, message: 'Faltan datos' });
+
+  if (!username || !newName || typeof username !== 'string' || typeof newName !== 'string') {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
   try {
@@ -669,8 +685,9 @@ app.post('/update-agent-name', async (req, res) => {
 app.post('/update-agent-password', async (req, res) => {
   const { username, newPassword } = req.body;
 
-  if (!username || !newPassword || newPassword.length < 4 || newPassword.length > 16) {
-    return res.status(400).json({ success: false, message: 'Contraseña inválida' });
+  if (!username || !newPassword || typeof username !== 'string' || typeof newPassword !== 'string' ||
+      newPassword.length < 4 || newPassword.length > 16) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
   try {
