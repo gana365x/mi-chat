@@ -10,6 +10,11 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 
+// Depurar las variables de entorno
+console.log("MONGO_URI:", process.env.MONGO_URI);
+console.log("SECRET_KEY:", process.env.SECRET_KEY);
+console.log("PORT:", process.env.PORT);
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
