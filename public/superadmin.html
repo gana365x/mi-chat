@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,12 +15,21 @@
     h1, h2, h3 {
       color: #FF3B00;
     }
-    .login-box, .main-box {
+    .login-box {
       background: #1a1a1a;
       padding: 20px 30px;
       border-radius: 12px;
       max-width: 900px;
       margin: 40px auto;
+      border: 2px solid #FF3B00;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    }
+    .main-box {
+      background: #1a1a1a;
+      padding: 20px 30px;
+      border-radius: 12px;
+      width: 80%; /* Ajustado a 80% */
+      margin: 40px auto; /* Centrado con márgenes automáticos */
       border: 2px solid #FF3B00;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
@@ -153,305 +161,301 @@
 </head>
 <body>
   <div class="login-box" id="loginBox">
-  <h1>Super Agente</h1>
-  <div class="input-group">
-    <input type="text" id="superUsername" required>
-    <label for="superUsername">Usuario</label>
+    <h1>Super Agente</h1>
+    <div class="input-group">
+      <input type="text" id="superUsername" required>
+      <label for="superUsername">Usuario</label>
+    </div>
+    <div class="input-group">
+      <input type="password" id="superPassword" required>
+      <label for="superPassword">Contraseña</label>
+    </div>
+    <div class="button-wrapper">
+      <button onclick="loginSuperAdmin()">Ingresar</button>
+    </div>
+    <p id="loginError" style="color: #ff5555; display: none; font-size: 12px; text-align: center;">Credenciales inválidas</p>
   </div>
-  <div class="input-group">
-    <input type="password" id="superPassword" required>
-    <label for="superPassword">Contraseña</label>
-  </div>
-  <div class="button-wrapper">
-    <button onclick="loginSuperAdmin()">Ingresar</button>
-  </div>
-  <p id="loginError" style="color: #ff5555; display: none; font-size: 12px; text-align: center;">Credenciales inválidas</p>
-</div>
 
-<div class="main-box" id="mainBox" style="display:none">
-  <div id="section-home">
-    <h2>🏠 Bienvenido, Super Agente</h2>
-    <div class="home-buttons">
-      <button onclick="showSection('agents')">👥 Agentes</button>
-      <button onclick="showSection('stats')">📊 Estadísticas</button>
-      <button onclick="showSection('customize')">🎨 Editar</button>
+  <div class="main-box" id="mainBox" style="display:none">
+    <div id="section-home">
+      <h2>🏠 Bienvenido, Super Agente</h2>
+      <div class="home-buttons">
+        <button onclick="showSection('agents')">👥 Agentes</button>
+        <button onclick="showSection('stats')">📊 Estadísticas</button>
+        <button onclick="showSection('customize')">🎨 Editar</button>
+      </div>
+    </div>
+
+    <!-- Sección de agentes -->
+    <div id="section-agents" style="display:none;">
+      <h2>Crear nuevo agente</h2>
+      <input type="text" id="newLogin" placeholder="Login del agente">
+      <input type="text" id="newName" placeholder="Nombre visible del agente">
+      <input type="password" id="newPassword" placeholder="Contraseña">
+      <button onclick="createAgent()">Crear</button>
+      <p id="createError" style="color: red; display: none;"></p>
+      <h2>Agentes registrados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre Visible</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="agentsTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Sección estadísticas -->
+    <div id="section-stats" style="display:none;">
+      <h2>📊 Estadísticas</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
+        <label>De:</label>
+        <div class="calendar-wrapper">
+          <input type="date" id="fromDate">
+          <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
+        </div>
+        <input type="time" id="fromTime">
+
+        <label>A:</label>
+        <div class="calendar-wrapper">
+          <input type="date" id="toDate">
+          <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
+        </div>
+        <input type="time" id="toTime">
+
+        <select id="quickRange" onchange="setQuickRange()">
+          <option value="">Elegir el periodo</option>
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+          <option value="lastMonth">Mes anterior</option>
+        </select>
+
+        <button onclick="confirmAndLoadStats()">Mostrar</button>
+      </div>
+      <!-- Sub-secciones -->
+      <div style="margin-top: 20px;">
+        <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
+        <canvas id="chartAgentes" height="150"></canvas>
+
+        <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
+        <div id="statsResults">
+          <p>Mensajes entrantes: <span id="statMessages">0</span></p>
+          <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
+          <p>Retirar presionado: <span id="statRetiro">0</span></p>
+          <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección editar -->
+    <div id="section-customize" style="display:none;">
+      <h2>🎨 Personalizar Estilo</h2>
+      <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
+      <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
     </div>
   </div>
 
-  <!-- Sección de agentes -->
-  <div id="section-agents" style="display:none;">
-    <h2>Crear nuevo agente</h2>
-    <input type="text" id="newLogin" placeholder="Login del agente">
-    <input type="text" id="newName" placeholder="Nombre visible del agente">
-    <input type="password" id="newPassword" placeholder="Contraseña">
-    <button onclick="createAgent()">Crear</button>
-    <p id="createError" style="color: red; display: none;"></p>
-    <h2>Agentes registrados</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Nombre Visible</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="agentsTable"></tbody>
-    </table>
-  </div>
-
-  <!-- Sección estadísticas -->
-  <div id="section-stats" style="display:none;">
-    <h2>📊 Estadísticas</h2>
-    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
-      <label>De:</label>
-      <div class="calendar-wrapper">
-        <input type="date" id="fromDate">
-        <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
-      </div>
-      <input type="time" id="fromTime">
-
-      <label>A:</label>
-      <div class="calendar-wrapper">
-        <input type="date" id="toDate">
-        <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
-      </div>
-      <input type="time" id="toTime">
-
-      <select id="quickRange" onchange="setQuickRange()">
-        <option value="">Elegir el periodo</option>
-        <option value="today">Hoy</option>
-        <option value="yesterday">Ayer</option>
-        <option value="week">Esta semana</option>
-        <option value="month">Este mes</option>
-        <option value="lastMonth">Mes anterior</option>
-      </select>
-
-      <button onclick="confirmAndLoadStats()">Mostrar</button>
-    </div>
-    <!-- Sub-secciones -->
-    <div style="margin-top: 20px;">
-      <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
-      <canvas id="chartAgentes" height="150"></canvas>
-
-      <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
-      <div id="statsResults">
-        <p>Mensajes entrantes: <span id="statMessages">0</span></p>
-        <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
-        <p>Retirar presionado: <span id="statRetiro">0</span></p>
-        <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sección editar -->
-  <div id="section-customize" style="display:none;">
-    <h2>🎨 Personalizar Estilo</h2>
-    <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
-    <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
-  </div>
-</div>
-
-<style>
-  body {
-    background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-  }
-
-  .login-box {
-    background: #1a1a1a;
-    padding: 30px;
-    border-radius: 12px;
-    max-width: 320px;
-    width: 100%;
-    border: 2px solid #FF3B00;
-    box-shadow: 0 8px 24px rgba(255, 59, 0, 0.2), inset 0 0 10px rgba(255, 59, 0, 0.1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .login-box h1 {
-    color: #FF3B00;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
-    margin-bottom: 20px;
-  }
-
-  .input-group {
-    position: relative;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .input-group input {
-    width: 60%;
-    max-width: 156px;
-    background: #1f1f1f;
-    color: white;
-    border: 2px solid #FF3B00;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s ease;
-  }
-
-  .input-group label {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #888;
-    font-size: 14px;
-    pointer-events: none;
-    transition: all 0.3s ease;
-  }
-
-  .input-group input:focus,
-  .input-group input:valid {
-    border-color: #ffa500;
-    background: #2a2a2a;
-  }
-
-  .input-group input:focus + label,
-  .input-group input:valid + label {
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 10px;
-    color: #FF3B00;
-    background: #1a1a1a;
-    padding: 0 4px;
-  }
-
-  .button-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-  }
-
-  .login-box button {
-    width: 120px;
-    background: linear-gradient(90deg, #FF3B00, #ffa500);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .login-box button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 59, 0, 0.5);
-    background: linear-gradient(90deg, #ffa500, #FF3B00);
-  }
-
-  .main-box {
-    background: #1a1a1a;
-    padding: 40px;
-    border-radius: 12px;
-    max-width: 600px;
-    margin: 40px auto;
-    border: 2px solid #FF3B00;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-  }
-
-  #section-home {
-    text-align: center;
-  }
-
-  #section-home h2 {
-    color: #FF3B00;
-    font-family: 'Poppins', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
-    margin-bottom: 40px;
-  }
-
-  .home-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    align-items: center;
-  }
-
-  .home-buttons button {
-    width: 200px;
-    background: linear-gradient(90deg, #FF3B00, #ffa500);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .home-buttons button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(255, 59, 0, 0.5);
-    background: linear-gradient(90deg, #ffa500, #FF3B00);
-  }
-</style>
-
-<script>
-  function loginSuperAdmin() {
-    const username = document.getElementById('superUsername').value.trim();
-    const password = document.getElementById('superPassword').value.trim();
-
-    fetch("https://mi-chat-9uti.onrender.com/superadmin-login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  credentials: "include", // ✅ MUY IMPORTANTE
-  body: JSON.stringify({ username, password })
-})
-.then(res => {
-  if (!res.ok) throw new Error();
-  return res.json();
-})
-.then(data => {
-  if (data.success) {
-    // Ya no seteamos manualmente el token porque lo manda el servidor como cookie segura
-    document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('mainBox').style.display = 'block';
-    showSection('home');
-    loadAgents();
-  } else {
-    throw new Error();
-  }
-})
-.catch(err => {
-  console.error("Error de login:", err);
-  alert("❌ Usuario o contraseña incorrectos");
-});
-    .catch(() => {
-      document.getElementById('loginError').style.display = 'block';
-    });
-  }
-
-  function showSection(section) {
-    document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
-    document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
-    document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
-    document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
-
-    if (section === "stats") {
-      setDefaultDates();
+  <style>
+    body {
+      background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
     }
-  }
-</script>
+
+    .login-box {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 320px;
+      width: 100%;
+      border: 2px solid #FF3B00;
+      box-shadow: 0 8px 24px rgba(255, 59, 0, 0.2), inset 0 0 10px rgba(255, 59, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-box h1 {
+      color: #FF3B00;
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .input-group input {
+      width: 60%;
+      max-width: 156px;
+      background: #1f1f1f;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-group label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #888;
+      font-size: 14px;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus,
+    .input-group input:valid {
+      border-color: #ffa500;
+      background: #2a2a2a;
+    }
+
+    .input-group input:focus + label,
+    .input-group input:valid + label {
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: #FF3B00;
+      background: #1a1a1a;
+      padding: 0 4px;
+    }
+
+    .button-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .login-box button {
+      width: 120px;
+      background: linear-gradient(90deg, #FF3B00, #ffa500);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .login-box button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 59, 0, 0.5);
+      background: linear-gradient(90deg, #ffa500, #FF3B00);
+    }
+
+    .main-box {
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 12px;
+      width: 80%; /* Ajustado a 80% */
+      margin: 40px auto;
+      border: 2px solid #FF3B00;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    }
+
+    #section-home {
+      text-align: center;
+    }
+
+    #section-home h2 {
+      color: #FF3B00;
+      font-family: 'Poppins', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
+      margin-bottom: 40px;
+    }
+
+    .home-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .home-buttons button {
+      width: 200px;
+      background: linear-gradient(90deg, #FF3B00, #ffa500);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .home-buttons button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(255, 59, 0, 0.5);
+      background: linear-gradient(90deg, #ffa500, #FF3B00);
+    }
+  </style>
+
+  <script>
+    function loginSuperAdmin() {
+      const username = document.getElementById('superUsername').value.trim();
+      const password = document.getElementById('superPassword').value.trim();
+
+      fetch("https://mi-chat-9uti.onrender.com/superadmin-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        if (data.success) {
+          document.getElementById('loginBox').style.display = 'none';
+          document.getElementById('mainBox').style.display = 'block';
+          showSection('home');
+          loadAgents();
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(err => {
+        console.error("Error de login:", err);
+        alert("❌ Usuario o contraseña incorrectos");
+      });
+    }
+
+    function showSection(section) {
+      document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
+      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+
+      if (section === "stats") {
+        setDefaultDates();
+      }
+    }
+  </script>
 
   <div class="main-box" id="mainBox" style="display:none">
     <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
@@ -561,19 +565,18 @@
         return res.json();
       })
       .then(data => {
-  if (data.success) {
-    if (data.token) {
-      document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-    }
-
-    document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('mainBox').style.display = 'block';
-    showSection('agents');
-    loadAgents();
-  } else {
-    throw new Error();
-  }
-})
+        if (data.success) {
+          if (data.token) {
+            document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+          }
+          document.getElementById('loginBox').style.display = 'none';
+          document.getElementById('mainBox').style.display = 'block';
+          showSection('agents');
+          loadAgents();
+        } else {
+          throw new Error();
+        }
+      })
       .catch(() => {
         document.getElementById('loginError').style.display = 'block';
       });
@@ -936,7 +939,6 @@
       const agentIndex = allAgents.indexOf(userId);
       if (agentIndex !== -1) {
         // Si necesitamos actualizar algo más en allAgents, lo hacemos aquí
-        // Por ahora, allAgents solo contiene usernames, así que no necesita cambio
       }
     });
 
