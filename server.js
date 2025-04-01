@@ -148,29 +148,8 @@ const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
 function getTimestamp() {
-  const defaultTimezone = "America/Argentina/Buenos_Aires";
-  let timezone = defaultTimezone;
-
-  try {
-    const data = fs.readFileSync(timezoneFile, 'utf-8');
-    const config = JSON.parse(data);
-    if (config.timezone) {
-      timezone = config.timezone;
-    }
-  } catch (e) {
-    console.error("❌ Error leyendo timezone.json:", e.message);
-  }
-
-  try {
-    const now = new Date();
-    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-    return localTime.toISOString();
-  } catch (e) {
-    console.error("❌ Error convirtiendo a zona horaria:", e.message);
-    return new Date().toISOString();
-  }
+  return new Date().toISOString(); // Siempre UTC
 }
-
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
