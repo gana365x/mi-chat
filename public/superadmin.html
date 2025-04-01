@@ -560,12 +560,15 @@
       const toDateInput = document.getElementById("toDate");
       const value = document.getElementById("quickRange").value;
 
-      let start = new Date(), end = new Date();
+      let start = new Date();
+      let end = new Date();
 
       switch (value) {
         case "today":
-          start = new Date(now.setHours(0, 0, 0, 0));
-          end = new Date(now.setHours(23, 59, 59, 999));
+          start = new Date(now);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(now);
+          end.setHours(23, 59, 59, 999);
           break;
           
         case "yesterday":
@@ -578,21 +581,25 @@
           
         case "week":
           start = new Date(now);
-          start.setDate(start.getDate() - start.getDay() + (start.getDay() === 0 ? -6 : 1));
+          const dayOfWeek = start.getDay() || 7;
+          start.setDate(start.getDate() - dayOfWeek + 1);
           start.setHours(0, 0, 0, 0);
           end = new Date(now);
           end.setHours(23, 59, 59, 999);
           break;
           
         case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          start.setHours(0, 0, 0, 0);
           end = new Date(now);
           end.setHours(23, 59, 59, 999);
           break;
           
         case "lastMonth":
-          start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
-          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(now.getFullYear(), now.getMonth(), 0);
+          end.setHours(23, 59, 59, 999);
           break;
       }
 
@@ -601,8 +608,10 @@
       toDateInput.value = end.toISOString().split('T')[0];
       document.getElementById("toTime").value = '23:59';
 
-      // Llamar a confirmAndLoadStats después de establecer las fechas
-      confirmAndLoadStats();
+      const from = `${fromDateInput.value}T00:00:00`;
+      const to = `${toDateInput.value}T23:59:59`;
+
+      loadStats(from, to);
     }
 
     function confirmAndLoadStats() {
@@ -623,14 +632,14 @@
     }
 
     function loadStats(from, to) {
-      console.log('Cargando estadísticas para:', { from, to }); // Debug
+      console.log('Cargando estadísticas para:', { from, to });
+
       // Interacciones
-     fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+      fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
         credentials: 'include'
       })
         .then(res => res.json())
         .then(data => {
-          console.log('Datos de interacciones recibidos:', data); // Debug
           document.getElementById("statMessages").textContent = data.messages || 0;
           document.getElementById("statCargar").textContent = data.cargarFichas || 0;
           document.getElementById("statRetiro").textContent = data.retiros || 0;
@@ -647,7 +656,8 @@
           return res.json();
         })
         .then(agentData => {
-          console.log('Datos de agentes recibidos:', agentData); // Debug
+          console.log('Datos de agentes recibidos:', agentData);
+
           // Filtrar solo agentes Admin y ordenar por cantidad de chats finalizados
           const filteredData = agentData
             .filter(agent => agent.role !== 'SuperAdmin')
@@ -799,6 +809,7 @@
                   grid: { color: '#333' }, 
                   ticks: { 
                     color: '#fff',
+                    
                     font: {
                       size: 11
                     }
