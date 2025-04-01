@@ -545,6 +545,13 @@
 
       if (section === "stats") {
         setDefaultDates();
+        // Cargar estadísticas automáticamente para el día actual
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        const from = start.toISOString();
+        const to = end.toISOString();
+        loadStats(from, to);
       }
     }
 
