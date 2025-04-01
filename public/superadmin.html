@@ -557,7 +557,7 @@
     // Registrar el plugin datalabels
     Chart.register(ChartDataLabels);
 
-    const socket = io();
+    const socket = io('https://mi-chat-9uti.onrender.com');
     let chartInstance = null;
     let allAgents = []; // Lista global de agentes registrados
 
@@ -597,7 +597,7 @@
     .then(res => res.json())
     .then(agents => {
       // Filtramos solo los agentes con rol "Agent" para estadísticas
-      allAgents = agents.filter(agent => agent.role === 'Agent').map(agent => agent.username);
+      allAgents = agents.filter(agent => agent.role === 'Admin').map(agent => agent.username);
       const table = document.getElementById('agentsTable');
       table.innerHTML = '';
       agents.forEach(agent => {
@@ -654,8 +654,9 @@
 
     function deleteAgent(username) {
       fetch(`/agents/${username}`, {
-        method: 'DELETE'
-      })
+  method: 'DELETE',
+  credentials: 'include'
+})
       .then(() => loadAgents());
     }
 
@@ -928,10 +929,11 @@
       if (newPass) body.password = newPass;
 
       fetch(`/agents/${selectedUsernameToEdit}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      })
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify(body)
+})
       .then(res => {
         if (!res.ok) throw new Error();
         loadAgents();
