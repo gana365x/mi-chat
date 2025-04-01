@@ -27,7 +27,7 @@ const allowedOrigins = [
 
 // Configuración de CORS para Express
 app.use(cors({
-  origin: ["https://mi-chat-gln5.vercel.app"],
+  origin: allowedOrigins,
   credentials: true
 }));
 
@@ -671,6 +671,36 @@ app.put('/agents/:username', async (req, res) => {
     res.status(200).json({ success: true, message: 'Agente actualizado correctamente' });
   } catch (err) {
     console.error('❌ Error actualizando agente:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
+// Aquí agregas el nuevo endpoint
+app.post('/agents', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
+
+  const { username, name, password, role } = req.body;
+
+  if (!username || !name || !password || !role || !['Admin', 'SuperAdmin'].includes(role)) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
+  }
+
+  try {
+    const existingAgent = await Agent.findOne({ username });
+    if (existingAgent) {
+      return res.status(400).json({ success: false, message: 'El usuario ya existe' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAgent = new Agent({ username, name, password: hashedPassword, role });
+    await newAgent.save();
+
+    res.status(201).json({ success: true, message: 'Agente creado correctamente' });
+  } catch (err) {
+    console.error('❌ Error al crear agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
