@@ -565,41 +565,33 @@
 
       switch (value) {
         case "today":
-          start = new Date(now);
-          start.setHours(0, 0, 0, 0);
-          end = new Date(now);
-          end.setHours(23, 59, 59, 999);
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
           break;
           
         case "yesterday":
-          start = new Date(now);
-          start.setDate(start.getDate() - 1);
-          start.setHours(0, 0, 0, 0);
-          end = new Date(start);
-          end.setHours(23, 59, 59, 999);
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
           break;
           
         case "week":
+          const dayOfWeek = now.getDay() || 7;
           start = new Date(now);
-          const dayOfWeek = start.getDay() || 7;
-          start.setDate(start.getDate() - dayOfWeek + 1);
+          start.setDate(now.getDate() - dayOfWeek + 1);
           start.setHours(0, 0, 0, 0);
           end = new Date(now);
-          end.setHours(23, 59, 59, 999);
+          end.setHours(23, 59, 59);
           break;
           
         case "month":
           start = new Date(now.getFullYear(), now.getMonth(), 1);
-          start.setHours(0, 0, 0, 0);
           end = new Date(now);
-          end.setHours(23, 59, 59, 999);
+          end.setHours(23, 59, 59);
           break;
           
         case "lastMonth":
           start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          start.setHours(0, 0, 0, 0);
-          end = new Date(now.getFullYear(), now.getMonth(), 0);
-          end.setHours(23, 59, 59, 999);
+          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
           break;
       }
 
@@ -608,6 +600,7 @@
       toDateInput.value = end.toISOString().split('T')[0];
       document.getElementById("toTime").value = '23:59';
 
+      // Construir las fechas ISO para la consulta
       const from = `${fromDateInput.value}T00:00:00`;
       const to = `${toDateInput.value}T23:59:59`;
 
@@ -625,6 +618,7 @@
         return;
       }
 
+      // Construir las fechas ISO para la consulta
       const from = `${fromDate}T${fromTime}:00`;
       const to = `${toDate}T${toTime}:00`;
 
@@ -809,9 +803,9 @@
                   grid: { color: '#333' }, 
                   ticks: { 
                     color: '#fff',
-                    
                     font: {
                       size: 11
+                    
                     }
                   } 
                 },
