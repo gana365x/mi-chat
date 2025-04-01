@@ -108,7 +108,7 @@ const agentSchema = new mongoose.Schema({
   name: String,
   password: String,
   type: { type: String }, // Campo antiguo, mantenido por compatibilidad
-  role: { type: String, enum: ['Agent', 'SuperAgente'], default: 'Agent' } // Campo nuevo
+  role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' } // Campo actualizado
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
@@ -550,9 +550,9 @@ app.post('/superadmin-login', async (req, res) => {
 
   try {
     const agent = await Agent.findOne({ 
-      username, 
-      $or: [{ role: 'SuperAgente' }, { type: 'superadmin' }] // Acepta ambos
-    });
+  username, 
+  $or: [{ role: 'SuperAdmin' }, { type: 'superadmin' }]
+});
     if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
@@ -566,7 +566,7 @@ app.post('/superadmin-login', async (req, res) => {
     res.status(200).json({
       success: true,
       name: agent.name,
-      role: agent.role || (agent.type === 'superadmin' ? 'SuperAgente' : 'Agent')
+      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin')
     });
   } catch (err) {
     console.error('❌ Error en login:', err);
@@ -610,7 +610,7 @@ app.get('/agents', async (req, res) => {
     const formattedAgents = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
-      role: agent.role || (agent.type === 'superadmin' ? 'SuperAgente' : 'Agent') // Mapea type a role si no existe role
+      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin') // Mapea type a role si no existe role
     }));
     res.json(formattedAgents);
   } catch (err) {
@@ -973,7 +973,7 @@ app.get('/stats-agents', async (req, res) => {
       }
     });
 
-    const agents = await Agent.find({ $or: [{ role: 'Agent' }, { type: 'agent' }] }, 'username name'); // Solo Agents
+    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name'); // Solo Agents
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
