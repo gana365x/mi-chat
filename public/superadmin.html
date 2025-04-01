@@ -505,13 +505,16 @@ let systemTimezone = "UTC"; // Valor por defecto
 
 function loadTimezoneFromServer() {
   return fetch('/get-timezone', { credentials: 'include' })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch timezone: ${res.status}`);
+      return res.json();
+    })
     .then(data => {
       systemTimezone = data.timezone || "UTC";
       console.log("Zona horaria cargada:", systemTimezone);
     })
     .catch(err => {
-      console.warn("Error al cargar timezone, usando UTC:", err);
+      console.error("Error al cargar timezone:", err);
       systemTimezone = "UTC";
     });
 }
@@ -521,36 +524,35 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     let allAgents = [];
 
     function loginSuperAdmin() {
-      const username = document.getElementById('superUsername').value.trim();
-      const password = document.getElementById('superPassword').value.trim();
+  const username = document.getElementById('superUsername').value.trim();
+  const password = document.getElementById('superPassword').value.trim();
 
-      fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => {
-        if (data.success) {
-          if (data.token) {
-            document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-          }
-          document.getElementById('loginBox').style.display = 'none';
-          document.getElementById('mainBox').style.display = 'block';
-          showSection('home');
-          loadAgents();
-        } else {
-          throw new Error();
-        }
-      })
-      .catch(() => {
-        document.getElementById('loginError').style.display = 'block';
-      });
+  fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error(`Login failed with status: ${res.status}`);
+    return res.json();
+  })
+  .then(data => {
+    if (data.success) {
+      console.log('Login exitoso:', data);
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('mainBox').style.display = 'block';
+      showSection('home');
+      loadAgents();
+    } else {
+      throw new Error('Login no exitoso');
     }
+  })
+  .catch(err => {
+    console.error('Error en login:', err);
+    document.getElementById('loginError').style.display = 'block';
+  });
+}
 
     function showSection(section) {
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
@@ -707,8 +709,12 @@ const socket = io('https://mi-chat-9uti.onrender.com');
   fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
     credentials: 'include'
   })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch stats: ${res.status}`);
+      return res.json();
+    })
     .then(data => {
+      console.log('Datos de interacciones recibidos:', data);
       document.getElementById("statMessages").textContent = data.messages || 0;
       document.getElementById("statCargar").textContent = data.cargarFichas || 0;
       document.getElementById("statRetiro").textContent = data.retiros || 0;
@@ -720,7 +726,7 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     credentials: 'include'
   })
     .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) throw new Error(`Failed to fetch stats-agents: ${res.status}`);
       return res.json();
     })
     .then(agentData => {
