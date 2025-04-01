@@ -537,10 +537,6 @@ io.on('connection', (socket) => {
   });
 });
 
-app.post('/admin-login', (req, res) => {
-  const { username, password } = req.body;
-  return res.status(401).json({ success: false, message: 'Endpoint no configurado' });
-});
 
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
