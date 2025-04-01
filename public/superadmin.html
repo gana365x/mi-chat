@@ -397,8 +397,8 @@
         <label for="superPassword">Contraseña</label>
       </div>
       <div class="button-wrapper">
-  <button onclick="loginSuperAdmin()">Ingresar</button>
-</div>
+        <button onclick="loginSuperAdmin()">Ingresar</button>
+      </div>
       <p id="loginError" style="color: #ff5555; display: none; font-size: 12px; text-align: center;">Credenciales inválidas</p>
     </div>
   </div>
@@ -501,64 +501,64 @@
   <script>
     Chart.register(ChartDataLabels);
 
-let systemTimezone = "UTC"; // Valor por defecto
-
-function loadTimezoneFromServer() {
-  return fetch('/get-timezone', { credentials: 'include' })
-    .then(res => {
-      if (!res.ok) throw new Error(`Failed to fetch timezone: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      systemTimezone = data.timezone || "UTC";
-      console.log("Zona horaria cargada:", systemTimezone);
-    })
-    .catch(err => {
-      console.error("Error al cargar timezone:", err);
-      systemTimezone = "UTC";
-    });
-}
-
-const socket = io('https://mi-chat-9uti.onrender.com');
+    let systemTimezone = "UTC";
     let chartInstance = null;
     let allAgents = [];
 
-    function loginSuperAdmin() {
-  const username = document.getElementById('superUsername').value.trim();
-  const password = document.getElementById('superPassword').value.trim();
-  const loginError = document.getElementById('loginError');
-
-  if (!username || !password) {
-    loginError.textContent = "Por favor, completa ambos campos.";
-    loginError.style.display = 'block';
-    return;
-  }
-
-  fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    credentials: 'include',
-    body: JSON.stringify({ username, password })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('mainBox').style.display = 'block';
-      showSection('home');
-      loadAgents();
-    } else {
-      throw new Error(data.message || 'Error de autenticación');
+    function loadTimezoneFromServer() {
+      return fetch('/get-timezone', { credentials: 'include' })
+        .then(res => {
+          if (!res.ok) throw new Error(`Failed to fetch timezone: ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          systemTimezone = data.timezone || "UTC";
+          console.log("Zona horaria cargada:", systemTimezone);
+        })
+        .catch(err => {
+          console.error("Error al cargar timezone:", err);
+          systemTimezone = "UTC";
+        });
     }
-  })
-  .catch(err => {
-    loginError.textContent = err.message || 'Error al intentar iniciar sesión';
-    loginError.style.display = 'block';
-  });
-}
+
+    const socket = io('https://mi-chat-9uti.onrender.com');
+
+    function loginSuperAdmin() {
+      const username = document.getElementById('superUsername').value.trim();
+      const password = document.getElementById('superPassword').value.trim();
+      const loginError = document.getElementById('loginError');
+
+      if (!username || !password) {
+        loginError.textContent = "Por favor, completa ambos campos";
+        loginError.style.display = 'block';
+        return;
+      }
+
+      fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('loginBox').style.display = 'none';
+          document.getElementById('mainBox').style.display = 'block';
+          showSection('home');
+          loadAgents();
+        } else {
+          throw new Error(data.message || 'Error de autenticación');
+        }
+      })
+      .catch(error => {
+        loginError.textContent = error.message || 'Error al intentar iniciar sesión';
+        loginError.style.display = 'block';
+      });
+    }
     
     function showSection(section) {
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
@@ -568,7 +568,6 @@ const socket = io('https://mi-chat-9uti.onrender.com');
 
       if (section === "stats") {
         setDefaultDates();
-        // Cargar estadísticas automáticamente al mostrar la sección
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
@@ -648,370 +647,181 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     }
 
     function setQuickRange() {
-  const now = new Date();
-  const fromDateInput = document.getElementById("fromDate");
-  const toDateInput = document.getElementById("toDate");
-  const fromTimeInput = document.getElementById("fromTime");
-  const toTimeInput = document.getElementById("toTime");
-  const value = document.getElementById("quickRange").value;
+      const now = new Date();
+      const fromDateInput = document.getElementById("fromDate");
+      const toDateInput = document.getElementById("toDate");
+      const fromTimeInput = document.getElementById("fromTime");
+      const toTimeInput = document.getElementById("toTime");
+      const value = document.getElementById("quickRange").value;
 
-  let start = new Date();
-  let end = new Date();
+      let start = new Date();
+      let end = new Date();
 
-  switch (value) {
-    case "today":
-      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-      break;
-    case "yesterday":
-      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
-      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
-      break;
-    case "week":
-      const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1;
-      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
-      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-      break;
-    case "month":
-      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
-      break;
-    case "lastMonth":
-      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
-      break;
-  }
-
-  fromDateInput.value = start.toISOString().split('T')[0];
-  fromTimeInput.value = '00:00';
-  toDateInput.value = end.toISOString().split('T')[0];
-  toTimeInput.value = '23:59';
-
-  const from = start.toISOString();
-  const to = end.toISOString();
-  loadStats(from, to);
-}
-
-    function confirmAndLoadStats() {
-  const fromDate = document.getElementById("fromDate").value;
-  const fromTime = document.getElementById("fromTime").value;
-  const toDate = document.getElementById("toDate").value;
-  const toTime = document.getElementById("toTime").value;
-
-  if (!fromDate || !fromTime || !toDate || !toTime) {
-    alert("Debes completar todos los campos de fecha y hora.");
-    return;
-  }
-
-  const from = new Date(`${fromDate}T${fromTime}:00Z`); // UTC directo
-  const to = new Date(`${toDate}T${toTime}:00Z`); // UTC directo
-
-  loadStats(from.toISOString(), to.toISOString());
-}
-    
-    function loadStats(from, to) {
-  // Cargar estadísticas de interacciones
-  fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-    credentials: 'include'
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`Error al cargar stats: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      document.getElementById("statMessages").textContent = data.messages || 0;
-      document.getElementById("statCargar").textContent = data.cargarFichas || 0;
-      document.getElementById("statRetiro").textContent = data.retiros || 0;
-      document.getElementById("statImagenes").textContent = data.imagenes || 0;
-    })
-    .catch(err => {
-      console.error("Error al cargar estadísticas de interacciones:", err);
-      document.getElementById("statMessages").textContent = 0;
-      document.getElementById("statCargar").textContent = 0;
-      document.getElementById("statRetiro").textContent = 0;
-      document.getElementById("statImagenes").textContent = 0;
-    });
-
-  // Cargar estadísticas de agentes para el gráfico
-  fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-    credentials: 'include'
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`Error al cargar stats-agents: ${res.status}`);
-      return res.json();
-    })
-    .then(agentData => {
-      const filteredData = agentData
-        .filter(agent => agent.role !== 'SuperAdmin')
-        .sort((a, b) => b.finalizados - a.finalizados);
-
-      const labels = filteredData.length > 0 ? filteredData.map(agent => agent.name || agent.username) : ['Sin datos'];
-      const values = filteredData.length > 0 ? filteredData.map(agent => agent.finalizados || 0) : [0];
-
-      const ctx = document.getElementById('chartAgentes').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Chats Finalizados',
-            data: values,
-            backgroundColor: values.length > 0 ? values.map((_, index) => 
-              index === 0 ? '#FFD700' :
-              index === 1 ? '#C0C0C0' :
-              index === 2 ? '#CD7F32' : '#1a1a1a'
-            ) : ['#1a1a1a'],
-            borderColor: '#FF3B00',
-            borderWidth: 2,
-            borderRadius: 6,
-            hoverBackgroundColor: '#2a2a2a'
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#FF3B00',
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              callbacks: {
-                label: function(context) {
-                  const position = context.dataIndex + 1;
-                  return `Posición #${position} - ${context.formattedValue} chats`;
-                }
-              }
-            },
-            datalabels: {
-              anchor: 'end',
-              align: 'right',
-              offset: 4,
-              color: '#fff',
-              font: { size: 10, weight: 'bold' },
-              formatter: (value, context) => `#${context.dataIndex + 1} - ${value}`
-            }
-          },
-          scales: {
-            x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
-            y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
-          }
-        }
-      });
-    })
-    .catch(err => {
-      console.error("Error al cargar estadísticas de agentes:", err);
-      const ctx = document.getElementById('chartAgentes').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Sin datos'],
-          datasets: [{ label: 'Chats Finalizados', data: [0], backgroundColor: '#1a1a1a', borderColor: '#FF3B00', borderWidth: 2, borderRadius: 6 }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false }, datalabels: { display: false } },
-          scales: {
-            x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
-            y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
-          }
-        }
-      });
-    });
-}
-    .then(res => {
-      if (!res.ok) throw new Error(`Failed to fetch stats: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-  document.getElementById("statMessages").textContent.Concurrent = data.messages || 0;
-  document.getElementById("statCargar").textContent = data.cargarFichas || 0;
-  document.getElementById("statRetiro").textContent = data.retiros || 0;
-  document.getElementById("statImagenes").textContent = data.imagenes || 0;
-})
-    .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
-
-  fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-    credentials: 'include'
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`Failed to fetch stats-agents: ${res.status}`);
-      return res.json();
-    })
-    .then(agentData => {
-      console.log('Datos de agentes recibidos:', agentData);
-
-      const filteredData = agentData
-        .filter(agent => agent.role !== 'SuperAdmin')
-        .sort((a, b) => b.finalizados - a.finalizados);
-
-      const labels = filteredData.map(agent => agent.name || agent.username);
-      const values = filteredData.map(agent => agent.finalizados || 0);
-
-      if (values.every(v => v === 0)) {
-        console.log('No hay datos de agentes para mostrar en el gráfico.');
+      switch (value) {
+        case "today":
+          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+          break;
+        case "yesterday":
+          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
+          break;
+        case "week":
+          const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1;
+          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
+          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+          break;
+        case "month":
+          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+          break;
+        case "lastMonth":
+          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
+          break;
       }
 
-      const ctx = document.getElementById('chartAgentes').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
+      fromDateInput.value = start.toISOString().split('T')[0];
+      fromTimeInput.value = '00:00';
+      toDateInput.value = end.toISOString().split('T')[0];
+      toTimeInput.value = '23:59';
 
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels.length > 0 ? labels : ["Sin datos"],
-          datasets: [{
-            label: 'Chats Finalizados',
-            data: values.length > 0 ? values : [0],
-            backgroundColor: values.length > 0 ? values.map((_, index) => 
-              index === 0 ? '#FFD700' :
-              index === 1 ? '#C0C0C0' :
-              index === 2 ? '#CD7F32' :
-              '#1a1a1a'
-            ) : ['#1a1a1a'],
-            borderColor: '#FF3B00',
-            borderWidth: 2,
-            borderRadius: 6,
-            hoverBackgroundColor: '#2a2a2a'
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            duration: 1000,
-            easing: 'easeInOutQuart'
+      const from = start.toISOString();
+      const to = end.toISOString();
+      loadStats(from, to);
+    }
+
+    function confirmAndLoadStats() {
+      const fromDate = document.getElementById("fromDate").value;
+      const fromTime = document.getElementById("fromTime").value;
+      const toDate = document.getElementById("toDate").value;
+      const toTime = document.getElementById("toTime").value;
+
+      if (!fromDate || !fromTime || !toDate || !toTime) {
+        alert("Debes completar todos los campos de fecha y hora.");
+        return;
+      }
+
+      const from = new Date(`${fromDate}T${fromTime}:00Z`);
+      const to = new Date(`${toDate}T${toTime}:00Z`);
+
+      loadStats(from.toISOString(), to.toISOString());
+    }
+    
+    function loadStats(from, to) {
+      fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+        credentials: 'include'
+      })
+      .then(res => {
+        if (!res.ok) throw new Error(`Error al cargar stats: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById("statMessages").textContent = data.messages || 0;
+        document.getElementById("statCargar").textContent = data.cargarFichas || 0;
+        document.getElementById("statRetiro").textContent = data.retiros || 0;
+        document.getElementById("statImagenes").textContent = data.imagenes || 0;
+      })
+      .catch(err => {
+        console.error("Error al cargar estadísticas de interacciones:", err);
+        document.getElementById("statMessages").textContent = 0;
+        document.getElementById("statCargar").textContent = 0;
+        document.getElementById("statRetiro").textContent = 0;
+        document.getElementById("statImagenes").textContent = 0;
+      });
+
+      fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+        credentials: 'include'
+      })
+      .then(res => {
+        if (!res.ok) throw new Error(`Error al cargar stats-agents: ${res.status}`);
+        return res.json();
+      })
+      .then(agentData => {
+        const filteredData = agentData
+          .filter(agent => agent.role !== 'SuperAdmin')
+          .sort((a, b) => b.finalizados - a.finalizados);
+
+        const labels = filteredData.length > 0 ? filteredData.map(agent => agent.name || agent.username) : ['Sin datos'];
+        const values = filteredData.length > 0 ? filteredData.map(agent => agent.finalizados || 0) : [0];
+
+        const ctx = document.getElementById('chartAgentes').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Chats Finalizados',
+              data: values,
+              backgroundColor: values.length > 0 ? values.map((_, index) => 
+                index === 0 ? '#FFD700' :
+                index === 1 ? '#C0C0C0' :
+                index === 2 ? '#CD7F32' : '#1a1a1a'
+              ) : ['#1a1a1a'],
+              borderColor: '#FF3B00',
+              borderWidth: 2,
+              borderRadius: 6,
+              hoverBackgroundColor: '#2a2a2a'
+            }]
           },
-          layout: {
-            padding: {
-              left: 5,
-              right: 20,
-              top: 5,
-              bottom: 5
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#FF3B00',
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              callbacks: {
-                label: function(context) {
-                  const position = context.dataIndex + 1;
-                  return `Posición #${position} - ${context.formattedValue} chats`;
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#FF3B00',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                callbacks: {
+                  label: function(context) {
+                    const position = context.dataIndex + 1;
+                    return `Posición #${position} - ${context.formattedValue} chats`;
+                  }
                 }
-              }
-            },
-            datalabels: {
-              anchor: 'end',
-              align: 'right',
-              offset: 4,
-              color: '#fff',
-              font: {
-                size: 10,
-                weight: 'bold'
               },
-              formatter: (value, context) => {
-                const position = context.dataIndex + 1;
-                return `#${position} - ${value}`;
-              }
-            }
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              grid: { color: '#333' },
-              ticks: { 
+              datalabels: {
+                anchor: 'end',
+                align: 'right',
+                offset: 4,
                 color: '#fff',
-                font: { size: 10 }
+                font: { size: 10, weight: 'bold' },
+                formatter: (value, context) => `#${context.dataIndex + 1} - ${value}`
               }
             },
-            y: {
-              grid: { color: '#333' },
-              ticks: { 
-                color: '#fff',
-                callback: function(value, index) {
-                  return `${labels[index] || "Sin datos"}`;
-                },
-                font: { size: 10 }
-              }
+            scales: {
+              x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
+              y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
             }
           }
-        }
-      });
-    })
-    .catch(err => {
-      console.error("Error al cargar estadísticas de agentes:", err);
-      const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
-      const values = labels.map(() => 0);
-
-      const ctx = document.getElementById('chartAgentes').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Chats Finalizados',
-            data: values,
-            backgroundColor: '#1a1a1a',
-            borderColor: '#FF3B00',
-            borderWidth: 2,
-            borderRadius: 6,
-            hoverBackgroundColor: '#2a2a2a'
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#FF3B00',
-              titleColor: '#fff',
-              bodyColor: '#fff'
-            },
-            datalabels: {
-              anchor: 'end',
-              align: 'right',
-              offset: 4,
-              color: '#fff',
-              font: {
-                size: 10,
-                weight: 'bold'
-              },
-              formatter: (value) => value
-            }
+        });
+      })
+      .catch(err => {
+        console.error("Error al cargar estadísticas de agentes:", err);
+        const ctx = document.getElementById('chartAgentes').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Sin datos'],
+            datasets: [{ label: 'Chats Finalizados', data: [0], backgroundColor: '#1a1a1a', borderColor: '#FF3B00', borderWidth: 2, borderRadius: 6 }]
           },
-          scales: {
-            x: { 
-              beginAtZero: true, 
-              grid: { color: '#333' }, 
-              ticks: { 
-                color: '#fff',
-                font: { size: 10 }
-              } 
-            },
-            y: { 
-              grid: { color: '#333' }, 
-              ticks: { 
-                color: '#fff',
-                font: { size: 10 }
-              } 
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, datalabels: { display: false } },
+            scales: {
+              x: { beginAtZero: true, grid: { color: '#333' },  ticks: { color: '#fff', font: { size: 10 } } },
+              y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
             }
           }
-        }
+        });
       });
-    });
-}
+    }
 
     let selectedUsernameToDelete = null;
     let selectedUsernameToEdit = null;
@@ -1087,19 +897,19 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-  loadTimezoneFromServer().then(() => {
-    const userInput = document.getElementById('superUsername');
-    const passInput = document.getElementById('superPassword');
+      loadTimezoneFromServer().then(() => {
+        const userInput = document.getElementById('superUsername');
+        const passInput = document.getElementById('superPassword');
 
-    [userInput, passInput].forEach(input => {
-      input.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-          loginSuperAdmin();
-        }
+        [userInput, passInput].forEach(input => {
+          input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+              loginSuperAdmin();
+            }
+          });
+        });
       });
     });
-  });
-});
   </script>
 
   <!-- POPUP CONFIRMAR ELIMINACIÓN -->
