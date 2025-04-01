@@ -191,25 +191,31 @@
   </div>
 
   <!-- Sección de agentes -->
-  <div id="section-agents" style="display:none;">
-    <h2>Crear nuevo agente</h2>
-    <input type="text" id="newLogin" placeholder="Login del agente">
-    <input type="text" id="newName" placeholder="Nombre visible del agente">
-    <input type="password" id="newPassword" placeholder="Contraseña">
-    <button onclick="createAgent()">Crear</button>
-    <p id="createError" style="color: red; display: none;"></p>
-    <h2>Agentes registrados</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Nombre Visible</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="agentsTable"></tbody>
-    </table>
-  </div>
+  <!-- Sección de agentes -->
+<div id="section-agents" style="display:none;">
+  <h2>Crear nuevo agente</h2>
+  <input type="text" id="newLogin" placeholder="Login del agente">
+  <input type="text" id="newName" placeholder="Nombre visible del agente">
+  <input type="password" id="newPassword" placeholder="Contraseña">
+  <select id="newRole" style="margin-top: 10px;">
+    <option value="Agent">Agent</option>
+    <option value="SuperAgente">SuperAgente</option>
+  </select>
+  <button onclick="createAgent()" style="margin-top: 10px;">Crear</button>
+  <p id="createError" style="color: red; display: none;"></p>
+  <h2>Agentes registrados</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Nombre Visible</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="agentsTable"></tbody>
+  </table>
+</div>
 
   <!-- Sección estadísticas -->
   <div id="section-stats" style="display:none;">
@@ -587,59 +593,63 @@
 }
 
     function loadAgents() {
-      fetch('/agents')
-        .then(res => res.json())
-        .then(agents => {
-          allAgents = agents.map(agent => agent.username); // Guardamos los usernames
-          const table = document.getElementById('agentsTable');
-          table.innerHTML = '';
-          agents.forEach(agent => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td><strong>${agent.username}</strong></td>
-              <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
-              <td style="display: flex; gap: 10px;">
-                <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
-                <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
-              </td>
-            `;
-            table.appendChild(row);
-          });
-        });
-    }
+  fetch('/agents')
+    .then(res => res.json())
+    .then(agents => {
+      // Filtramos solo los agentes con rol "Agent" para estadísticas
+      allAgents = agents.filter(agent => agent.role === 'Agent').map(agent => agent.username);
+      const table = document.getElementById('agentsTable');
+      table.innerHTML = '';
+      agents.forEach(agent => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${agent.username}</strong></td>
+          <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
+          <td>${agent.role || 'Agent'}</td>
+          <td style="display: flex; gap: 10px;">
+            <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
+            <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+          </td>
+        `;
+        table.appendChild(row);
+      });
+    });
+}
 
     function createAgent() {
-      const login = document.getElementById('newLogin').value.trim();
-      const name = document.getElementById('newName').value.trim();
-      const password = document.getElementById('newPassword').value.trim();
+  const login = document.getElementById('newLogin').value.trim();
+  const name = document.getElementById('newName').value.trim();
+  const password = document.getElementById('newPassword').value.trim();
+  const role = document.getElementById('newRole').value;
 
-      if (!login || !name || !password) {
-        document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
-        document.getElementById('createError').style.display = 'block';
-        return;
-      }
+  if (!login || !name || !password || !role) {
+    document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+    document.getElementById('createError').style.display = 'block';
+    return;
+  }
 
-      fetch('/agents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: login, name, password })
-      })
-      .then(res => {
-        if (!res.ok) return res.json().then(err => { throw err; });
-        return res.json();
-      })
-      .then(() => {
-        document.getElementById('newLogin').value = '';
-        document.getElementById('newName').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('createError').style.display = 'none';
-        loadAgents();
-      })
-      .catch(err => {
-        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
-        document.getElementById('createError').style.display = 'block';
-      });
-    }
+  fetch('/agents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: login, name, password, role })
+  })
+  .then(res => {
+    if (!res.ok) return res.json().then(err => { throw err; });
+    return res.json();
+  })
+  .then(() => {
+    document.getElementById('newLogin').value = '';
+    document.getElementById('newName').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('newRole').value = 'Agent'; // Resetear a valor por defecto
+    document.getElementById('createError').style.display = 'none';
+    loadAgents();
+  })
+  .catch(err => {
+    document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+    document.getElementById('createError').style.display = 'block';
+  });
+}
 
     function deleteAgent(username) {
       fetch(`/agents/${username}`, {
