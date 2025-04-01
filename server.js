@@ -134,7 +134,7 @@ const chatMessageSchema = new mongoose.Schema({
   image: String,
   timestamp: { type: String, required: true },
   status: String,
-  agentUsername: String,
+  adminUsername: String,
   username: String
 });
 
@@ -475,54 +475,54 @@ io.on('connection', (socket) => {
     socket.emit('chat history', { userId: data.userId, messages: history });
   });
 
-  socket.on('close chat', async ({ userId, agentUsername }) => {
-    const userSocket = userSessions.get(userId)?.socket;
-    if (userSocket) {
-      userSocket.emit('chat closed', { userId });
+  socket.on('close chat', async ({ userId, adminUsername }) => {
+  const userSocket = userSessions.get(userId)?.socket;
+  if (userSocket) {
+    userSocket.emit('chat closed', { userId });
+  }
+
+  if (adminUsername) {
+    await incrementPerformance(adminUsername);
+  }
+
+  if (userSessions.has(userId)) {
+    const session = userSessions.get(userId);
+    userSessions.set(userId, { ...session, socket: null });
+  }
+
+  let username = userSessions.get(userId)?.username || 'Usuario';
+  try {
+    const savedName = await UserName.findOne({ userId });
+    if (savedName) {
+      username = savedName.name;
     }
+  } catch (e) {
+    console.error("❌ Error obteniendo nombre del usuario:", e.message);
+  }
 
-    if (agentUsername) {
-      await incrementPerformance(agentUsername);
+  const closeMsg = {
+    userId,
+    sender: 'System',
+    message: '💬 Chat cerrado',
+    timestamp: getTimestamp(),
+    status: 'closed',
+    adminUsername: adminUsername,
+    username: username
+  };
+  await new ChatMessage(closeMsg).save();
+
+  if (userSocket) {
+    userSocket.emit('chat message', closeMsg);
+  }
+
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === userId) {
+      io.to(adminSocketId).emit('admin message', closeMsg);
     }
+  }
 
-    if (userSessions.has(userId)) {
-      const session = userSessions.get(userId);
-      userSessions.set(userId, { ...session, socket: null });
-    }
-
-    let username = userSessions.get(userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
-
-    const closeMsg = {
-      userId,
-      sender: 'System',
-      message: '💬 Chat cerrado',
-      timestamp: getTimestamp(),
-      status: 'closed',
-      agentUsername: agentUsername,
-      username: username
-    };
-    await new ChatMessage(closeMsg).save();
-
-    if (userSocket) {
-      userSocket.emit('chat message', closeMsg);
-    }
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === userId) {
-        io.to(adminSocketId).emit('admin message', closeMsg);
-      }
-    }
-
-    io.emit('user list', await getAllChatsSorted());
-  });
+  io.emit('user list', await getAllChatsSorted());
+});
 
   socket.on('disconnect', async () => {
     adminSubscriptions.delete(socket.id);
@@ -574,7 +574,7 @@ app.post('/superadmin-login', async (req, res) => {
   }
 });
 
-app.post('/agent-login', async (req, res) => {
+app.post('/admin-login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!validateAuthInput(username, password)) {
@@ -582,7 +582,7 @@ app.post('/agent-login', async (req, res) => {
   }
 
   try {
-    const agent = await Agent.findOne({ username, type: 'agent' });
+    const agent = await Agent.findOne({ username, $or: [{ role: 'Admin' }, { type: 'agent' }] });
     if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
@@ -595,7 +595,7 @@ app.post('/agent-login', async (req, res) => {
     res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
-    console.error('❌ Error en login de agente:', err);
+    console.error('❌ Error en login de admin:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
@@ -968,9 +968,9 @@ app.get('/stats-agents', async (req, res) => {
 
     const agentStatsMap = {};
     closedMessages.forEach(msg => {
-      if (msg.agentUsername) {
-        agentStatsMap[msg.agentUsername] = (agentStatsMap[msg.agentUsername] || 0) + 1;
-      }
+      if (msg.adminUsername) {
+  agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
+}
     });
 
     const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name'); // Solo Agents
