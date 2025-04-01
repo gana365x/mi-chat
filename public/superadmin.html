@@ -673,21 +673,26 @@
     }
 
     function confirmAndLoadStats() {
-      const fromDate = document.getElementById("fromDate").value;
-      const fromTime = document.getElementById("fromTime").value;
-      const toDate = document.getElementById("toDate").value;
-      const toTime = document.getElementById("toTime").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const fromTime = document.getElementById("fromTime").value;
+  const toDate = document.getElementById("toDate").value;
+  const toTime = document.getElementById("toTime").value;
 
-      if (!fromDate || !fromTime || !toDate || !toTime) {
-        alert("Debes completar todos los campos de fecha y hora.");
-        return;
-      }
+  if (!fromDate || !fromTime || !toDate || !toTime) {
+    alert("Debes completar todos los campos de fecha y hora.");
+    return;
+  }
 
-      const from = new Date(`${fromDate}T${fromTime}:00`);
-      const to = new Date(`${toDate}T${toTime}:59`);
+  // Crear fechas en UTC y luego ajustarlas a la zona horaria del servidor
+  const fromUTC = new Date(`${fromDate}T${fromTime}:00Z`); // Z asegura UTC
+  const toUTC = new Date(`${toDate}T${toTime}:59Z`);
 
-      loadStats(from.toISOString(), to.toISOString());
-    }
+  // Convertir a la zona horaria del servidor
+  const from = fromUTC.toLocaleString('en-US', { timeZone: systemTimezone });
+  const to = toUTC.toLocaleString('en-US', { timeZone: systemTimezone });
+
+  loadStats(new Date(from).toISOString(), new Date(to).toISOString());
+}
     
     function loadStats(from, to) {
       fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
