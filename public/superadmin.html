@@ -704,11 +704,121 @@ const socket = io('https://mi-chat-9uti.onrender.com');
 }
     
     function loadStats(from, to) {
-  console.log('Cargando estadísticas para:', { from, to });
-
+  // Cargar estadísticas de interacciones
   fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
     credentials: 'include'
   })
+    .then(res => {
+      if (!res.ok) throw new Error(`Error al cargar stats: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById("statMessages").textContent.Concurrent = data.messages || 0;
+      document.getElementById("statCargar").textContent = data.cargarFichas || 0;
+      document.getElementById("statRetiro").textContent = data.retiros || 0;
+      document.getElementById("statImagenes").textContent = data.imagenes || 0;
+    })
+    .catch(err => {
+      console.error("Error al cargar estadísticas de interacciones:", err);
+      document.getElementById("statMessages").textContent = 0;
+      document.getElementById("statCargar").textContent = 0;
+      document.getElementById("statRetiro").textContent = 0;
+      document.getElementById("statImagenes").textContent = 0;
+    });
+
+  // Cargar estadísticas de agentes para el gráfico
+  fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+    credentials: 'include'
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`Error al cargar stats-agents: ${res.status}`);
+      return res.json();
+    })
+    .then(agentData => {
+      const filteredData = agentData
+        .filter(agent => agent.role !== 'SuperAdmin')
+        .sort((a, b) => b.finalizados - a.finalizados);
+
+      const labels = filteredData.length > 0 ? filteredData.map(agent => agent.name || agent.username) : ['Sin datos'];
+      const values = filteredData.length > 0 ? filteredData.map(agent => agent.finalizados || 0) : [0];
+
+      const ctx = document.getElementById('chartAgentes').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Chats Finalizados',
+            data: values,
+            backgroundColor: values.length > 0 ? values.map((_, index) => 
+              index === 0 ? '#FFD700' :
+              index === 1 ? '#C0C0C0' :
+              index === 2 ? '#CD7F32' : '#1a1a1a'
+            ) : ['#1a1a1a'],
+            borderColor: '#FF3B00',
+            borderWidth: 2,
+            borderRadius: 6,
+            hoverBackgroundColor: '#2a2a2a'
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#FF3B00',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              callbacks: {
+                label: function(context) {
+                  const position = context.dataIndex + 1;
+                  return `Posición #${position} - ${context.formattedValue} chats`;
+                }
+              }
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              offset: 4,
+              color: '#fff',
+              font: { size: 10, weight: 'bold' },
+              formatter: (value, context) => `#${context.dataIndex + 1} - ${value}`
+            }
+          },
+          scales: {
+            x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
+            y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
+          }
+        }
+      });
+    })
+    .catch(err => {
+      console.error("Error al cargar estadísticas de agentes:", err);
+      const ctx = document.getElementById('chartAgentes').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Sin datos'],
+          datasets: [{ label: 'Chats Finalizados', data: [0], backgroundColor: '#1a1a1a', borderColor: '#FF3B00', borderWidth: 2, borderRadius: 6 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: {
+            x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
+            y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
+          }
+        }
+      });
+    });
+}
     .then(res => {
       if (!res.ok) throw new Error(`Failed to fetch stats: ${res.status}`);
       return res.json();
