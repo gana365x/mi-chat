@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Super Admin - Gestión de Accesos</title>
   <style>
     /* Variables CSS */
@@ -22,21 +22,26 @@
     }
 
     /* Estilos base */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
       color: var(--text-light);
-      margin: 0;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
     }
 
     /* Desktop (≥1024px) */
     @media (min-width: 1024px) {
       body {
         padding: 30px;
+        overflow: auto;
       }
 
       .login-box {
@@ -49,78 +54,30 @@
         padding: 40px;
       }
 
+      .stats-filters {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        align-items: center;
+      }
+
+      .stats-filters button {
+        grid-column: 1 / -1;
+      }
+
       .home-buttons {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 20px;
       }
 
-      .home-buttons button {
-        font-size: 16px;
-        padding: 15px;
-      }
-
-      table {
-        font-size: 14px;
-      }
-
-      th, td {
-        padding: 15px;
-      }
-
       #chartAgentes {
         height: 400px !important;
       }
-
-      .popup-box {
-        width: 400px;
-        padding: 30px;
-      }
     }
 
-    /* Tablet (≥768px y <1024px) */
-    @media (min-width: 768px) and (max-width: 1023px) {
-      body {
-        padding: 20px;
-      }
-
-      .login-box {
-        width: 80%;
-        max-width: 500px;
-        padding: 30px;
-      }
-
-      .main-box {
-        width: 90%;
-        padding: 25px;
-      }
-
-      .home-buttons {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-      }
-
-      .home-buttons button {
-        font-size: 14px;
-        padding: 12px;
-      }
-
-      table {
-        font-size: 13px;
-      }
-
-      th, td {
-        padding: 12px;
-      }
-
-      #chartAgentes {
-        height: 350px !important;
-      }
-    }
-
-    /* Mobile (<768px) */
-    @media (max-width: 767px) {
+    /* Mobile (<1024px) */
+    @media (max-width: 1023px) {
       body {
         padding: 10px;
       }
@@ -128,30 +85,63 @@
       .login-box, .main-box {
         width: 95%;
         padding: 15px;
+        margin: 10px auto;
+      }
+
+      .main-box {
+        height: calc(100vh - 40px);
+        overflow-y: auto;
+      }
+
+      .stats-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .stats-filters label {
+        font-size: 12px;
+        margin: 0;
+      }
+
+      .stats-filters input,
+      .stats-filters select {
+        font-size: 12px;
+        padding: 4px;
+        height: 30px;
+      }
+
+      .stats-filters .date-group {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        width: 100%;
+      }
+
+      .stats-filters .date-group label {
+        width: auto;
+        min-width: 30px;
+      }
+
+      .stats-filters .date-group input {
+        flex: 1;
+      }
+
+      .stats-filters button {
+        width: 100%;
+        margin-top: 10px;
       }
 
       .home-buttons {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 10px;
       }
 
-      .home-buttons button {
-        font-size: 14px;
-        padding: 12px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      h2 {
-        font-size: 20px;
-      }
-
-      h3 {
-        font-size: 18px;
-      }
+      h1 { font-size: 24px; }
+      h2 { font-size: 20px; }
+      h3 { font-size: 18px; }
 
       table {
         font-size: 12px;
@@ -169,15 +159,6 @@
       #chartAgentes {
         height: 300px !important;
       }
-
-      .popup-box {
-        width: 90%;
-        padding: 15px;
-      }
-
-      .input-group label {
-        font-size: 14px;
-      }
     }
 
     /* Estilos comunes */
@@ -186,7 +167,6 @@
       border-radius: var(--border-radius-lg);
       border: 2px solid var(--primary-color);
       box-shadow: var(--shadow);
-      margin: 20px auto;
     }
 
     h1, h2, h3 {
@@ -244,6 +224,19 @@
       background-color: var(--bg-input);
     }
 
+    .calendar-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .calendar-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
     .popup-overlay {
       position: fixed;
       top: 0;
@@ -263,14 +256,51 @@
 
     .popup-box {
       background: var(--bg-darker);
+      padding: 20px;
       border-radius: var(--border-radius-lg);
       border: 2px solid var(--primary-color);
       box-shadow: 0 0 20px rgba(255, 59, 0, 0.3);
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
+    }
+
+    .popup-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .popup-btn {
+      background: var(--bg-darker);
+      color: white;
+      border: 2px solid var(--primary-color);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .popup-btn:hover {
+      background: var(--bg-hover);
+      transform: scale(1.05);
+    }
+
+    .popup-icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .popup-text {
+      font-size: 14px;
+      color: #ffae00;
     }
 
     .input-group {
       position: relative;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     .input-group label {
@@ -297,20 +327,6 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 15px;
       margin-top: 20px;
-    }
-
-    .calendar-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    .calendar-icon {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 18px;
     }
 
     .delete-btn, .edit-btn {
@@ -382,19 +398,25 @@
     <!-- Sección estadísticas -->
     <div id="section-stats" style="display:none;">
       <h2>📊 Estadísticas</h2>
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-        <label>De:</label>
-        <div class="calendar-wrapper">
-          <input type="date" id="fromDate">
-          <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
+      <div class="stats-filters">
+        <div class="date-group">
+          <label>De:</label>
+          <div class="calendar-wrapper">
+            <input type="date" id="fromDate">
+            <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
+          </div>
+          <input type="time" id="fromTime">
         </div>
-        <input type="time" id="fromTime">
-        <label>A:</label>
-        <div class="calendar-wrapper">
-          <input type="date" id="toDate">
-          <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
+        
+        <div class="date-group">
+          <label>A:</label>
+          <div class="calendar-wrapper">
+            <input type="date" id="toDate">
+            <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
+          </div>
+          <input type="time" id="toTime">
         </div>
-        <input type="time" id="toTime">
+        
         <select id="quickRange" onchange="setQuickRange()">
           <option value="">Elegir el periodo</option>
           <option value="today">Hoy</option>
@@ -403,8 +425,10 @@
           <option value="month">Este mes</option>
           <option value="lastMonth">Mes anterior</option>
         </select>
+        
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
+      
       <div>
         <h3 style="color: orange;">📈 Estadísticas de Agentes</h3>
         <canvas id="chartAgentes" height="100"></canvas>
@@ -866,7 +890,8 @@
 
     socket.on('update username', (data) => {
       console.log('Evento update username recibido en superadmin:', data);
-      const {userId, newUsername} = data;
+      const { userId, newUsername } = data;
+
       const agentRow = document.getElementById(`agent-name-${userId}`);
       if (agentRow) {
         agentRow.textContent = newUsername;
