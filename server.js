@@ -901,9 +901,13 @@ app.get('/stats', async (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
+    console.log('Filtrando stats - Desde:', fromDate.toISOString(), 'Hasta:', toDate.toISOString());
+
     const messages = await ChatMessage.find({
-      timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
+      timestamp: { $gte: fromDate, $lte: toDate }
     });
+
+    console.log('Mensajes encontrados en /stats:', messages.length);
 
     let chatsClosed = 0;
     let messagesCount = 0;
@@ -935,6 +939,8 @@ app.get('/stats', async (req, res) => {
       ).length;
     }
 
+    console.log('Resultados /stats:', { chatsClosed, messagesCount, cargarFichasCount, retirosCount, imagenesCount });
+
     res.json({
       chats: chatsClosed,
       messages: messagesCount,
@@ -958,8 +964,57 @@ app.get('/stats-agents', async (req, res) => {
   if (!from || !to) {
     return res.status(400).json({ error: 'Faltan parámetros from y to' });
   }
-  
+
+  try {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    if (isNaN(fromDate) || isNaN(toDate)) {
+      return res.status(400).json({ error: 'Fechas inválidas' });
+    }
+
+    console.log('Filtrando stats-agents - Desde:', fromDate.toISOString(), 'Hasta:', toDate.toISOString());
+
+    const closedMessages = await ChatMessage.find({
+      status: 'closed',
+      sender: 'System',
+      timestamp: { $gte: fromDate, $lte: toDate }
+    });
+
+    console.log('Mensajes cerrados encontrados:', closedMessages.length);
+    if (closedMessages.length > 0) {
+      console.log('Timestamps de mensajes cerrados:', closedMessages.map(msg => msg.timestamp));
+    } else {
+      console.log('No se encontraron mensajes cerrados en el rango. Buscando mensajes cercanos...');
+      const nearbyMessages = await ChatMessage.find({
+        status: 'closed',
+        sender: 'System'
+      }).sort({ timestamp: 1 }).limit(5);
+      console.log('Mensajes cerrados más cercanos:', nearbyMessages.map(msg => ({ timestamp: msg.timestamp, adminUsername: msg.adminUsername })));
+    }
+
+    const agentStatsMap = {};
+    closedMessages.forEach(msg => {
+      if (msg.adminUsername) {
+        agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
+      }
+    });
+
+    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name');
+    const agentStats = agents.map(agent => ({
+      username: agent.username,
+      name: agent.name || agent.username,
+      finalizados: agentStatsMap[agent.username] || 0
+    }));
+
+    console.log('Estadísticas de agentes:', agentStats);
+    res.json(agentStats);
+  } catch (error) {
+    console.error('Error al procesar estadísticas por agente:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
-  server.listen(PORT, () => {
+
+server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
