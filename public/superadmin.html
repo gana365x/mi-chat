@@ -545,13 +545,11 @@
 
       if (section === "stats") {
         setDefaultDates();
-        // Cargar estadísticas automáticamente para el día actual
-        const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-        const from = start.toISOString();
-        const to = end.toISOString();
-        loadStats(from, to);
+        // Cargar estadísticas automáticamente al mostrar la sección
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+        loadStats(todayStart.toISOString(), todayEnd.toISOString());
       }
     }
 
@@ -637,37 +635,44 @@
       let start = new Date();
       let end = new Date();
 
+      // Ajustamos para la zona horaria local
+      const offset = now.getTimezoneOffset() * 60000;
+
       switch (value) {
         case "today":
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
           break;
         case "yesterday":
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
           break;
         case "week":
           const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
           break;
         case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
-          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
           break;
         case "lastMonth":
-          start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
-          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
           break;
       }
+
+      // Ajustamos las fechas para UTC
+      const startUTC = new Date(start.getTime() - offset);
+      const endUTC = new Date(end.getTime() - offset);
 
       fromDateInput.value = start.toISOString().split('T')[0];
       fromTimeInput.value = '00:00';
       toDateInput.value = end.toISOString().split('T')[0];
       toTimeInput.value = '23:59';
 
-      const from = start.toISOString();
-      const to = end.toISOString();
+      const from = startUTC.toISOString();
+      const to = endUTC.toISOString();
       loadStats(from, to);
     }
 
@@ -682,9 +687,16 @@
         return;
       }
 
-      const from = `${fromDate}T${fromTime}:00Z`;
-      const to = `${toDate}T${toTime}:00Z`;
-      loadStats(from, to);
+      // Creamos fechas en UTC
+      const from = new Date(`${fromDate}T${fromTime}:00`);
+      const to = new Date(`${toDate}T${toTime}:00`);
+      
+      // Ajustamos para la zona horaria local
+      const offset = from.getTimezoneOffset() * 60000;
+      const fromUTC = new Date(from.getTime() - offset);
+      const toUTC = new Date(to.getTime() - offset);
+
+      loadStats(fromUTC.toISOString(), toUTC.toISOString());
     }
 
     function loadStats(from, to) {
@@ -842,6 +854,7 @@
                 },
                 datalabels: {
                   anchor: 'end',
+                
                   align: 'right',
                   offset: 4,
                   color: '#fff',
@@ -878,7 +891,7 @@
     let selectedUsernameToEdit = null;
 
     function openDeletePopup(username) {
-      selectedUsername = username;
+      selectedUsernameToDelete = username;
       document.getElementById("deletePopup").classList.add("active");
     }
 
