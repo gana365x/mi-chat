@@ -901,48 +901,29 @@ app.get('/stats', async (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    console.log('Filtrando stats - Desde:', fromDate.toISOString(), 'Hasta:', toDate.toISOString());
-
+    // Busca todos los mensajes en el rango de fechas
     const messages = await ChatMessage.find({
       timestamp: { $gte: fromDate, $lte: toDate }
     });
 
-    console.log('Mensajes encontrados en /stats:', messages.length);
+    // Contar estadísticas
+    const messagesCount = messages.filter(msg => 
+      !['Agent', 'System', 'Bot'].includes(msg.sender) && !msg.image
+    ).length;
 
-    let chatsClosed = 0;
-    let messagesCount = 0;
-    let cargarFichasCount = 0;
-    let retirosCount = 0;
-    let imagenesCount = 0;
+    const cargarFichasCount = messages.filter(msg => 
+      msg.message === 'Cargar Fichas'
+    ).length;
 
-    const userIds = [...new Set(messages.map(msg => msg.userId))];
-    for (const userId of userIds) {
-      const userMessages = messages.filter(msg => msg.userId === userId);
-      if (userMessages.some(msg => msg.status === 'closed')) {
-        chatsClosed++;
-      }
+    const retirosCount = messages.filter(msg => 
+      msg.message === 'Retirar'
+    ).length;
 
-      messagesCount += userMessages.filter(
-        msg => msg.sender === userSessions.get(userId)?.username || (!['Agent', 'System', 'Bot'].includes(msg.sender) && !msg.image)
-      ).length;
-
-      imagenesCount += userMessages.filter(
-        msg => msg.image && !['Agent', 'System', 'Bot'].includes(msg.sender)
-      ).length;
-
-      cargarFichasCount += userMessages.filter(
-        msg => msg.message === 'Cargar Fichas'
-      ).length;
-
-      retirosCount += userMessages.filter(
-        msg => msg.message === 'Retirar'
-      ).length;
-    }
-
-    console.log('Resultados /stats:', { chatsClosed, messagesCount, cargarFichasCount, retirosCount, imagenesCount });
+    const imagenesCount = messages.filter(msg => 
+      msg.image && !['Agent', 'System', 'Bot'].includes(msg.sender)
+    ).length;
 
     res.json({
-      chats: chatsClosed,
       messages: messagesCount,
       cargarFichas: cargarFichasCount,
       retiros: retirosCount,
@@ -973,41 +954,29 @@ app.get('/stats-agents', async (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    console.log('Filtrando stats-agents - Desde:', fromDate.toISOString(), 'Hasta:', toDate.toISOString());
-
+    // Busca mensajes cerrados en el rango de fechas
     const closedMessages = await ChatMessage.find({
       status: 'closed',
       sender: 'System',
       timestamp: { $gte: fromDate, $lte: toDate }
     });
 
-    console.log('Mensajes cerrados encontrados:', closedMessages.length);
-    if (closedMessages.length > 0) {
-      console.log('Timestamps de mensajes cerrados:', closedMessages.map(msg => msg.timestamp));
-    } else {
-      console.log('No se encontraron mensajes cerrados en el rango. Buscando mensajes cercanos...');
-      const nearbyMessages = await ChatMessage.find({
-        status: 'closed',
-        sender: 'System'
-      }).sort({ timestamp: 1 }).limit(5);
-      console.log('Mensajes cerrados más cercanos:', nearbyMessages.map(msg => ({ timestamp: msg.timestamp, adminUsername: msg.adminUsername })));
-    }
-
+    // Contar chats cerrados por agente
     const agentStatsMap = {};
     closedMessages.forEach(msg => {
-      if (msg.adminUsername) {
-        agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
-      }
+      const adminUsername = msg.adminUsername || 'unknown'; // Asegura que siempre haya un valor
+      agentStatsMap[adminUsername] = (agentStatsMap[adminUsername] || 0) + 1;
     });
 
-    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name');
+    // Obtener todos los agentes y combinar con estadísticas
+    const agents = await Agent.find({}, 'username name role type');
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
-      finalizados: agentStatsMap[agent.username] || 0
+      finalizados: agentStatsMap[agent.username] || 0,
+      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin')
     }));
 
-    console.log('Estadísticas de agentes:', agentStats);
     res.json(agentStats);
   } catch (error) {
     console.error('Error al procesar estadísticas por agente:', error);
