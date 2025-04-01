@@ -829,7 +829,6 @@
     function confirmDelete() {
       if (!selectedUsernameToDelete) return;
       fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToDelete}`, {
-        
         method: 'DELETE',
         credentials: 'include'
       })
