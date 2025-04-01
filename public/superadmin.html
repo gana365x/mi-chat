@@ -83,26 +83,27 @@
       }
 
       .login-box, .main-box {
-        width: 95%;
+        width: calc(100% - 20px);
         padding: 15px;
-        margin: 10px auto;
+        margin: 10px;
+        box-sizing: border-box;
       }
 
       .main-box {
-        height: calc(100vh - 40px);
+        height: calc(100vh - 20px);
         overflow-y: auto;
       }
 
       .stats-filters {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
+        gap: 8px;
       }
 
       .stats-filters label {
         font-size: 12px;
         margin: 0;
+        min-width: 25px;
       }
 
       .stats-filters input,
@@ -112,25 +113,35 @@
         height: 30px;
       }
 
-      .stats-filters .date-group {
+      .date-group {
         display: flex;
         align-items: center;
         gap: 5px;
         width: 100%;
       }
 
-      .stats-filters .date-group label {
-        width: auto;
-        min-width: 30px;
+      .date-group .calendar-wrapper {
+        flex: 2;
       }
 
-      .stats-filters .date-group input {
+      .date-group input[type="time"] {
         flex: 1;
+      }
+
+      .calendar-icon {
+        font-size: 14px;
+        padding: 5px;
+      }
+
+      select#quickRange {
+        width: 100%;
+        margin: 5px 0;
       }
 
       .stats-filters button {
         width: 100%;
-        margin-top: 10px;
+        margin-top: 5px;
+        height: 35px;
       }
 
       .home-buttons {
@@ -235,6 +246,7 @@
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
+      z-index: 2;
     }
 
     .popup-overlay {
