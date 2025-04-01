@@ -659,25 +659,25 @@
 
       switch (value) {
         case "today":
-          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
           break;
         case "yesterday":
-          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
-          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
           break;
         case "week":
-          const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1;
-          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
-          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+          const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
           break;
         case "month":
-          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
           break;
         case "lastMonth":
-          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
           break;
       }
 
@@ -686,9 +686,7 @@
       toDateInput.value = end.toISOString().split('T')[0];
       toTimeInput.value = '23:59';
 
-      const from = start.toISOString();
-      const to = end.toISOString();
-      loadStats(from, to);
+      loadStats(start.toISOString(), end.toISOString());
     }
 
     function confirmAndLoadStats() {
@@ -702,8 +700,8 @@
         return;
       }
 
-      const from = new Date(`${fromDate}T${fromTime}:00Z`);
-      const to = new Date(`${toDate}T${toTime}:00Z`);
+      const from = new Date(`${fromDate}T${fromTime}`);
+      const to = new Date(`${toDate}T${toTime}`);
 
       loadStats(from.toISOString(), to.toISOString());
     }
@@ -815,7 +813,7 @@
             maintainAspectRatio: false,
             plugins: { legend: { display: false }, datalabels: { display: false } },
             scales: {
-              x: { beginAtZero: true, grid: { color: '#333' },  ticks: { color: '#fff', font: { size: 10 } } },
+              x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
               y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
             }
           }
@@ -832,6 +830,7 @@
     }
 
     function closeDeletePopup() {
+      
       selectedUsernameToDelete = null;
       document.getElementById("deletePopup").classList.remove("active");
     }
