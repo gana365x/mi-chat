@@ -20,8 +20,9 @@ const server = http.createServer(app);
 
 // Definimos los orígenes permitidos
 const allowedOrigins = [
-  "http://localhost:3000", // Para pruebas locales
-  "https://mi-chat-gln5.vercel.app" // Tu frontend en Vercel
+  "http://localhost:3000",
+  "https://mi-chat-gln5.vercel.app",
+  "https://mi-chat-9uti.onrender.com" // Agrega el dominio donde se ejecuta superadmin.html
 ];
 
 // Configuración de CORS para Express
@@ -601,6 +602,7 @@ app.post('/admin-login', async (req, res) => {
 });
 
 app.get('/agents', async (req, res) => {
+  console.log('Solicitud recibida en /agents:', req.headers);
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
