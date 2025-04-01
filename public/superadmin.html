@@ -596,7 +596,9 @@
 }
 
     function loadAgents() {
-  fetch('/agents')
+  fetch('/agents', {
+  credentials: 'include'
+})
     .then(res => res.json())
     .then(agents => {
       // Filtramos solo los agentes con rol "Agent" para estadísticas
@@ -749,7 +751,9 @@
 
     function loadStats(from, to) {
       // Interacciones
-      fetch(`/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+      fetch(`/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+  credentials: 'include'
+})
         .then(res => res.json())
         .then(data => {
           document.getElementById("statMessages").textContent = data.messages || 0;
@@ -761,7 +765,9 @@
 
       // Agentes (gráfico)
       console.log(`Solicitando stats-agents con rango: from=${from}, to=${to}`);
-      fetch(`/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+      fetch(`/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+  credentials: 'include'
+})
         .then(res => {
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           return res.json();
