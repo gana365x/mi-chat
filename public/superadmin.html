@@ -198,9 +198,9 @@
   <input type="text" id="newName" placeholder="Nombre visible del agente">
   <input type="password" id="newPassword" placeholder="Contraseña">
   <select id="newRole" style="margin-top: 10px;">
-    <option value="Agent">Agent</option>
-    <option value="SuperAgente">SuperAgente</option>
-  </select>
+  <option value="Admin">Admin</option>
+  <option value="SuperAdmin">SuperAdmin</option>
+</select>
   <button onclick="createAgent()" style="margin-top: 10px;">Crear</button>
   <p id="createError" style="color: red; display: none;"></p>
   <h2>Agentes registrados</h2>
@@ -642,7 +642,7 @@
     document.getElementById('newLogin').value = '';
     document.getElementById('newName').value = '';
     document.getElementById('newPassword').value = '';
-    document.getElementById('newRole').value = 'Agent';
+    document.getElementById('newRole').value = 'Admin'; // Resetear a valor por defecto
     document.getElementById('createError').style.display = 'none';
     loadAgents();
   })
