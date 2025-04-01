@@ -119,9 +119,12 @@ const userNameSchema = new mongoose.Schema({
 const UserName = mongoose.model('UserName', userNameSchema);
 
 const performanceSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
+  username: { type: String, required: true },
+  date: { type: Date, required: true },
   count: { type: Number, default: 0 }
 });
+
+performanceSchema.index({ username: 1, date: 1 }, { unique: true });
 
 const Performance = mongoose.model('Performance', performanceSchema);
 
@@ -152,9 +155,15 @@ if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.st
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
 async function incrementPerformance(agentUsername) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   try {
     await Performance.findOneAndUpdate(
-      { username: agentUsername },
+      { 
+        username: agentUsername,
+        date: today
+      },
       { $inc: { count: 1 } },
       { upsert: true, new: true }
     );
@@ -759,24 +768,37 @@ app.get('/stats-agents', async (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    const closedMessages = await ChatMessage.find({
-      status: 'closed',
-      sender: 'System',
-      timestamp: { $gte: fromDate, $lte: toDate }
-    });
-
-    const agentStatsMap = {};
-    closedMessages.forEach(msg => {
-      if (msg.adminUsername) {
-        agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
-      }
-    });
-
+    // Obtener todos los agentes
     const agents = await Agent.find({}, 'username name role type');
+
+    // Obtener las estadísticas de rendimiento para el rango de fechas
+    const performances = await Performance.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: new Date(fromDate.setHours(0, 0, 0, 0)),
+            $lte: new Date(toDate.setHours(23, 59, 59, 999))
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$username",
+          finalizados: { $sum: "$count" }
+        }
+      }
+    ]);
+
+    // Crear un mapa de rendimiento por username
+    const performanceMap = new Map(
+      performances.map(p => [p._id, p.finalizados])
+    );
+
+    // Combinar la información de agentes con su rendimiento
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
-      finalizados: agentStatsMap[agent.username] || 0,
+      finalizados: performanceMap.get(agent.username) || 0,
       role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin')
     }));
 
