@@ -397,8 +397,8 @@
         <label for="superPassword">Contraseña</label>
       </div>
       <div class="button-wrapper">
-        <button onclick="loginSuperAdmin()">Ingresar</button>
-      </div>
+  <button onclick="loginSuperAdmin()">Ingresar</button>
+</div>
       <p id="loginError" style="color: #ff5555; display: none; font-size: 12px; text-align: center;">Credenciales inválidas</p>
     </div>
   </div>
@@ -527,6 +527,12 @@ const socket = io('https://mi-chat-9uti.onrender.com');
   const username = document.getElementById('superUsername').value.trim();
   const password = document.getElementById('superPassword').value.trim();
 
+  if (!username || !password) {
+    document.getElementById('loginError').textContent = "Por favor, completa ambos campos.";
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+
   fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -534,26 +540,30 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     body: JSON.stringify({ username, password })
   })
   .then(res => {
-    if (!res.ok) throw new Error(`Login failed with status: ${res.status}`);
+    if (!res.ok) {
+      return res.json().then(err => {
+        throw new Error(`Error ${res.status}: ${err.message || 'Error desconocido'}`);
+      });
+    }
     return res.json();
   })
   .then(data => {
     if (data.success) {
-      console.log('Login exitoso:', data);
       document.getElementById('loginBox').style.display = 'none';
       document.getElementById('mainBox').style.display = 'block';
       showSection('home');
       loadAgents();
     } else {
-      throw new Error('Login no exitoso');
+      throw new Error(data.message || 'Login no exitoso');
     }
   })
   .catch(err => {
-    console.error('Error en login:', err);
+    console.error('Error en login:', err.message);
+    document.getElementById('loginError').textContent = err.message;
     document.getElementById('loginError').style.display = 'block';
   });
 }
-
+    
     function showSection(section) {
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
       document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
@@ -713,7 +723,7 @@ const socket = io('https://mi-chat-9uti.onrender.com');
       return res.json();
     })
     .then(data => {
-      document.getElementById("statMessages").textContent.Concurrent = data.messages || 0;
+      document.getElementById("statMessages").textContent = data.messages || 0;
       document.getElementById("statCargar").textContent = data.cargarFichas || 0;
       document.getElementById("statRetiro").textContent = data.retiros || 0;
       document.getElementById("statImagenes").textContent = data.imagenes || 0;
