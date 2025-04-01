@@ -107,7 +107,8 @@ const agentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   name: String,
   password: String,
-  role: { type: String, enum: ['Agent', 'SuperAgente'], default: 'Agent' }
+  type: { type: String }, // Campo antiguo, mantenido por compatibilidad
+  role: { type: String, enum: ['Agent', 'SuperAgente'], default: 'Agent' } // Campo nuevo
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
@@ -548,7 +549,10 @@ app.post('/superadmin-login', async (req, res) => {
   }
 
   try {
-    const agent = await Agent.findOne({ username, type: 'superadmin' });
+    const agent = await Agent.findOne({ 
+      username, 
+      $or: [{ role: 'SuperAgente' }, { type: 'superadmin' }] // Acepta ambos
+    });
     if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
@@ -562,7 +566,7 @@ app.post('/superadmin-login', async (req, res) => {
     res.status(200).json({
       success: true,
       name: agent.name,
-      type: agent.type
+      role: agent.role || (agent.type === 'superadmin' ? 'SuperAgente' : 'Agent')
     });
   } catch (err) {
     console.error('❌ Error en login:', err);
@@ -602,48 +606,16 @@ app.get('/agents', async (req, res) => {
     return res.status(401).json({ success: false, message: 'No autorizado' });
   }
   try {
-    const agents = await Agent.find({}, 'username name role');
+    const agents = await Agent.find({}, 'username name role type');
     const formattedAgents = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
-      role: agent.role || 'Agent'
+      role: agent.role || (agent.type === 'superadmin' ? 'SuperAgente' : 'Agent') // Mapea type a role si no existe role
     }));
     res.json(formattedAgents);
   } catch (err) {
     console.error('❌ Error al obtener agentes:', err);
     res.status(500).json({ success: false, message: 'Error al obtener agentes' });
-  }
-});
-
-app.post('/agents', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-
-  const { username, name, password, role } = req.body;
-
-  if (!validateAuthInput(username, password)) {
-    return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newAgent = new Agent({ 
-      username, 
-      name, 
-      password: hashedPassword, 
-      role: role || 'Agent' // Si no se envía role, por defecto es 'Agent'
-    });
-    await newAgent.save();
-    res.status(201).json({ success: true });
-  } catch (err) {
-    if (err.code === 11000) {
-      res.status(400).json({ success: false, message: 'Usuario ya existe' });
-    } else {
-      console.error('❌ Error creando agente:', err);
-      res.status(500).json({ success: false, message: 'Error interno del servidor' });
-    }
   }
 });
 
@@ -1001,7 +973,7 @@ app.get('/stats-agents', async (req, res) => {
       }
     });
 
-    const agents = await Agent.find({ role: 'Agent' }, 'username name'); // Solo Agents
+    const agents = await Agent.find({ $or: [{ role: 'Agent' }, { type: 'agent' }] }, 'username name'); // Solo Agents
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
