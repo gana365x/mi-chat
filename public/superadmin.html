@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -433,12 +434,11 @@
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
 
   <script>
-    // Registrar el plugin datalabels
     Chart.register(ChartDataLabels);
 
     const socket = io('https://mi-chat-9uti.onrender.com');
     let chartInstance = null;
-    let allAgents = []; // Lista global de agentes registrados
+    let allAgents = [];
 
     function loginSuperAdmin() {
       const username = document.getElementById('superUsername').value.trim();
@@ -555,65 +555,49 @@
     }
 
     function setQuickRange() {
-        const now = new Date();
-        const fromDateInput = document.getElementById("fromDate");
-        const toDateInput = document.getElementById("toDate");
-        const value = document.getElementById("quickRange").value;
+      const now = new Date();
+      const fromDateInput = document.getElementById("fromDate");
+      const toDateInput = document.getElementById("toDate");
+      const fromTimeInput = document.getElementById("fromTime");
+      const toTimeInput = document.getElementById("toTime");
+      const value = document.getElementById("quickRange").value;
 
-        let start = new Date();
-        let end = new Date();
+      let start = new Date();
+      let end = new Date();
 
-        switch (value) {
-          case "today":
-            // Set start to beginning of current day
-            start.setHours(0, 0, 0, 0);
-            // Set end to current time
-            end = new Date();
-            break;
-            
-          case "yesterday":
-            // Set start to beginning of previous day
-            start.setDate(start.getDate() - 1);
-            start.setHours(0, 0, 0, 0);
-            // Set end to end of previous day
-            end.setDate(end.getDate() - 1);
-            end.setHours(23, 59, 59, 999);
-            break;
-            
-          case "week":
-            const dayOfWeek = now.getDay() || 7;
-            start = new Date(now);
-            start.setDate(now.getDate() - dayOfWeek + 1);
-            start.setHours(0, 0, 0, 0);
-            end = new Date(now);
-            end.setHours(23, 59, 59, 999);
-            break;
-            
-          case "month":
-            start = new Date(now.getFullYear(), now.getMonth(), 1);
-            end = new Date(now);
-            end.setHours(23, 59, 59, 999);
-            break;
-            
-          case "lastMonth":
-            start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            end = new Date(now.getFullYear(), now.getMonth(), 0);
-            end.setHours(23, 59, 59, 999);
-            break;
-        }
-
-        // Format dates for inputs
-        fromDateInput.value = start.toISOString().split('T')[0];
-        document.getElementById("fromTime").value = start.toTimeString().slice(0, 5);
-        toDateInput.value = end.toISOString().split('T')[0];
-        document.getElementById("toTime").value = end.toTimeString().slice(0, 5);
-
-        // Construct ISO dates for query
-        const from = start.toISOString();
-        const to = end.toISOString();
-
-        loadStats(from, to);
+      switch (value) {
+        case "today":
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+          break;
+        case "yesterday":
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+          break;
+        case "week":
+          const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+          break;
+        case "month":
+          start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+          break;
+        case "lastMonth":
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+          break;
       }
+
+      fromDateInput.value = start.toISOString().split('T')[0];
+      fromTimeInput.value = '00:00';
+      toDateInput.value = end.toISOString().split('T')[0];
+      toTimeInput.value = '23:59';
+
+      const from = start.toISOString();
+      const to = end.toISOString();
+      loadStats(from, to);
+    }
 
     function confirmAndLoadStats() {
       const fromDate = document.getElementById("fromDate").value;
@@ -626,10 +610,8 @@
         return;
       }
 
-      // Construir las fechas ISO para la consulta
-      const from = `${fromDate}T${fromTime}:00`;
-      const to = `${toDate}T${toTime}:00`;
-
+      const from = `${fromDate}T${fromTime}:00Z`;
+      const to = `${toDate}T${toTime}:00Z`;
       loadStats(from, to);
     }
 
@@ -660,7 +642,6 @@
         .then(agentData => {
           console.log('Datos de agentes recibidos:', agentData);
 
-          // Filtrar solo agentes Admin y ordenar por cantidad de chats finalizados
           const filteredData = agentData
             .filter(agent => agent.role !== 'SuperAdmin')
             .sort((a, b) => b.finalizados - a.finalizados);
@@ -679,10 +660,10 @@
                 label: 'Chats Finalizados',
                 data: values,
                 backgroundColor: values.map((_, index) => 
-                  index === 0 ? '#FFD700' : // Oro para el primer lugar
-                  index === 1 ? '#C0C0C0' : // Plata para el segundo
-                  index === 2 ? '#CD7F32' : // Bronce para el tercero
-                  '#1a1a1a' // Color por defecto para el resto
+                  index === 0 ? '#FFD700' :
+                  index === 1 ? '#C0C0C0' :
+                  index === 2 ? '#CD7F32' :
+                  '#1a1a1a'
                 ),
                 borderColor: '#FF3B00',
                 borderWidth: 2,
@@ -740,9 +721,7 @@
                   grid: { color: '#333' },
                   ticks: { 
                     color: '#fff',
-                    font: {
-                      size: 11
-                    }
+                    font: { size: 11 }
                   }
                 },
                 y: {
@@ -752,9 +731,7 @@
                     callback: function(value, index) {
                       return `${labels[index]}`;
                     },
-                    font: {
-                      size: 11
-                    }
+                    font: { size: 11 }
                   }
                 }
               }
@@ -811,19 +788,14 @@
                   grid: { color: '#333' }, 
                   ticks: { 
                     color: '#fff',
-                    font: {
-                      size: 11
-                    
-                    }
+                    font: { size: 11 }
                   } 
                 },
                 y: { 
                   grid: { color: '#333' }, 
                   ticks: { 
                     color: '#fff',
-                    font: {
-                      size: 11
-                    }
+                    font: { size: 11 }
                   } 
                 }
               }
@@ -903,11 +875,6 @@
       if (agentRow) {
         agentRow.textContent = newUsername;
       }
-
-      const agentIndex = allAgents.indexOf(userId);
-      if (agentIndex !== -1) {
-        // Si necesitamos actualizar algo más en allAgents, lo hacemos aquí
-      }
     });
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -955,5 +922,5 @@
       </div>
     </div>
   </div>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'929a4d6a1853458a',t:'MTc0MzUzMzc0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
