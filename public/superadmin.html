@@ -658,13 +658,25 @@
 }
 
     function deleteAgent(username) {
-      fetch(`/agents/${username}`, {
-  method: 'DELETE',
-  credentials: 'include',
-  headers: { 'Content-Type': 'application/json' }
-})
-      .then(() => loadAgents());
-    }
+  fetch(`https://mi-chat-9uti.onrender.com/agents/${username}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return res.json();
+  })
+  .then(() => loadAgents())
+  .catch(err => console.error("Error al eliminar agente:", err));
+}
+
+function confirmDelete() {
+  if (!selectedUsernameToDelete) return;
+  deleteAgent(selectedUsernameToDelete)
+    .then(() => closeDeletePopup())
+    .catch(err => console.error("Error en confirmDelete:", err));
+}
 
     function showSection(section) {
   document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
