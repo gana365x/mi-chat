@@ -7,29 +7,36 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #121212;
+      background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
       color: white;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     h1, h2, h3 {
       color: #FF3B00;
+      margin: 10px 0;
     }
     .login-box {
       background: #1a1a1a;
-      padding: 20px 30px;
+      padding: 20px;
       border-radius: 12px;
-      max-width: 900px;
-      margin: 40px auto;
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
       border: 2px solid #FF3B00;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
     .main-box {
       background: #1a1a1a;
-      padding: 20px 30px;
+      padding: 15px;
       border-radius: 12px;
-      width: 80%;
-      margin: 40px auto;
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
       border: 2px solid #FF3B00;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
@@ -38,8 +45,11 @@
       color: white;
       border: 2px solid #FF3B00;
       border-radius: 6px;
-      padding: 10px;
+      padding: 8px;
       font-size: 14px;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 5px 0;
       outline: none;
       transition: all 0.2s ease;
     }
@@ -56,30 +66,33 @@
     }
     .calendar-wrapper {
       position: relative;
-      display: inline-block;
+      width: 100%;
     }
     button {
       background: #1f1f1f;
       color: white;
       border: 2px solid #FF3B00;
       border-radius: 8px;
-      padding: 10px 16px;
+      padding: 8px 12px;
       font-size: 14px;
       font-weight: bold;
       cursor: pointer;
+      width: 100%;
+      margin: 5px 0;
       transition: all 0.2s ease;
     }
     button:hover {
       background: #2a2a2a;
-      transform: scale(1.05);
+      transform: scale(1.02);
     }
     table {
       width: 100%;
-      margin-top: 20px;
+      margin-top: 10px;
       border-collapse: collapse;
+      font-size: 12px;
     }
     th, td {
-      padding: 12px 10px;
+      padding: 8px;
       text-align: left;
       border-bottom: 1px solid #333;
       background-color: #1f1f1f;
@@ -89,19 +102,25 @@
       background-color: #2a2a2a;
       color: #FF3B00;
     }
-    .delete-btn {
+    .delete-btn, .edit-btn {
       background: #1f1f1f;
       color: white;
       border: 2px solid #cc0000;
       border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 13px;
+      padding: 6px 10px;
+      font-size: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
     .delete-btn:hover {
       background: #330000;
       transform: scale(1.05);
+    }
+    .edit-btn {
+      border-color: #ffa500;
+    }
+    .edit-btn:hover {
+      background: #2a2a2a;
     }
     .popup-overlay {
       position: fixed;
@@ -120,45 +139,132 @@
     }
     .popup-box {
       background: #1a1a1a;
-      padding: 30px 20px;
+      padding: 20px;
       border-radius: 10px;
       border: 2px solid #FF3B00;
       box-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
       width: 90%;
-      max-width: 400px;
+      max-width: 300px;
       color: white;
       text-align: center;
     }
     .popup-actions {
       display: flex;
       justify-content: center;
-      gap: 15px;
-      margin-top: 20px;
+      gap: 10px;
+      margin-top: 15px;
     }
     .popup-btn {
       background: #1a1a1a;
       color: white;
       border: 2px solid #FF3B00;
       border-radius: 6px;
-      padding: 8px 16px;
+      padding: 6px 12px;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 16px;
       transition: all 0.2s ease;
     }
     .popup-btn:hover {
       background: #2a2a2a;
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
     .popup-icon {
-      font-size: 24px;
-      margin-bottom: 10px;
+      font-size: 20px;
+      margin-bottom: 8px;
     }
     .popup-text {
-      font-size: 16px;
+      font-size: 14px;
       color: #ffae00;
     }
     #chartAgentes {
-      max-height: 300px !important;
+      max-height: 250px !important;
+      width: 100%;
+    }
+    .home-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+    .home-buttons button {
+      width: 48%;
+      padding: 10px;
+      font-size: 12px;
+      background: linear-gradient(90deg, #FF3B00, #ffa500);
+      border: none;
+    }
+    .input-group {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 12px;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .input-group input:focus + label,
+    .input-group input:valid + label {
+      top: -8px;
+      left: 5px;
+      font-size: 10px;
+      color: #FF3B00;
+      background: #1a1a1a;
+      padding: 0 4px;
+    }
+    .button-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    .login-box button {
+      width: 100px;
+      background: linear-gradient(90deg, #FF3B00, #ffa500);
+      border: none;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+      .login-box, .main-box {
+        margin: 10px auto;
+        padding: 10px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      h3 {
+        font-size: 16px;
+      }
+      input, select, button {
+        font-size: 12px;
+        padding: 6px;
+      }
+      .home-buttons button {
+        width: 100%;
+        margin: 2px 0;
+      }
+      table {
+        font-size: 10px;
+      }
+      th, td {
+        padding: 6px;
+      }
+      .delete-btn, .edit-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+      .popup-box {
+        padding: 15px;
+        max-width: 250px;
+      }
     }
   </style>
 </head>
@@ -199,11 +305,11 @@
       <input type="text" id="newLogin" placeholder="Login del agente">
       <input type="text" id="newName" placeholder="Nombre visible del agente">
       <input type="password" id="newPassword" placeholder="Contraseña">
-      <select id="newRole" style="margin-top: 10px;">
+      <select id="newRole">
         <option value="Admin">Admin</option>
         <option value="SuperAdmin">SuperAdmin</option>
       </select>
-      <button onclick="createAgent()" style="margin-top: 10px;">Crear</button>
+      <button onclick="createAgent()">Crear</button>
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
       <table>
@@ -222,21 +328,19 @@
     <!-- Sección estadísticas -->
     <div id="section-stats" style="display:none;">
       <h2>📊 Estadísticas</h2>
-      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
         <label>De:</label>
         <div class="calendar-wrapper">
           <input type="date" id="fromDate">
           <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
         </div>
         <input type="time" id="fromTime">
-
         <label>A:</label>
         <div class="calendar-wrapper">
           <input type="date" id="toDate">
           <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
         </div>
         <input type="time" id="toTime">
-
         <select id="quickRange" onchange="setQuickRange()">
           <option value="">Elegir el periodo</option>
           <option value="today">Hoy</option>
@@ -245,19 +349,16 @@
           <option value="month">Este mes</option>
           <option value="lastMonth">Mes anterior</option>
         </select>
-
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
-      <!-- Sub-secciones -->
-      <div style="margin-top: 20px;">
-        <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
+      <div>
+        <h3 style="color: orange;">📈 Estadísticas de Agentes</h3>
         <canvas id="chartAgentes" height="100"></canvas>
-
-        <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
+        <h3 style="color: lightblue; margin-top: 20px;">💬 Interacciones</h3>
         <div id="statsResults">
           <p>Mensajes entrantes: <span id="statMessages">0</span></p>
-          <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
-          <p>Retirar presionado: <span id="statRetiro">0</span></p>
+          <p>Cargar Fichas: <span id="statCargar">0</span></p>
+          <p>Retirar: <span id="statRetiro">0</span></p>
           <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
         </div>
       </div>
@@ -270,161 +371,6 @@
       <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
     </div>
   </div>
-  
-  <style>
-    body {
-      background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-
-    .login-box {
-      background: #1a1a1a;
-      padding: 30px;
-      border-radius: 12px;
-      max-width: 320px;
-      width: 100%;
-      border: 2px solid #FF3B00;
-      box-shadow: 0 8px 24px rgba(255, 59, 0, 0.2), inset 0 0 10px rgba(255, 59, 0, 0.1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .login-box h1 {
-      color: #FF3B00;
-      text-align: center;
-      font-family: 'Poppins', sans-serif;
-      font-size: 28px;
-      font-weight: 700;
-      text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
-      margin-bottom: 20px;
-    }
-
-    .input-group {
-      position: relative;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .input-group input {
-      width: 60%;
-      max-width: 156px;
-      background: #1f1f1f;
-      color: white;
-      border: 2px solid #FF3B00;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-
-    .input-group label {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #888;
-      font-size: 14px;
-      pointer-events: none;
-      transition: all 0.3s ease;
-    }
-
-    .input-group input:focus,
-    .input-group input:valid {
-      border-color: #ffa500;
-      background: #2a2a2a;
-    }
-
-    .input-group input:focus + label,
-    .input-group input:valid + label {
-      top: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 10px;
-      color: #FF3B00;
-      background: #1a1a1a;
-      padding: 0 4px;
-    }
-
-    .button-wrapper {
-      display: flex;
-      justify-content: center;
-      margin-top: 10px;
-    }
-
-    .login-box button {
-      width: 120px;
-      background: linear-gradient(90deg, #FF3B00, #ffa500);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .login-box button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 59, 0, 0.5);
-      background: linear-gradient(90deg, #ffa500, #FF3B00);
-    }
-
-    .main-box {
-      background: #1a1a1a;
-      padding: 40px;
-      border-radius: 12px;
-      width: 80%;
-      margin: 40px auto;
-      border: 2px solid #FF3B00;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-    }
-
-    #section-home {
-      text-align: center;
-    }
-
-    #section-home h2 {
-      color: #FF3B00;
-      font-family: 'Poppins', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      text-shadow: 0 0 10px rgba(255, 59, 0, 0.5);
-      margin-bottom: 40px;
-    }
-
-    .home-buttons {
-      display: flex;
-      justify-content: space-around;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .home-buttons button {
-      width: 150px;
-      background: linear-gradient(90deg, #FF3B00, #ffa500);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .home-buttons button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 16px rgba(255, 59, 0, 0.5);
-      background: linear-gradient(90deg, #ffa500, #FF3B00);
-    }
-  </style>
 
   <!-- Chart.js y chartjs-plugin-datalabels desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -497,7 +443,7 @@
             <td><strong>${agent.username}</strong></td>
             <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
             <td>${agent.role || 'Admin'}</td>
-            <td style="display: flex; gap: 10px;">
+            <td style="display: flex; gap: 5px;">
               <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
               <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
             </td>
@@ -617,7 +563,6 @@
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
 
-      // Interacciones
       fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
         credentials: 'include'
       })
@@ -630,7 +575,6 @@
         })
         .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
 
-      // Agentes (gráfico)
       fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
         credentials: 'include'
       })
@@ -680,10 +624,10 @@
               },
               layout: {
                 padding: {
-                  left: 10,
-                  right: 30,
-                  top: 10,
-                  bottom: 10
+                  left: 5,
+                  right: 20,
+                  top: 5,
+                  bottom: 5
                 }
               },
               plugins: {
@@ -705,7 +649,7 @@
                   offset: 4,
                   color: '#fff',
                   font: {
-                    size: 12,
+                    size: 10,
                     weight: 'bold'
                   },
                   formatter: (value, context) => {
@@ -720,7 +664,7 @@
                   grid: { color: '#333' },
                   ticks: { 
                     color: '#fff',
-                    font: { size: 11 }
+                    font: { size: 10 }
                   }
                 },
                 y: {
@@ -730,7 +674,7 @@
                     callback: function(value, index) {
                       return `${labels[index]}`;
                     },
-                    font: { size: 11 }
+                    font: { size: 10 }
                   }
                 }
               }
@@ -775,7 +719,7 @@
                   offset: 4,
                   color: '#fff',
                   font: {
-                    size: 12,
+                    size: 10,
                     weight: 'bold'
                   },
                   formatter: (value) => value
@@ -787,14 +731,14 @@
                   grid: { color: '#333' }, 
                   ticks: { 
                     color: '#fff',
-                    font: { size: 11 }
+                    font: { size: 10 }
                   } 
                 },
                 y: { 
                   grid: { color: '#333' }, 
                   ticks: { 
                     color: '#fff',
-                    font: { size: 11 }
+                    font: { size: 10 }
                   } 
                 }
               }
@@ -907,15 +851,15 @@
     <div class="popup-box">
       <div class="popup-icon">✏️</div>
       <p class="popup-text">Editar agente</p>
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
         <input type="text" id="editAgentLogin" placeholder="Nuevo login (opcional)" 
-               style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+               style="padding: 8px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
         <input type="text" id="editAgentName" placeholder="Nuevo nombre visible" 
-               style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+               style="padding: 8px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
         <input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" 
-               style="padding: 10px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+               style="padding: 8px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
       </div>
-      <div class="popup-actions" style="margin-top: 20px;">
+      <div class="popup-actions" style="margin-top: 15px;">
         <button class="popup-btn confirm" onclick="confirmEdit()">✔</button>
         <button class="popup-btn cancel" onclick="closeEditPopup()">✖</button>
       </div>
