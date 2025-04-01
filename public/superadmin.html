@@ -526,27 +526,24 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     function loginSuperAdmin() {
   const username = document.getElementById('superUsername').value.trim();
   const password = document.getElementById('superPassword').value.trim();
+  const loginError = document.getElementById('loginError');
 
   if (!username || !password) {
-    document.getElementById('loginError').textContent = "Por favor, completa ambos campos.";
-    document.getElementById('loginError').style.display = 'block';
+    loginError.textContent = "Por favor, completa ambos campos.";
+    loginError.style.display = 'block';
     return;
   }
 
   fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
     credentials: 'include',
     body: JSON.stringify({ username, password })
   })
-  .then(res => {
-    if (!res.ok) {
-      return res.json().then(err => {
-        throw new Error(`Error ${res.status}: ${err.message || 'Error desconocido'}`);
-      });
-    }
-    return res.json();
-  })
+  .then(res => res.json())
   .then(data => {
     if (data.success) {
       document.getElementById('loginBox').style.display = 'none';
@@ -554,13 +551,12 @@ const socket = io('https://mi-chat-9uti.onrender.com');
       showSection('home');
       loadAgents();
     } else {
-      throw new Error(data.message || 'Login no exitoso');
+      throw new Error(data.message || 'Error de autenticación');
     }
   })
   .catch(err => {
-    console.error('Error en login:', err.message);
-    document.getElementById('loginError').textContent = err.message;
-    document.getElementById('loginError').style.display = 'block';
+    loginError.textContent = err.message || 'Error al intentar iniciar sesión';
+    loginError.style.display = 'block';
   });
 }
     
