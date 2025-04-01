@@ -107,7 +107,7 @@ const agentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   name: String,
   password: String,
-  type: { type: String, default: 'agent' }
+  role: { type: String, enum: ['Agent', 'SuperAgente'], default: 'Agent' }
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
@@ -602,11 +602,11 @@ app.get('/agents', async (req, res) => {
     return res.status(401).json({ success: false, message: 'No autorizado' });
   }
   try {
-    const agents = await Agent.find({}, 'username name type');
+    const agents = await Agent.find({}, 'username name role');
     const formattedAgents = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
-      type: agent.type || 'agent'
+      role: agent.role || 'Agent'
     }));
     res.json(formattedAgents);
   } catch (err) {
@@ -621,7 +621,7 @@ app.post('/agents', async (req, res) => {
     return res.status(401).json({ success: false, message: 'No autorizado' });
   }
 
-  const { username, name, password } = req.body;
+  const { username, name, password, role } = req.body;
 
   if (!validateAuthInput(username, password)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
@@ -629,7 +629,12 @@ app.post('/agents', async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAgent = new Agent({ username, name, password: hashedPassword, type: 'agent' });
+    const newAgent = new Agent({ 
+      username, 
+      name, 
+      password: hashedPassword, 
+      role: role || 'Agent' // Si no se envía role, por defecto es 'Agent'
+    });
     await newAgent.save();
     res.status(201).json({ success: true });
   } catch (err) {
@@ -996,7 +1001,7 @@ app.get('/stats-agents', async (req, res) => {
       }
     });
 
-    const agents = await Agent.find({}, 'username name');
+    const agents = await Agent.find({ role: 'Agent' }, 'username name'); // Solo Agents
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
