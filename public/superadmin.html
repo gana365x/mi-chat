@@ -103,13 +103,14 @@
       .stats-filters label {
         font-size: 12px;
         margin: 0;
-        min-width: 25px;
+        width: 25px;
       }
 
       .stats-filters input,
-      .stats-filters select {
+      .stats-filters select,
+      .stats-filters button {
         font-size: 12px;
-        padding: 4px;
+        padding: 4px 8px;
         height: 30px;
       }
 
@@ -120,17 +121,9 @@
         width: 100%;
       }
 
-      .date-group .calendar-wrapper {
-        flex: 2;
-      }
-
+      .date-group input[type="date"],
       .date-group input[type="time"] {
         flex: 1;
-      }
-
-      .calendar-icon {
-        font-size: 14px;
-        padding: 5px;
       }
 
       select#quickRange {
@@ -141,7 +134,6 @@
       .stats-filters button {
         width: 100%;
         margin-top: 5px;
-        height: 35px;
       }
 
       .home-buttons {
@@ -233,20 +225,6 @@
 
     td {
       background-color: var(--bg-input);
-    }
-
-    .calendar-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    .calendar-icon {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      z-index: 2;
     }
 
     .popup-overlay {
@@ -413,19 +391,13 @@
       <div class="stats-filters">
         <div class="date-group">
           <label>De:</label>
-          <div class="calendar-wrapper">
-            <input type="date" id="fromDate">
-            <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
-          </div>
+          <input type="date" id="fromDate">
           <input type="time" id="fromTime">
         </div>
         
         <div class="date-group">
           <label>A:</label>
-          <div class="calendar-wrapper">
-            <input type="date" id="toDate">
-            <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
-          </div>
+          <input type="date" id="toDate">
           <input type="time" id="toTime">
         </div>
         
@@ -888,7 +860,8 @@
 
       fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToEdit}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': '
+application/json' },
         credentials: 'include',
         body: JSON.stringify(body)
       })
