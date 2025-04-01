@@ -834,12 +834,11 @@ const socket = io('https://mi-chat-9uti.onrender.com');
       return res.json();
     })
     .then(data => {
-      console.log('Datos de interacciones recibidos:', data);
-      document.getElementById("statMessages").textContent = data.messages || 0;
-      document.getElementById("statCargar").textContent = data.cargarFichas || 0;
-      document.getElementById("statRetiro").textContent = data.retiros || 0;
-      document.getElementById("statImagenes").textContent = data.imagenes || 0;
-    })
+  document.getElementById("statMessages").textContent.Concurrent = data.messages || 0;
+  document.getElementById("statCargar").textContent = data.cargarFichas || 0;
+  document.getElementById("statRetiro").textContent = data.retiros || 0;
+  document.getElementById("statImagenes").textContent = data.imagenes || 0;
+})
     .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
 
   fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
