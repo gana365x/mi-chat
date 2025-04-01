@@ -601,56 +601,58 @@ function confirmDelete() {
 }
 
         function setDefaultDates() {
-  const today = new Date();
-  const todayInArgentina = new Date(today.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-  const todayISO = todayInArgentina.toISOString().split('T')[0];
-  document.getElementById('fromDate').value = todayISO;
-  document.getElementById('fromTime').value = '00:00';
-  document.getElementById('toDate').value = todayISO;
-  document.getElementById('toTime').value = '23:59';
-}
+      const today = new Date();
+      const todayISO = today.toISOString().split('T')[0];
+      document.getElementById('fromDate').value = todayISO;
+      document.getElementById('fromTime').value = '00:00';
+      document.getElementById('toDate').value = todayISO;
+      document.getElementById('toTime').value = '23:59';
+    }
 
     function setQuickRange() {
-  const now = new Date();
-  const nowInArgentina = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-  const fromDateInput = document.getElementById("fromDate");
-  const toDateInput = document.getElementById("toDate");
-  const value = document.getElementById("quickRange").value;
+      const now = new Date();
+      const fromDateInput = document.getElementById("fromDate");
+      const toDateInput = document.getElementById("toDate");
+      const value = document.getElementById("quickRange").value;
 
-  let start = new Date(nowInArgentina), end = new Date(nowInArgentina);
+      let start = new Date(), end = new Date();
 
-  switch (value) {
-    case "today":
-      start = new Date(nowInArgentina);
-      end = new Date(nowInArgentina);
-      break;
-    case "yesterday":
-      start = new Date(nowInArgentina);
-      start.setDate(start.getDate() - 1);
-      end = new Date(start);
-      break;
-    case "week":
-      const day = nowInArgentina.getDay();
-      const diff = nowInArgentina.getDate() - day + (day === 0 ? -6 : 1);
-      start = new Date(nowInArgentina);
-      start.setDate(diff);
-      end = new Date(nowInArgentina);
-      break;
-    case "month":
-      start = new Date(nowInArgentina.getFullYear(), nowInArgentina.getMonth(), 1);
-      end = new Date(nowInArgentina);
-      break;
-    case "lastMonth":
-      start = new Date(nowInArgentina.getFullYear(), nowInArgentina.getMonth() - 1, 1);
-      end = new Date(nowInArgentina.getFullYear(), nowInArgentina.getMonth(), 0);
-      break;
-  }
+      switch (value) {
+        case "today":
+          start = new Date();
+          end = new Date(start);
+          break;
+          
+        case "yesterday":
+          start = new Date();
+          start.setDate(start.getDate() - 1);
+          end = new Date(start);
+          break;
+          
+        case "week":
+          const day = now.getDay();
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+          start = new Date(now);
+          start.setDate(diff);
+          end = new Date();
+          break;
+          
+        case "month":
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          end = new Date();
+          break;
+          
+        case "lastMonth":
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          end = new Date(now.getFullYear(), now.getMonth(), 0);
+          break;
+      }
 
-  fromDateInput.value = start.toISOString().split('T')[0];
-  document.getElementById("fromTime").value = '00:00';
-  toDateInput.value = end.toISOString().split('T')[0];
-  document.getElementById("toTime").value = '23:59';
-}
+      fromDateInput.value = start.toISOString().split('T')[0];
+      document.getElementById("fromTime").value = '00:00';
+      toDateInput.value = end.toISOString().split('T')[0];
+      document.getElementById("toTime").value = '23:59';
+    }
 
     function confirmAndLoadStats() {
       const fromDate = document.getElementById("fromDate").value;
@@ -671,150 +673,94 @@ function confirmDelete() {
     }
 
     function loadStats(from, to) {
-  const fromDate = new Date(from);
-  const toDate = new Date(to);
-  const fromInArgentina = new Date(fromDate.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-  const toInArgentina = new Date(toDate.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-  const adjustedFrom = fromInArgentina.toISOString();
-  const adjustedTo = toInArgentina.toISOString();
+      // Interacciones
+      fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+  credentials: 'include'
+})
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("statMessages").textContent = data.messages || 0;
+          document.getElementById("statCargar").textContent = data.cargarFichas || 0;
+          document.getElementById("statRetiro").textContent = data.retiros || 0;
+          document.getElementById("statImagenes").textContent = data.imagenes || 0;
+        })
+        .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
 
-  // Interacciones
-  fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(adjustedFrom)}&to=${encodeURIComponent(adjustedTo)}`, {
-    credentials: 'include'
-  })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("statMessages").textContent = data.messages || 0;
-      document.getElementById("statCargar").textContent = data.cargarFichas || 0;
-      document.getElementById("statRetiro").textContent = data.retiros || 0;
-      document.getElementById("statImagenes").textContent = data.imagenes || 0;
-    })
-    .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
+      // Agentes (gráfico)
+      console.log(`Solicitando stats-agents con rango: from=${from}, to=${to}`);
+      fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+  credentials: 'include'
+})
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
+        .then(agentData => {
+          console.log("Datos recibidos de /stats-agents:", agentData);
 
-  // Agentes (gráfico)
-  console.log(`Solicitando stats-agents con rango: from=${adjustedFrom}, to=${adjustedTo}`);
-  fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(adjustedFrom)}&to=${encodeURIComponent(adjustedTo)}`, {
-    credentials: 'include'
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    })
-    .then(agentData => {
-      console.log("Datos recibidos de /stats-agents:", agentData);
+          // Crear un mapa de datos por agente
+          const agentStats = {};
+          agentData.forEach(item => {
+            agentStats[item.username] = item.finalizados || 0;
+          });
 
-      const agentStats = {};
-      agentData.forEach(item => {
-        agentStats[item.username] = item.finalizados || 0;
-      });
+          // Asegurar que todos los agentes registrados aparezcan, con 0 si no tienen datos
+          const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
+          const values = labels.map(username => agentStats[username] || 0);
 
-      const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
-      const values = labels.map(username => agentStats[username] || 0);
+          const ctx = document.getElementById('chartAgentes').getContext('2d');
+          if (chartInstance) chartInstance.destroy();
 
-      const ctx = document.getElementById('chartAgentes').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Chats Finalizados',
-            data: values,
-            backgroundColor: '#1a1a1a',
-            borderColor: '#FF3B00',
-            borderWidth: 2,
-            borderRadius: 6,
-            hoverBackgroundColor: '#2a2a2a'
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#FF3B00',
-              titleColor: '#fff',
-              bodyColor: '#fff'
+          chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Chats Finalizados',
+                data: values,
+                backgroundColor: '#1a1a1a',
+                borderColor: '#FF3B00',
+                borderWidth: 2,
+                borderRadius: 6,
+                hoverBackgroundColor: '#2a2a2a'
+              }]
             },
-            datalabels: {
-              anchor: 'end',
-              align: 'right',
-              offset: 4,
-              color: '#fff',
-              font: {
-                size: 14,
-                weight: 'bold'
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: '#FF3B00',
+                  titleColor: '#fff',
+                  bodyColor: '#fff'
+                },
+                datalabels: {
+                  anchor: 'end',
+                  align: 'right',
+                  offset: 4,
+                  color: '#fff',
+                  font: {
+                    size: 14,
+                    weight: 'bold'
+                  },
+                  formatter: (value) => value
+                }
               },
-              formatter: (value) => value
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  grid: { color: '#333' },
+                  ticks: { color: '#fff' }
+                },
+                y: {
+                  grid: { color: '#333' },
+                  ticks: { color: '#fff' }
+                }
+              }
             }
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              grid: { color: '#333' },
-              ticks: { color: '#fff' }
-            },
-            y: {
-              grid: { color: '#333' },
-              ticks: { color: '#fff' }
-            }
-          }
-        }
-      });
-    })
-    .catch(err => {
-      console.error("Error al cargar estadísticas de agentes:", err);
-      const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
-      const values = labels.map(() => 0);
-
-      const ctx = document.getElementById('chartAgentes').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Chats Finalizados',
-            data: values,
-            backgroundColor: '#1a1a1a',
-            borderColor: '#FF3B00',
-            borderWidth: 2,
-            borderRadius: 6,
-            hoverBackgroundColor: '#2a2a2a'
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#FF3B00',
-              titleColor: '#fff',
-              bodyColor: '#fff'
-            },
-            datalabels: {
-              anchor: 'end',
-              align: 'right',
-              offset: 4,
-              color: '#fff',
-              font: {
-                size: 14,
-                weight: 'bold'
-              },
-              formatter: (value) => value
-            }
-          },
-          scales: {
-            x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff' } },
-            y: { grid: { color: '#333' }, ticks: { color: '#fff' } }
-          }
-        }
-      });
-    });
-}
+          });
+        })
         .catch(err => {
           console.error("Error al cargar estadísticas de agentes:", err);
           const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
