@@ -28,8 +28,8 @@
       background: #1a1a1a;
       padding: 20px 30px;
       border-radius: 12px;
-      width: 80%; /* Ajustado a 80% */
-      margin: 40px auto; /* Centrado con márgenes automáticos */
+      width: 80%;
+      margin: 40px auto;
       border: 2px solid #FF3B00;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
@@ -157,6 +157,9 @@
       font-size: 16px;
       color: #ffae00;
     }
+    #chartAgentes {
+      max-height: 300px !important;
+    }
   </style>
 </head>
 <body>
@@ -177,97 +180,96 @@
   </div>
 
   <div class="main-box" id="mainBox" style="display:none">
-  <div class="home-buttons">
-    <button onclick="showSection('home')">🏠 Home</button>
-    <button onclick="showSection('agents')">👥 Agentes</button>
-    <button onclick="showSection('stats')">📊 Estadísticas</button>
-    <button onclick="showSection('customize')">🎨 Editar</button>
-  </div>
+    <div class="home-buttons">
+      <button onclick="showSection('home')">🏠 Home</button>
+      <button onclick="showSection('agents')">👥 Agentes</button>
+      <button onclick="showSection('stats')">📊 Estadísticas</button>
+      <button onclick="showSection('customize')">🎨 Editar</button>
+    </div>
 
-  <!-- Sección Home -->
-  <div id="section-home">
-    <h2>🏠 Home</h2>
-    <p>Próximamente se agregará información aquí.</p>
-  </div>
+    <!-- Sección Home -->
+    <div id="section-home">
+      <h2>🏠 Home</h2>
+      <p>Próximamente se agregará información aquí.</p>
+    </div>
 
-  <!-- Sección de agentes -->
-  <!-- Sección de agentes -->
-<div id="section-agents" style="display:none;">
-  <h2>Crear nuevo agente</h2>
-  <input type="text" id="newLogin" placeholder="Login del agente">
-  <input type="text" id="newName" placeholder="Nombre visible del agente">
-  <input type="password" id="newPassword" placeholder="Contraseña">
-  <select id="newRole" style="margin-top: 10px;">
-  <option value="Admin">Admin</option>
-  <option value="SuperAdmin">SuperAdmin</option>
-</select>
-  <button onclick="createAgent()" style="margin-top: 10px;">Crear</button>
-  <p id="createError" style="color: red; display: none;"></p>
-  <h2>Agentes registrados</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Usuario</th>
-        <th>Nombre Visible</th>
-        <th>Rol</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="agentsTable"></tbody>
-  </table>
-</div>
-
-  <!-- Sección estadísticas -->
-  <div id="section-stats" style="display:none;">
-    <h2>📊 Estadísticas</h2>
-    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
-      <label>De:</label>
-      <div class="calendar-wrapper">
-        <input type="date" id="fromDate">
-        <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
-      </div>
-      <input type="time" id="fromTime">
-
-      <label>A:</label>
-      <div class="calendar-wrapper">
-        <input type="date" id="toDate">
-        <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
-      </div>
-      <input type="time" id="toTime">
-
-      <select id="quickRange" onchange="setQuickRange()">
-        <option value="">Elegir el periodo</option>
-        <option value="today">Hoy</option>
-        <option value="yesterday">Ayer</option>
-        <option value="week">Esta semana</option>
-        <option value="month">Este mes</option>
-        <option value="lastMonth">Mes anterior</option>
+    <!-- Sección de agentes -->
+    <div id="section-agents" style="display:none;">
+      <h2>Crear nuevo agente</h2>
+      <input type="text" id="newLogin" placeholder="Login del agente">
+      <input type="text" id="newName" placeholder="Nombre visible del agente">
+      <input type="password" id="newPassword" placeholder="Contraseña">
+      <select id="newRole" style="margin-top: 10px;">
+        <option value="Admin">Admin</option>
+        <option value="SuperAdmin">SuperAdmin</option>
       </select>
-
-      <button onclick="confirmAndLoadStats()">Mostrar</button>
+      <button onclick="createAgent()" style="margin-top: 10px;">Crear</button>
+      <p id="createError" style="color: red; display: none;"></p>
+      <h2>Agentes registrados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre Visible</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="agentsTable"></tbody>
+      </table>
     </div>
-    <!-- Sub-secciones -->
-    <div style="margin-top: 20px;">
-      <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
-      <canvas id="chartAgentes" height="150"></canvas>
 
-      <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
-      <div id="statsResults">
-        <p>Mensajes entrantes: <span id="statMessages">0</span></p>
-        <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
-        <p>Retirar presionado: <span id="statRetiro">0</span></p>
-        <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+    <!-- Sección estadísticas -->
+    <div id="section-stats" style="display:none;">
+      <h2>📊 Estadísticas</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px;">
+        <label>De:</label>
+        <div class="calendar-wrapper">
+          <input type="date" id="fromDate">
+          <span class="calendar-icon" onclick="document.getElementById('fromDate').showPicker()">📅</span>
+        </div>
+        <input type="time" id="fromTime">
+
+        <label>A:</label>
+        <div class="calendar-wrapper">
+          <input type="date" id="toDate">
+          <span class="calendar-icon" onclick="document.getElementById('toDate').showPicker()">📅</span>
+        </div>
+        <input type="time" id="toTime">
+
+        <select id="quickRange" onchange="setQuickRange()">
+          <option value="">Elegir el periodo</option>
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+          <option value="lastMonth">Mes anterior</option>
+        </select>
+
+        <button onclick="confirmAndLoadStats()">Mostrar</button>
+      </div>
+      <!-- Sub-secciones -->
+      <div style="margin-top: 20px;">
+        <h3 style="color: orange;">📈 Estadísticas de Agentes (Rendimiento)</h3>
+        <canvas id="chartAgentes" height="100"></canvas>
+
+        <h3 style="color: lightblue; margin-top: 40px;">💬 Estadísticas de Interacciones</h3>
+        <div id="statsResults">
+          <p>Mensajes entrantes: <span id="statMessages">0</span></p>
+          <p>Cargar Fichas presionado: <span id="statCargar">0</span></p>
+          <p>Retirar presionado: <span id="statRetiro">0</span></p>
+          <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Sección editar -->
-  <div id="section-customize" style="display:none;">
-    <h2>🎨 Personalizar Estilo</h2>
-    <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
-    <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
+    <!-- Sección editar -->
+    <div id="section-customize" style="display:none;">
+      <h2>🎨 Personalizar Estilo</h2>
+      <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
+      <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
+    </div>
   </div>
-</div>
   
   <style>
     body {
@@ -378,7 +380,7 @@
       background: #1a1a1a;
       padding: 40px;
       border-radius: 12px;
-      width: 80%; /* Ajustado a 80% */
+      width: 80%;
       margin: 40px auto;
       border: 2px solid #FF3B00;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
@@ -398,79 +400,32 @@
     }
 
     .home-buttons {
-  display: flex;
-  justify-content: space-around;
-  gap: 10px;
-  margin-bottom: 20px;
-}
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
-.home-buttons button {
-  width: 150px;
-  background: linear-gradient(90deg, #FF3B00, #ffa500);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+    .home-buttons button {
+      width: 150px;
+      background: linear-gradient(90deg, #FF3B00, #ffa500);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-.home-buttons button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(255, 59, 0, 0.5);
-  background: linear-gradient(90deg, #ffa500, #FF3B00);
-}
+    .home-buttons button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(255, 59, 0, 0.5);
+      background: linear-gradient(90deg, #ffa500, #FF3B00);
+    }
   </style>
 
-  <script>
-   function loginSuperAdmin() {
-  const username = document.getElementById('superUsername').value.trim();
-  const password = document.getElementById('superPassword').value.trim();
-
-  fetch("https://mi-chat-9uti.onrender.com/superadmin-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ username, password })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return res.json();
-  })
-  .then(data => {
-    if (data.success) {
-      if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-      }
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('mainBox').style.display = 'block';
-      showSection('home');
-      loadAgents();
-    } else {
-      throw new Error('Login failed');
-    }
-  })
-  .catch(err => {
-    console.error("Error de login:", err);
-    document.getElementById('loginError').style.display = 'block';
-  });
-}
-
-    function showSection(section) {
-      document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
-      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
-      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
-      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
-
-      if (section === "stats") {
-        setDefaultDates();
-      }
-    }
-  </script>
-
-  
   <!-- Chart.js y chartjs-plugin-datalabels desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -485,122 +440,112 @@
     let chartInstance = null;
     let allAgents = []; // Lista global de agentes registrados
 
-   function loginSuperAdmin() {
-  const username = document.getElementById('superUsername').value.trim();
-  const password = document.getElementById('superPassword').value.trim();
+    function loginSuperAdmin() {
+      const username = document.getElementById('superUsername').value.trim();
+      const password = document.getElementById('superPassword').value.trim();
 
-  fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error();
-    return res.json();
-  })
-  .then(data => {
-    if (data.success) {
-      if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-      }
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('mainBox').style.display = 'block';
-      showSection('home'); // Cambiado a 'home'
-      loadAgents();
-    } else {
-      throw new Error();
+      fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        if (data.success) {
+          if (data.token) {
+            document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+          }
+          document.getElementById('loginBox').style.display = 'none';
+          document.getElementById('mainBox').style.display = 'block';
+          showSection('home');
+          loadAgents();
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(() => {
+        document.getElementById('loginError').style.display = 'block';
+      });
     }
-  })
-  .catch(() => {
-    document.getElementById('loginError').style.display = 'block';
-  });
-}
+
+    function showSection(section) {
+      document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
+      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+
+      if (section === "stats") {
+        setDefaultDates();
+      }
+    }
 
     function loadAgents() {
-  fetch('https://mi-chat-9uti.onrender.com/agents', {
-  credentials: 'include'
-})
-    .then(res => res.json())
-    .then(agents => {
-      // Filtramos solo los agentes con rol "Agent" para estadísticas
-      allAgents = agents.filter(agent => agent.role === 'Admin').map(agent => agent.username);
-      const table = document.getElementById('agentsTable');
-      table.innerHTML = '';
-      agents.forEach(agent => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><strong>${agent.username}</strong></td>
-          <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
-          <td>${agent.role || 'Admin'}</td>
-          <td style="display: flex; gap: 10px;">
-            <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
-            <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
-          </td>
-        `;
-        table.appendChild(row);
+      fetch('https://mi-chat-9uti.onrender.com/agents', {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(agents => {
+        allAgents = agents.filter(agent => agent.role === 'Admin').map(agent => agent.username);
+        const table = document.getElementById('agentsTable');
+        table.innerHTML = '';
+        agents.forEach(agent => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${agent.username}</strong></td>
+            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
+            <td>${agent.role || 'Admin'}</td>
+            <td style="display: flex; gap: 10px;">
+              <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
+              <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+            </td>
+          `;
+          table.appendChild(row);
+        });
       });
-    });
-}
+    }
 
-   function createAgent() {
-  const login = document.getElementById('newLogin').value.trim();
-  const name = document.getElementById('newName').value.trim();
-  const password = document.getElementById('newPassword').value.trim();
-  const role = document.getElementById('newRole').value;
+    function createAgent() {
+      const login = document.getElementById('newLogin').value.trim();
+      const name = document.getElementById('newName').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      const role = document.getElementById('newRole').value;
 
-  if (!login || !name || !password || !role) {
-    document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
-    document.getElementById('createError').style.display = 'block';
-    return;
-  }
+      if (!login || !name || !password || !role) {
+        document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+        document.getElementById('createError').style.display = 'block';
+        return;
+      }
 
-  fetch('https://mi-chat-9uti.onrender.com/agents', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ username: login, name, password, role })
-  })
-  .then(res => {
-    if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
-    return res.json();
-  })
-  .then(() => {
-    document.getElementById('newLogin').value = '';
-    document.getElementById('newName').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('newRole').value = 'Admin';
-    document.getElementById('createError').style.display = 'none';
-    loadAgents();
-  })
-  .catch(err => {
-    console.error("Error al crear agente:", err);
-    document.getElementById('createError').textContent = err.message || 'Error al crear agente';
-    document.getElementById('createError').style.display = 'block';
-  });
-}
+      fetch('https://mi-chat-9uti.onrender.com/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username: login, name, password, role })
+      })
+      .then(res => {
+        if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
+        return res.json();
+      })
+      .then(() => {
+        document.getElementById('newLogin').value = '';
+        document.getElementById('newName').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('newRole').value = 'Admin';
+        document.getElementById('createError').style.display = 'none';
+        loadAgents();
+      })
+      .catch(err => {
+        console.error("Error al crear agente:", err);
+        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+        document.getElementById('createError').style.display = 'block';
+      });
+    }
 
-    function deleteAgent(username) {
-  fetch(`https://mi-chat-9uti.onrender.com/agents/${username}`, {
-    method: 'DELETE',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(res => {
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return res.json();
-  })
-  .then(() => loadAgents())
-  .catch(err => console.error("Error al eliminar agente:", err));
-}
-
-function confirmDelete() {
-  if (!selectedUsernameToDelete) return;
-  deleteAgent(selectedUsernameToDelete)
-    .then(() => closeDeletePopup())
-    .catch(err => console.error("Error en confirmDelete:", err));
-}
-
-        function setDefaultDates() {
+    function setDefaultDates() {
       const today = new Date();
       const todayISO = today.toISOString().split('T')[0];
       document.getElementById('fromDate').value = todayISO;
@@ -652,6 +597,9 @@ function confirmDelete() {
       document.getElementById("fromTime").value = '00:00';
       toDateInput.value = end.toISOString().split('T')[0];
       document.getElementById("toTime").value = '23:59';
+
+      // Llamar a confirmAndLoadStats después de establecer las fechas
+      confirmAndLoadStats();
     }
 
     function confirmAndLoadStats() {
@@ -668,15 +616,14 @@ function confirmDelete() {
       const from = `${fromDate}T${fromTime}:00`;
       const to = `${toDate}T${toTime}:00`;
 
-      // Sin confirmación, carga directamente las estadísticas
       loadStats(from, to);
     }
 
     function loadStats(from, to) {
       // Interacciones
       fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-  credentials: 'include'
-})
+        credentials: 'include'
+      })
         .then(res => res.json())
         .then(data => {
           document.getElementById("statMessages").textContent = data.messages || 0;
@@ -687,26 +634,21 @@ function confirmDelete() {
         .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
 
       // Agentes (gráfico)
-      console.log(`Solicitando stats-agents con rango: from=${from}, to=${to}`);
       fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-  credentials: 'include'
-})
+        credentials: 'include'
+      })
         .then(res => {
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           return res.json();
         })
         .then(agentData => {
-          console.log("Datos recibidos de /stats-agents:", agentData);
+          // Filtrar solo agentes Admin y ordenar por cantidad de chats finalizados
+          const filteredData = agentData
+            .filter(agent => agent.role !== 'SuperAdmin')
+            .sort((a, b) => b.finalizados - a.finalizados);
 
-          // Crear un mapa de datos por agente
-          const agentStats = {};
-          agentData.forEach(item => {
-            agentStats[item.username] = item.finalizados || 0;
-          });
-
-          // Asegurar que todos los agentes registrados aparezcan, con 0 si no tienen datos
-          const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
-          const values = labels.map(username => agentStats[username] || 0);
+          const labels = filteredData.map(agent => agent.name || agent.username);
+          const values = filteredData.map(agent => agent.finalizados || 0);
 
           const ctx = document.getElementById('chartAgentes').getContext('2d');
           if (chartInstance) chartInstance.destroy();
@@ -718,7 +660,12 @@ function confirmDelete() {
               datasets: [{
                 label: 'Chats Finalizados',
                 data: values,
-                backgroundColor: '#1a1a1a',
+                backgroundColor: values.map((_, index) => 
+                  index === 0 ? '#FFD700' : // Oro para el primer lugar
+                  index === 1 ? '#C0C0C0' : // Plata para el segundo
+                  index === 2 ? '#CD7F32' : // Bronce para el tercero
+                  '#1a1a1a' // Color por defecto para el resto
+                ),
                 borderColor: '#FF3B00',
                 borderWidth: 2,
                 borderRadius: 6,
@@ -728,12 +675,31 @@ function confirmDelete() {
             options: {
               indexAxis: 'y',
               responsive: true,
+              maintainAspectRatio: false,
+              animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+              },
+              layout: {
+                padding: {
+                  left: 10,
+                  right: 30,
+                  top: 10,
+                  bottom: 10
+                }
+              },
               plugins: {
                 legend: { display: false },
                 tooltip: {
                   backgroundColor: '#FF3B00',
                   titleColor: '#fff',
-                  bodyColor: '#fff'
+                  bodyColor: '#fff',
+                  callbacks: {
+                    label: function(context) {
+                      const position = context.dataIndex + 1;
+                      return `Posición #${position} - ${context.formattedValue} chats`;
+                    }
+                  }
                 },
                 datalabels: {
                   anchor: 'end',
@@ -741,21 +707,37 @@ function confirmDelete() {
                   offset: 4,
                   color: '#fff',
                   font: {
-                    size: 14,
+                    size: 12,
                     weight: 'bold'
                   },
-                  formatter: (value) => value
+                  formatter: (value, context) => {
+                    const position = context.dataIndex + 1;
+                    return `#${position} - ${value}`;
+                  }
                 }
               },
               scales: {
                 x: {
                   beginAtZero: true,
                   grid: { color: '#333' },
-                  ticks: { color: '#fff' }
+                  ticks: { 
+                    color: '#fff',
+                    font: {
+                      size: 11
+                    }
+                  }
                 },
                 y: {
                   grid: { color: '#333' },
-                  ticks: { color: '#fff' }
+                  ticks: { 
+                    color: '#fff',
+                    callback: function(value, index) {
+                      return `${labels[index]}`;
+                    },
+                    font: {
+                      size: 11
+                    }
+                  }
                 }
               }
             }
@@ -785,6 +767,7 @@ function confirmDelete() {
             options: {
               indexAxis: 'y',
               responsive: true,
+              maintainAspectRatio: false,
               plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -798,15 +781,32 @@ function confirmDelete() {
                   offset: 4,
                   color: '#fff',
                   font: {
-                    size: 14,
+                    size: 12,
                     weight: 'bold'
                   },
                   formatter: (value) => value
                 }
               },
               scales: {
-                x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff' } },
-                y: { grid: { color: '#333' }, ticks: { color: '#fff' } }
+                x: { 
+                  beginAtZero: true, 
+                  grid: { color: '#333' }, 
+                  ticks: { 
+                    color: '#fff',
+                    font: {
+                      size: 11
+                    }
+                  } 
+                },
+                y: { 
+                  grid: { color: '#333' }, 
+                  ticks: { 
+                    color: '#fff',
+                    font: {
+                      size: 11
+                    }
+                  } 
+                }
               }
             }
           });
@@ -829,7 +829,9 @@ function confirmDelete() {
     function confirmDelete() {
       if (!selectedUsernameToDelete) return;
       fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToDelete}`, {
-        method: 'DELETE'
+        
+        method: 'DELETE',
+        credentials: 'include'
       })
       .then(() => {
         loadAgents();
@@ -862,11 +864,11 @@ function confirmDelete() {
       if (newPass) body.password = newPass;
 
       fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToEdit}`, {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify(body)
-})
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      })
       .then(res => {
         if (!res.ok) throw new Error();
         loadAgents();
@@ -875,25 +877,21 @@ function confirmDelete() {
       .catch(() => alert("Error al editar agente"));
     }
 
-    // Escuchar actualizaciones de nombre desde config.html
     socket.on('update username', (data) => {
       console.log('Evento update username recibido en superadmin:', data);
       const { userId, newUsername } = data;
 
-      // Actualizar la tabla de agentes dinámicamente
       const agentRow = document.getElementById(`agent-name-${userId}`);
       if (agentRow) {
         agentRow.textContent = newUsername;
       }
 
-      // Actualizar la lista global de agentes
       const agentIndex = allAgents.indexOf(userId);
       if (agentIndex !== -1) {
         // Si necesitamos actualizar algo más en allAgents, lo hacemos aquí
       }
     });
 
-    // Permitir login con tecla Enter
     document.addEventListener('DOMContentLoaded', () => {
       const userInput = document.getElementById('superUsername');
       const passInput = document.getElementById('superPassword');
