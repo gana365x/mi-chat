@@ -437,7 +437,7 @@
     if (data.success) {
       document.getElementById('loginBox').style.display = 'none';
       document.getElementById('mainBox').style.display = 'block';
-      showSection('agents'); // Esto podría estar como 'agents' o algo más
+      showSection('home'); // Asegura que abra Home
       loadAgents();
     } else {
       throw new Error();
