@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Super Agente - Gestión de Accesos</title>
+  <title>Super Admin - Gestión de Accesos</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -161,7 +161,7 @@
 </head>
 <body>
   <div class="login-box" id="loginBox">
-    <h1>Super Agente</h1>
+    <h1>Super Admin</h1>
     <div class="input-group">
       <input type="text" id="superUsername" required>
       <label for="superUsername">Usuario</label>
@@ -436,22 +436,25 @@
     body: JSON.stringify({ username, password })
   })
   .then(res => {
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     return res.json();
   })
   .then(data => {
     if (data.success) {
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+      }
       document.getElementById('loginBox').style.display = 'none';
       document.getElementById('mainBox').style.display = 'block';
-      showSection('home'); // Asegura que abra Home
+      showSection('home');
       loadAgents();
     } else {
-      throw new Error();
+      throw new Error('Login failed');
     }
   })
   .catch(err => {
     console.error("Error de login:", err);
-    alert("❌ Usuario o contraseña incorrectos");
+    document.getElementById('loginError').style.display = 'block';
   });
 }
 
@@ -605,7 +608,7 @@
         row.innerHTML = `
           <td><strong>${agent.username}</strong></td>
           <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
-          <td>${agent.role || 'Agent'}</td>
+          <td>${agent.role || 'Admin'}</td>
           <td style="display: flex; gap: 10px;">
             <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
             <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
@@ -655,7 +658,8 @@
     function deleteAgent(username) {
       fetch(`/agents/${username}`, {
   method: 'DELETE',
-  credentials: 'include'
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json' }
 })
       .then(() => loadAgents());
     }
