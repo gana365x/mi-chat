@@ -555,36 +555,36 @@
     let chartInstance = null;
     let allAgents = []; // Lista global de agentes registrados
 
-    function loginSuperAdmin() {
-      const username = document.getElementById('superUsername').value.trim();
-      const password = document.getElementById('superPassword').value.trim();
+   function loginSuperAdmin() {
+  const username = document.getElementById('superUsername').value.trim();
+  const password = document.getElementById('superPassword').value.trim();
 
-      fetch('/superadmin-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => {
-        if (data.success) {
-          if (data.token) {
-            document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-          }
-          document.getElementById('loginBox').style.display = 'none';
-          document.getElementById('mainBox').style.display = 'block';
-          showSection('agents');
-          loadAgents();
-        } else {
-          throw new Error();
-        }
-      })
-      .catch(() => {
-        document.getElementById('loginError').style.display = 'block';
-      });
+  fetch('/superadmin-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error();
+    return res.json();
+  })
+  .then(data => {
+    if (data.success) {
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+      }
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('mainBox').style.display = 'block';
+      showSection('home'); // Cambiado a 'home'
+      loadAgents();
+    } else {
+      throw new Error();
     }
+  })
+  .catch(() => {
+    document.getElementById('loginError').style.display = 'block';
+  });
+}
 
     function loadAgents() {
       fetch('/agents')
@@ -649,14 +649,15 @@
     }
 
     function showSection(section) {
-      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
-      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
-      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+  document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
+  document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+  document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+  document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
 
-      if (section === "stats") {
-        setDefaultDates();
-      }
-    }
+  if (section === "stats") {
+    setDefaultDates();
+  }
+}
 
     function setDefaultDates() {
       const today = new Date();
