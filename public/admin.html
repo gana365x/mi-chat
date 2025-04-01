@@ -947,7 +947,7 @@
   </div>
 
   <div id="loginScreen" style="position: absolute; top:0; left:0; width:100vw; height:100vh; background:#121212; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
-    <h2 style="color: white; font-size: 24px;">Login Agente</h2>
+    <h2 style="color: white; font-size: 24px;">Login Admin</h2>
     <input id="adminUsername" type="text" placeholder="Usuario" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;">
     <input id="adminPassword" type="password" placeholder="Contraseña" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;">
     <button id="loginButton" style="padding: 10px 20px; background: #FF3B00; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Ingresar</button>
@@ -958,7 +958,7 @@
     <div class="inbox" id="userListContainer">
       <div id="agentInfo">
         <div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
-        <span>Agente: <span id="agentDisplayName">Cargando...</span></span>
+        <span>Admin: <span id="adminDisplayName">Cargando...</span></span>
       </div>
       <div class="topbar">
         <span class="topbar-title">
@@ -1238,7 +1238,7 @@
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
 
-      fetch("https://mi-chat-9uti.onrender.com/agent-login", {
+      fetch("https://mi-chat-9uti.onrender.com/admin-login", {
   method: "POST",
   headers: {
     "Content-Type": "application/json"
@@ -1285,14 +1285,14 @@
   const agentDisplayName = localStorage.getItem("agentDisplayName");
 
   if (agentDisplayName) {
-    document.getElementById("agentDisplayName").textContent = agentDisplayName;
+    document.getElementById("adminDisplayName").textContent = adminDisplayName;
   } else if (agentUser) {
     fetch(`/get-agent-displayname?username=${agentUser}`)
       .then(res => res.json())
       .then(data => {
         const displayName = data.name || agentUser;
         document.getElementById("agentDisplayName").textContent = displayName;
-        localStorage.setItem("agentDisplayName", displayName);
+        localStorage.setItem("adminDisplayName", displayName);
       })
       .catch(err => {
         console.error("Error al obtener el nombre visible del agente:", err);
@@ -1576,12 +1576,12 @@
       console.log('Evento update username recibido:', data);
       const { userId, newUsername } = data;
 
-      // Actualizar el nombre del agente conectado en #agentDisplayName si coincide con adminUser
-      const currentAgentUser = localStorage.getItem("adminUser");
-      if (userId === currentAgentUser) {
-        document.getElementById("agentDisplayName").textContent = newUsername;
-        localStorage.setItem("agentDisplayName", newUsername);
-      }
+      // Actualizar el nombre del admin conectado en #adminDisplayName si coincide con adminUser
+const currentAdminUser = localStorage.getItem("adminUser");
+if (userId === currentAdminUser) {
+  document.getElementById("adminDisplayName").textContent = newUsername;
+  localStorage.setItem("adminDisplayName", newUsername);
+}
 
       // Actualizar la lista de usuarios en la bandeja de entrada
       if (window.chatUsers) {
@@ -1643,7 +1643,7 @@
       if (userId) {
         console.log('Finalizando chat para el usuario:', userId);
         const agentUsername = localStorage.getItem("adminUser");
-        socket.emit('close chat', { userId, agentUsername });
+        socket.emit('close chat', { userId, adminUsername });
 
         const chatElement = document.querySelector(`div[data-user-id="${userId}"]`);
         if (chatElement) {
@@ -1808,9 +1808,9 @@
     function confirmFinalize() {
       if (pendingFinalizeUserId) {
         socket.emit("close chat", {
-          userId: pendingFinalizeUserId,
-          agentUsername: localStorage.getItem("adminUser")
-        });
+  userId: pendingFinalizeUserId,
+  adminUsername: localStorage.getItem("adminUser")
+});
         closeFinalizePopup();
       }
     }
