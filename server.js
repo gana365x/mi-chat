@@ -520,20 +520,14 @@ io.on('connection', (socket) => {
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ success: false, message: 'Faltan usuario o contraseña' });
-  }
-
-  if (typeof username !== 'string' || typeof password !== 'string' || username.length < 3 || password.length < 4) {
-    return res.status(400).json({ success: false, message: 'Usuario o contraseña inválidos (mínimo 3 caracteres para usuario, 4 para contraseña)' });
+  if (!validateAuthInput(username, password)) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
   try {
-    const agent = await Agent.findOne({ 
-      username, 
-      $or: [{ role: 'SuperAdmin' }, { type: 'superadmin' }]
-    });
-    if (!agent) {
+    const agent = await Agent.findOne({ username });
+    
+    if (!agent || (agent.role !== 'SuperAdmin' && agent.type !== 'superadmin')) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado o no es SuperAdmin' });
     }
 
@@ -542,7 +536,13 @@ app.post('/superadmin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
+    res.cookie('token', process.env.SECRET_KEY, { 
+      httpOnly: true,
+      path: '/',
+      sameSite: 'None',
+      secure: true
+    });
+    
     res.status(200).json({
       success: true,
       name: agent.name || username,
@@ -550,7 +550,7 @@ app.post('/superadmin-login', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error en login de SuperAdmin:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor: ' + err.message });
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
 
