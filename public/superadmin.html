@@ -501,7 +501,22 @@
   <script>
     Chart.register(ChartDataLabels);
 
-    const socket = io('https://mi-chat-9uti.onrender.com');
+let systemTimezone = "UTC"; // Valor por defecto
+
+function loadTimezoneFromServer() {
+  return fetch('/get-timezone', { credentials: 'include' })
+    .then(res => res.json())
+    .then(data => {
+      systemTimezone = data.timezone || "UTC";
+      console.log("Zona horaria cargada:", systemTimezone);
+    })
+    .catch(err => {
+      console.warn("Error al cargar timezone, usando UTC:", err);
+      systemTimezone = "UTC";
+    });
+}
+
+const socket = io('https://mi-chat-9uti.onrender.com');
     let chartInstance = null;
     let allAgents = [];
 
@@ -625,80 +640,67 @@
     }
 
     function setQuickRange() {
-      const now = new Date();
-      const fromDateInput = document.getElementById("fromDate");
-      const toDateInput = document.getElementById("toDate");
-      const fromTimeInput = document.getElementById("fromTime");
-      const toTimeInput = document.getElementById("toTime");
-      const value = document.getElementById("quickRange").value;
+  const now = new Date();
+  const fromDateInput = document.getElementById("fromDate");
+  const toDateInput = document.getElementById("toDate");
+  const fromTimeInput = document.getElementById("fromTime");
+  const toTimeInput = document.getElementById("toTime");
+  const value = document.getElementById("quickRange").value;
 
-      let start = new Date();
-      let end = new Date();
+  let start = new Date();
+  let end = new Date();
 
-      // Ajustamos para la zona horaria local
-      const offset = now.getTimezoneOffset() * 60000;
+  switch (value) {
+    case "today":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+      break;
+    case "yesterday":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
+      break;
+    case "week":
+      const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1;
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+      break;
+    case "month":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+      break;
+    case "lastMonth":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
+      break;
+  }
 
-      switch (value) {
-        case "today":
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-          break;
-        case "yesterday":
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
-          break;
-        case "week":
-          const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-          break;
-        case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1);
-          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-          break;
-        case "lastMonth":
-          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-          break;
-      }
+  fromDateInput.value = start.toISOString().split('T')[0];
+  fromTimeInput.value = '00:00';
+  toDateInput.value = end.toISOString().split('T')[0];
+  toTimeInput.value = '23:59';
 
-      // Ajustamos las fechas para UTC
-      const startUTC = new Date(start.getTime() - offset);
-      const endUTC = new Date(end.getTime() - offset);
-
-      fromDateInput.value = start.toISOString().split('T')[0];
-      fromTimeInput.value = '00:00';
-      toDateInput.value = end.toISOString().split('T')[0];
-      toTimeInput.value = '23:59';
-
-      const from = startUTC.toISOString();
-      const to = endUTC.toISOString();
-      loadStats(from, to);
-    }
+  const from = start.toISOString();
+  const to = end.toISOString();
+  loadStats(from, to);
+}
 
     function confirmAndLoadStats() {
-      const fromDate = document.getElementById("fromDate").value;
-      const fromTime = document.getElementById("fromTime").value;
-      const toDate = document.getElementById("toDate").value;
-      const toTime = document.getElementById("toTime").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const fromTime = document.getElementById("fromTime").value;
+  const toDate = document.getElementById("toDate").value;
+  const toTime = document.getElementById("toTime").value;
 
-      if (!fromDate || !fromTime || !toDate || !toTime) {
-        alert("Debes completar todos los campos de fecha y hora.");
-        return;
-      }
+  if (!fromDate || !fromTime || !toDate || !toTime) {
+    alert("Debes completar todos los campos de fecha y hora.");
+    return;
+  }
 
-      // Creamos fechas en UTC
-      const from = new Date(`${fromDate}T${fromTime}:00`);
-      const to = new Date(`${toDate}T${toTime}:00`);
-      
-      // Ajustamos para la zona horaria local
-      const offset = from.getTimezoneOffset() * 60000;
-      const fromUTC = new Date(from.getTime() - offset);
-      const toUTC = new Date(to.getTime() - offset);
+  const from = new Date(`${fromDate}T${fromTime}:00Z`); // UTC directo
+  const to = new Date(`${toDate}T${toTime}:00Z`); // UTC directo
 
-      loadStats(fromUTC.toISOString(), toUTC.toISOString());
-    }
-
+  loadStats(from.toISOString(), to.toISOString());
+}
+    
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
 
@@ -961,17 +963,19 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      const userInput = document.getElementById('superUsername');
-      const passInput = document.getElementById('superPassword');
+  loadTimezoneFromServer().then(() => {
+    const userInput = document.getElementById('superUsername');
+    const passInput = document.getElementById('superPassword');
 
-      [userInput, passInput].forEach(input => {
-        input.addEventListener('keypress', function (e) {
-          if (e.key === 'Enter') {
-            loginSuperAdmin();
-          }
-        });
+    [userInput, passInput].forEach(input => {
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          loginSuperAdmin();
+        }
       });
     });
+  });
+});
   </script>
 
   <!-- POPUP CONFIRMAR ELIMINACIÓN -->
