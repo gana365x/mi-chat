@@ -958,7 +958,8 @@ app.get('/stats-agents', async (req, res) => {
   if (!from || !to) {
     return res.status(400).json({ error: 'Faltan parámetros from y to' });
   }
-
+  
+});
   server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
