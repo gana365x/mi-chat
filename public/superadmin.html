@@ -866,10 +866,8 @@
 
     socket.on('update username', (data) => {
       console.log('Evento update username recibido en superadmin:', data);
-      const { userId, newUsername } = data;
-
-      const agent
-Row = document.getElementById(`agent-name-${userId}`);
+      const {userId, newUsername} = data;
+      const agentRow = document.getElementById(`agent-name-${userId}`);
       if (agentRow) {
         agentRow.textContent = newUsername;
       }
