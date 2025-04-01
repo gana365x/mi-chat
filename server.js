@@ -917,13 +917,15 @@ app.get('/stats', async (req, res) => {
   try {
     const fromDate = new Date(from);
     const toDate = new Date(to);
+    const fromInArgentina = new Date(fromDate.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    const toInArgentina = new Date(toDate.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
 
-    if (isNaN(fromDate) || isNaN(toDate)) {
+    if (isNaN(fromInArgentina) || isNaN(toInArgentina)) {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
     const messages = await ChatMessage.find({
-      timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
+      timestamp: { $gte: fromInArgentina.toISOString(), $lte: toInArgentina.toISOString() }
     });
 
     let chatsClosed = 0;
@@ -983,25 +985,27 @@ app.get('/stats-agents', async (req, res) => {
   try {
     const fromDate = new Date(from);
     const toDate = new Date(to);
+    const fromInArgentina = new Date(fromDate.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    const toInArgentina = new Date(toDate.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
 
-    if (isNaN(fromDate) || isNaN(toDate)) {
+    if (isNaN(fromInArgentina) || isNaN(toInArgentina)) {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
     const closedMessages = await ChatMessage.find({
       status: 'closed',
       sender: 'System',
-      timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
+      timestamp: { $gte: fromInArgentina.toISOString(), $lte: toInArgentina.toISOString() }
     });
 
     const agentStatsMap = {};
     closedMessages.forEach(msg => {
       if (msg.adminUsername) {
-  agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
-}
+        agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
+      }
     });
 
-    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name'); // Solo Agents
+    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name');
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
