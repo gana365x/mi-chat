@@ -631,6 +631,7 @@
   fetch('/agents', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // Añade esto
     body: JSON.stringify({ username: login, name, password, role })
   })
   .then(res => {
@@ -641,7 +642,7 @@
     document.getElementById('newLogin').value = '';
     document.getElementById('newName').value = '';
     document.getElementById('newPassword').value = '';
-    document.getElementById('newRole').value = 'Agent'; // Resetear a valor por defecto
+    document.getElementById('newRole').value = 'Agent';
     document.getElementById('createError').style.display = 'none';
     loadAgents();
   })
