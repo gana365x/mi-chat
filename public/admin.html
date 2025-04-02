@@ -552,12 +552,21 @@
     }
 
     .bubble.bot {
-      background-color: #FFFFFF;
-      align-self: flex-start;
-      margin-right: auto;
-      border-top-left-radius: 0;
-      color: #000;
-    }
+  background-color: #FFFFFF;
+  align-self: flex-start;
+  margin-right: auto;
+  border-top-left-radius: 0;
+  color: #000;
+  padding: 4px 6px; /* Reducir el padding para hacerlo más compacto */
+  margin: 2px; /* Reducir el margen */
+  font-size: 12px; /* Reducir el tamaño de la fuente */
+  line-height: 1.1; /* Reducir el espaciado entre líneas */
+  max-width: fit-content; /* Ajustar el ancho al contenido */
+}
+
+.bubble.bot div {
+  margin: 2px 0; /* Reducir el margen entre las líneas del mensaje */
+}
 
     .bubble.system {
       background-color: #2e2e2e;
