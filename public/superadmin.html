@@ -380,6 +380,52 @@
       align-items: center;
       justify-content: center;
     }
+
+    .kpi-container {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .kpi-box {
+      flex: 1;
+      background: var(--bg-darker);
+      padding: 20px;
+      border-radius: var(--border-radius-lg);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .kpi-box h3 {
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+    .kpi-box p {
+      font-size: 24px;
+      color: var(--text-light);
+    }
+    .chart-container, .table-container {
+      background: var(--bg-darker);
+      padding: 20px;
+      border-radius: var(--border-radius-lg);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .table-container table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .table-container th, .table-container td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--bg-hover);
+    }
+    .table-container th {
+      background: var(--bg-hover);
+      color: var(--primary-color);
+    }
+    .table-container td {
+      color: var(--text-light);
+    }
   </style>
 </head>
 <body>
@@ -493,38 +539,43 @@
   <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
 
   <!-- KPIs destacados -->
-  <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-    <div style="flex: 1; background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg); text-align: center;">
-      <h3 style="color: var(--primary-color);">👑 Mejor Agente</h3>
-      <p id="bestAgent" style="font-size: 24px; color: var(--text-light);">-</p>
+  <div class="kpi-container">
+    <div class="kpi-box">
+      <h3>👑 Mejor Agente</h3>
+      <p id="bestAgent">-</p>
     </div>
-    <div style="flex: 1; background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg); text-align: center;">
-      <h3 style="color: var(--primary-color);">📈 Total Cierres</h3>
-      <p id="totalClosures" style="font-size: 24px; color: var(--text-light);">0</p>
+    <div class="kpi-box">
+      <h3>📈 Total Cierres</h3>
+      <p id="totalClosures">0</p>
+    </div>
+    <div class="kpi-box">
+      <h3>💬 Total Interacciones</h3>
+      <p id="totalInteractions">0</p>
     </div>
   </div>
 
   <!-- Gráfico de rendimiento -->
-  <div style="background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg); margin-bottom: 20px;">
-    <h3 style="color: var(--primary-color);">📊 Rendimiento por Agente</h3>
+  <div class="chart-container">
+    <h3>📊 Rendimiento por Agente</h3>
     <canvas id="performanceChart" height="100"></canvas>
   </div>
 
   <!-- Tabla dinámica -->
-  <div style="background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg);">
-    <h3 style="color: var(--primary-color);">📋 Detalles de Rendimiento</h3>
-    <table id="performanceTable" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+  <div class="table-container">
+    <h3>📋 Detalles de Rendimiento</h3>
+    <table id="performanceTable">
       <thead>
         <tr>
-          <th style="padding: 10px; background: var(--bg-hover); color: var(--primary-color);">Agente</th>
-          <th style="padding: 10px; background: var(--bg-hover); color: var(--primary-color);">Cierres</th>
-          <th style="padding: 10px; background: var(--bg-hover); color: var(--primary-color);">Interacciones</th>
+          <th>Agente</th>
+          <th>Cierres</th>
+          <th>Interacciones</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 </div>
+
 <script>
   function loadPerformanceData() {
     fetch("https://mi-chat-9uti.onrender.com/get-performance-data", {
@@ -536,6 +587,7 @@
       const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
       document.getElementById("bestAgent").textContent = bestAgent.name;
       document.getElementById("totalClosures").textContent = data.totalClosures;
+      document.getElementById("totalInteractions").textContent = data.totalInteractions;
 
       // Actualizar gráfico
       const ctx = document.getElementById("performanceChart").getContext("2d");
