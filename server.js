@@ -1054,3 +1054,43 @@ app.post('/get-performance-logs', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error al obtener logs' });
   }
 });
+
+
+app.post('/get-daily-performance', async (req, res) => {
+  const { from, to } = req.body;
+  try {
+    const logs = await PerformanceLog.aggregate([
+      {
+        $match: {
+          timestamp: {
+            $gte: new Date(from),
+            $lte: new Date(to)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            day: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+            agent: "$agent"
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id.day": -1, count: -1 }
+      }
+    ]);
+
+    const formatted = logs.map(l => ({
+      date: l._id.day,
+      agent: l._id.agent,
+      count: l.count
+    }));
+
+    res.json({ success: true, logs: formatted });
+  } catch (e) {
+    console.error("❌ Error en /get-daily-performance", e);
+    res.status(500).json({ success: false });
+  }
+});
