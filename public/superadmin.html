@@ -426,6 +426,7 @@
         <option value="Admin">Admin</option>
         <option value="SuperAdmin">SuperAdmin</option>
       </select>
+
 <script>
 document.getElementById("periodFilter").addEventListener("change", () => {
   const period = document.getElementById("periodFilter").value;
@@ -435,21 +436,20 @@ document.getElementById("periodFilter").addEventListener("change", () => {
 
   switch (period) {
     case "today":
-      // ambos son hoy
       break;
     case "yesterday":
       from.setDate(today.getDate() - 1);
       to.setDate(today.getDate() - 1);
       break;
     case "week":
-      from.setDate(today.getDate() - 6); // incluye hoy
+      from.setDate(today.getDate() - 6);
       break;
     case "month":
       from = new Date(today.getFullYear(), today.getMonth(), 1);
       break;
     case "lastMonth":
       from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0); // último día del mes anterior
+      to = new Date(today.getFullYear(), today.getMonth(), 0);
       break;
   }
 
@@ -457,8 +457,14 @@ document.getElementById("periodFilter").addEventListener("change", () => {
   const fromISO = from.toISOString().split("T")[0];
   document.getElementById("dailyFrom").value = fromISO;
   document.getElementById("dailyTo").value = toISO;
+
+  // Llama automáticamente a loadPerformance() cuando cambia el período
+  if (typeof loadPerformance === "function") {
+    loadPerformance();
+  }
 });
 </script>
+
 
       <button onclick="createAgent()">Crear</button>
       <p id="createError" style="color: red; display: none;"></p>
@@ -504,6 +510,7 @@ document.getElementById("periodFilter").addEventListener("change", () => {
           <option value="month">Este mes</option>
           <option value="lastMonth">Mes anterior</option>
         </select>
+
 <script>
 document.getElementById("periodFilter").addEventListener("change", () => {
   const period = document.getElementById("periodFilter").value;
@@ -513,21 +520,20 @@ document.getElementById("periodFilter").addEventListener("change", () => {
 
   switch (period) {
     case "today":
-      // ambos son hoy
       break;
     case "yesterday":
       from.setDate(today.getDate() - 1);
       to.setDate(today.getDate() - 1);
       break;
     case "week":
-      from.setDate(today.getDate() - 6); // incluye hoy
+      from.setDate(today.getDate() - 6);
       break;
     case "month":
       from = new Date(today.getFullYear(), today.getMonth(), 1);
       break;
     case "lastMonth":
       from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0); // último día del mes anterior
+      to = new Date(today.getFullYear(), today.getMonth(), 0);
       break;
   }
 
@@ -535,8 +541,14 @@ document.getElementById("periodFilter").addEventListener("change", () => {
   const fromISO = from.toISOString().split("T")[0];
   document.getElementById("dailyFrom").value = fromISO;
   document.getElementById("dailyTo").value = toISO;
+
+  // Llama automáticamente a loadPerformance() cuando cambia el período
+  if (typeof loadPerformance === "function") {
+    loadPerformance();
+  }
 });
 </script>
+
 
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
@@ -570,6 +582,7 @@ document.getElementById("periodFilter").addEventListener("change", () => {
             <option value="month">Este mes</option>
             <option value="lastMonth">Mes anterior</option>
           </select>
+
 <script>
 document.getElementById("periodFilter").addEventListener("change", () => {
   const period = document.getElementById("periodFilter").value;
@@ -579,21 +592,20 @@ document.getElementById("periodFilter").addEventListener("change", () => {
 
   switch (period) {
     case "today":
-      // ambos son hoy
       break;
     case "yesterday":
       from.setDate(today.getDate() - 1);
       to.setDate(today.getDate() - 1);
       break;
     case "week":
-      from.setDate(today.getDate() - 6); // incluye hoy
+      from.setDate(today.getDate() - 6);
       break;
     case "month":
       from = new Date(today.getFullYear(), today.getMonth(), 1);
       break;
     case "lastMonth":
       from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0); // último día del mes anterior
+      to = new Date(today.getFullYear(), today.getMonth(), 0);
       break;
   }
 
@@ -601,8 +613,14 @@ document.getElementById("periodFilter").addEventListener("change", () => {
   const fromISO = from.toISOString().split("T")[0];
   document.getElementById("dailyFrom").value = fromISO;
   document.getElementById("dailyTo").value = toISO;
+
+  // Llama automáticamente a loadPerformance() cuando cambia el período
+  if (typeof loadPerformance === "function") {
+    loadPerformance();
+  }
 });
 </script>
+
 
           <button onclick="loadPerformance()">Filtrar</button>
         </div>
