@@ -807,7 +807,6 @@
 const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
-    }
 
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
