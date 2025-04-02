@@ -9,6 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const moment = require('moment-timezone');
 const cors = require("cors"); // Agregado
 
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -148,8 +149,10 @@ const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
 function getTimestamp() {
-  const defaultTimezone = "America/Argentina/Buenos_Aires";
-  let timezone = defaultTimezone;
+  const timezone = "America/Argentina/Buenos_Aires";
+  const now = new Date();
+  return new Date(now.toLocaleString("en-US", { timeZone: timezone })).toISOString();
+}
 
   try {
     const data = fs.readFileSync(timezoneFile, 'utf-8');
@@ -981,8 +984,9 @@ app.get('/stats-agents', async (req, res) => {
   }
 
   try {
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
+    const fromDate = moment.tz(from, "YYYY-MM-DDTHH:mm:ssZ", "America/Argentina/Buenos_Aires").utc().toDate();
+const toDate = moment.tz(to, "YYYY-MM-DDTHH:mm:ssZ", "America/Argentina/Buenos_Aires").utc().toDate();
+
 
     if (isNaN(fromDate) || isNaN(toDate)) {
       return res.status(400).json({ error: 'Fechas inválidas' });
