@@ -496,10 +496,11 @@
           <input type="date" id="dailyFrom" />
           <input type="date" id="dailyTo" />
           <select id="periodFilter">
-            <option value="daily">Diario</option>
-            <option value="weekly">Semanal</option>
-            <option value="biweekly">Quincenal</option>
-            <option value="monthly">Mensual</option>
+            <option value="today">Hoy</option>
+            <option value="yesterday">Ayer</option>
+            <option value="week">Semanal</option>
+            <option value="month">Este mes</option>
+            <option value="lastMonth">Mes anterior</option>
           </select>
           <button onclick="loadPerformance()">Filtrar</button>
         </div>
@@ -811,7 +812,7 @@
 const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
-
+    
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
 
