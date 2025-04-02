@@ -1114,6 +1114,41 @@ app.post('/get-daily-performance', async (req, res) => {
   }
 });
 
+app.get('/get-performance-data', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
+
+  try {
+    const agents = await Agent.find({}, 'username name');
+    const closures = await PerformanceLog.aggregate([
+      { $group: { _id: "$agent", count: { $sum: 1 } } }
+    ]);
+    const interactions = await ChatMessage.aggregate([
+      { $group: { _id: "$username", count: { $sum: 1 } } }
+    ]);
+
+    const agentData = agents.map(agent => {
+      const closureCount = closures.find(c => c._id === agent.username)?.count || 0;
+      const interactionCount = interactions.find(i => i._id === agent.username)?.count || 0;
+      return {
+        name: agent.name || agent.username,
+        closures: closureCount,
+        interactions: interactionCount
+      };
+    });
+
+    const totalClosures = closures.reduce((sum, c) => sum + c.count, 0);
+    const totalInteractions = interactions.reduce((sum, i) => sum + i.count, 0);
+
+    res.json({ agents: agentData, totalClosures, totalInteractions });
+  } catch (err) {
+    console.error('❌ Error al obtener datos de rendimiento:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
