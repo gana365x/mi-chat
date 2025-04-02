@@ -167,14 +167,14 @@ function getTimestamp() {
   }
 
   try {
-    const now = moment().tz(timezone);
-    return now.format(); // formato ISO con hora local real
+    const now = new Date();
+    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+    return localTime.toISOString();
   } catch (e) {
-    console.error("❌ Error con moment-timezone:", e.message);
-    return moment().toISOString(); // fallback
+    console.error("❌ Error convirtiendo a zona horaria:", e.message);
+    return new Date().toISOString();
   }
 }
-
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
@@ -217,6 +217,30 @@ async function getAllChatsSorted() {
 
   return sortedChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 }
+
+app.get('/performance-log', async (req, res) => {
+  const { from, to } = req.query;
+
+  if (!from || !to) {
+    return res.status(400).json({ error: "Parámetros 'from' y 'to' son requeridos" });
+  }
+
+  try {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    const logs = await PerformanceLog.find({
+      timestamp: {
+        $gte: fromDate,
+        $lte: toDate
+      }
+    }).lean();
+
+    res.json(logs);
+  } catch (err) {
+    console.error("❌ Error al obtener performance logs:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
 
 io.on('connection', (socket) => {
   socket.on('user joined', async (data) => {
