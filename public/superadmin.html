@@ -470,13 +470,25 @@
           <option value="month">Este mes</option>
           <option value="lastMonth">Mes anterior</option>
         </select>
-        <button onclick="confirmAndLoadStats()">Mostrar</button>
+        <button onclick="loadPerformanceLogs()">Mostrar</button>
       </div>
       <div>
         <h3 style="color: orange;">📈 Estadísticas de Agentes</h3>
         <canvas id="chartAgentes" height="100"></canvas>
         <h3 style="color: lightblue; margin-top: 20px;">💬 Interacciones</h3>
-        <div id="statsResults">
+        
+        <h3 style="color: #fff; margin-top: 20px;">📋 Detalle de cierres por agente</h3>
+        <table id="performanceTable" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding: 8px; border-bottom: 1px solid #555;">Agente</th>
+              <th style="text-align:left; padding: 8px; border-bottom: 1px solid #555;">Cantidad de cierres</th>
+            </tr>
+          </thead>
+          <tbody id="performanceTableBody"></tbody>
+        </table>
+
+<div id="statsResults">
           <p>Mensajes entrantes: <span id="statMessages">0</span></p>
           <p>Cargar Fichas: <span id="statCargar">0</span></p>
           <p>Retirar: <span id="statRetiro">0</span></p>
@@ -495,6 +507,66 @@
 
   <!-- Chart.js y chartjs-plugin-datalabels desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js">
+async function loadPerformanceLogs() {
+  const fromDate = document.getElementById("fromDate").value;
+  const fromTime = document.getElementById("fromTime").value;
+  const toDate = document.getElementById("toDate").value;
+  const toTime = document.getElementById("toTime").value;
+
+  const from = new Date(`${fromDate}T${fromTime}`);
+  const to = new Date(`${toDate}T${toTime}`);
+
+  const res = await fetch('https://mi-chat-9uti.onrender.com/get-performance-logs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ from, to })
+  });
+
+  const data = await res.json();
+  if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
+
+  const labels = data.data.map(e => e._id);
+  const counts = data.data.map(e => e.count);
+
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('chartAgentes').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Chats Finalizados',
+        data: counts,
+        backgroundColor: '#FF3B00'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: 'white',
+          font: { weight: 'bold' }
         }
       },
       scales: {
@@ -506,6 +578,66 @@
 
 </script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0">
+async function loadPerformanceLogs() {
+  const fromDate = document.getElementById("fromDate").value;
+  const fromTime = document.getElementById("fromTime").value;
+  const toDate = document.getElementById("toDate").value;
+  const toTime = document.getElementById("toTime").value;
+
+  const from = new Date(`${fromDate}T${fromTime}`);
+  const to = new Date(`${toDate}T${toTime}`);
+
+  const res = await fetch('https://mi-chat-9uti.onrender.com/get-performance-logs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ from, to })
+  });
+
+  const data = await res.json();
+  if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
+
+  const labels = data.data.map(e => e._id);
+  const counts = data.data.map(e => e.count);
+
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('chartAgentes').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Chats Finalizados',
+        data: counts,
+        backgroundColor: '#FF3B00'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: 'white',
+          font: { weight: 'bold' }
         }
       },
       scales: {
@@ -518,6 +650,66 @@
 </script>
   <!-- Socket.IO -->
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js">
+async function loadPerformanceLogs() {
+  const fromDate = document.getElementById("fromDate").value;
+  const fromTime = document.getElementById("fromTime").value;
+  const toDate = document.getElementById("toDate").value;
+  const toTime = document.getElementById("toTime").value;
+
+  const from = new Date(`${fromDate}T${fromTime}`);
+  const to = new Date(`${toDate}T${toTime}`);
+
+  const res = await fetch('https://mi-chat-9uti.onrender.com/get-performance-logs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ from, to })
+  });
+
+  const data = await res.json();
+  if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
+
+  const labels = data.data.map(e => e._id);
+  const counts = data.data.map(e => e.count);
+
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('chartAgentes').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Chats Finalizados',
+        data: counts,
+        backgroundColor: '#FF3B00'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: 'white',
+          font: { weight: 'bold' }
         }
       },
       scales: {
@@ -1018,6 +1210,66 @@ const socket = io('https://mi-chat-9uti.onrender.com');
   });
 });
   
+async function loadPerformanceLogs() {
+  const fromDate = document.getElementById("fromDate").value;
+  const fromTime = document.getElementById("fromTime").value;
+  const toDate = document.getElementById("toDate").value;
+  const toTime = document.getElementById("toTime").value;
+
+  const from = new Date(`${fromDate}T${fromTime}`);
+  const to = new Date(`${toDate}T${toTime}`);
+
+  const res = await fetch('https://mi-chat-9uti.onrender.com/get-performance-logs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ from, to })
+  });
+
+  const data = await res.json();
+  if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
+
+  const labels = data.data.map(e => e._id);
+  const counts = data.data.map(e => e.count);
+
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('chartAgentes').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Chats Finalizados',
+        data: counts,
+        backgroundColor: '#FF3B00'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: 'white',
+          font: { weight: 'bold' }
         }
       },
       scales: {
