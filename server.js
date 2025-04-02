@@ -167,14 +167,14 @@ function getTimestamp() {
   }
 
   try {
-    const now = new Date();
-    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-    return localTime.toISOString();
+    const now = moment().tz(timezone);
+    return now.format(); // formato ISO con hora local real
   } catch (e) {
-    console.error("❌ Error convirtiendo a zona horaria:", e.message);
-    return new Date().toISOString();
+    console.error("❌ Error con moment-timezone:", e.message);
+    return moment().toISOString(); // fallback
   }
 }
+
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
