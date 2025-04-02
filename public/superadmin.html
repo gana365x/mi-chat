@@ -427,47 +427,6 @@
         <option value="SuperAdmin">SuperAdmin</option>
       </select>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const filter = document.getElementById("periodFilter");
-  if (!filter) return;
-  filter.addEventListener("change", () => {
-  const period = document.getElementById("periodFilter").value;
-  const today = new Date();
-  let from = new Date(today);
-  let to = new Date(today);
-
-  switch (period) {
-    case "today":
-      break;
-    case "yesterday":
-      from.setDate(today.getDate() - 1);
-      to.setDate(today.getDate() - 1);
-      break;
-    case "week":
-      from.setDate(today.getDate() - 6);
-      break;
-    case "month":
-      from = new Date(today.getFullYear(), today.getMonth(), 1);
-      break;
-    case "lastMonth":
-      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0);
-      break;
-  }
-
-  const toISO = to.toISOString().split("T")[0];
-  const fromISO = from.toISOString().split("T")[0];
-  document.getElementById("dailyFrom").value = fromISO;
-  document.getElementById("dailyTo").value = toISO;
-
-    if (typeof loadPerformance === "function") {
-      loadPerformance();
-    }
-  });
-</script>
-
-
       <button onclick="createAgent()">Crear</button>
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
@@ -513,47 +472,6 @@ document.addEventListener("DOMContentLoaded", function() {
           <option value="lastMonth">Mes anterior</option>
         </select>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const filter = document.getElementById("periodFilter");
-  if (!filter) return;
-  filter.addEventListener("change", () => {
-  const period = document.getElementById("periodFilter").value;
-  const today = new Date();
-  let from = new Date(today);
-  let to = new Date(today);
-
-  switch (period) {
-    case "today":
-      break;
-    case "yesterday":
-      from.setDate(today.getDate() - 1);
-      to.setDate(today.getDate() - 1);
-      break;
-    case "week":
-      from.setDate(today.getDate() - 6);
-      break;
-    case "month":
-      from = new Date(today.getFullYear(), today.getMonth(), 1);
-      break;
-    case "lastMonth":
-      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0);
-      break;
-  }
-
-  const toISO = to.toISOString().split("T")[0];
-  const fromISO = from.toISOString().split("T")[0];
-  document.getElementById("dailyFrom").value = fromISO;
-  document.getElementById("dailyTo").value = toISO;
-
-    if (typeof loadPerformance === "function") {
-      loadPerformance();
-    }
-  });
-</script>
-
-
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
       <div>
@@ -586,47 +504,6 @@ document.addEventListener("DOMContentLoaded", function() {
             <option value="month">Este mes</option>
             <option value="lastMonth">Mes anterior</option>
           </select>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const filter = document.getElementById("periodFilter");
-  if (!filter) return;
-  filter.addEventListener("change", () => {
-  const period = document.getElementById("periodFilter").value;
-  const today = new Date();
-  let from = new Date(today);
-  let to = new Date(today);
-
-  switch (period) {
-    case "today":
-      break;
-    case "yesterday":
-      from.setDate(today.getDate() - 1);
-      to.setDate(today.getDate() - 1);
-      break;
-    case "week":
-      from.setDate(today.getDate() - 6);
-      break;
-    case "month":
-      from = new Date(today.getFullYear(), today.getMonth(), 1);
-      break;
-    case "lastMonth":
-      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0);
-      break;
-  }
-
-  const toISO = to.toISOString().split("T")[0];
-  const fromISO = from.toISOString().split("T")[0];
-  document.getElementById("dailyFrom").value = fromISO;
-  document.getElementById("dailyTo").value = toISO;
-
-    if (typeof loadPerformance === "function") {
-      loadPerformance();
-    }
-  });
-</script>
-
 
           <button onclick="loadPerformance()">Filtrar</button>
         </div>
@@ -880,60 +757,59 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function confirmAndLoadStats() {
-  const fromDate = document.getElementById("fromDate").value;
-  const fromTime = document.getElementById("fromTime").value || "00:00";
-  const toDate = document.getElementById("toDate").value;
-  const toTime = document.getElementById("toTime").value || "23:59";
+      const fromDate = document.getElementById("fromDate").value;
+      const fromTime = document.getElementById("fromTime").value || "00:00";
+      const toDate = document.getElementById("toDate").value;
+      const toTime = document.getElementById("toTime").value || "23:59";
 
-  if (!fromDate || !toDate) {
-    alert("Por favor seleccioná un rango de fechas.");
-  }
+      if (!fromDate || !toDate) {
+        alert("Por favor seleccioná un rango de fechas.");
+      }
 
-  const from = new Date(fromDate + "T" + fromTime);
-  const to = new Date(toDate + "T" + toTime);
+      const fromDateTime = new Date(fromDate + "T" + fromTime);
+      const toDateTime = new Date(toDate + "T" + toTime);
 
-  fetch(`/performance-log?from=${from.toISOString()}&to=${to.toISOString()}`)
-    .then(res => res.json())
-    .then(data => {
-      const ctx = document.getElementById("chartAgentes").getContext("2d");
+      fetch(`/performance-log?from=${fromDateTime.toISOString()}&to=${to.toISOString()}`)
+        .then(res => res.json())
+        .then(data => {
+          const ctx = document.getElementById("chartAgentes").getContext("2d");
 
-      const resumen = {};
-      data.forEach(log => {
-        resumen[log.agent] = (resumen[log.agent] || 0) + 1;
-      });
+          const resumen = {};
+          data.forEach(log => {
+            resumen[log.agent] = (resumen[log.agent] || 0) + 1;
+          });
 
-      const labels = Object.keys(resumen);
-      const values = Object.values(resumen);
+          const labels = Object.keys(resumen);
+          const values = Object.values(resumen);
 
-      if (window.chartAgentes) window.chartAgentes.destroy();
-      window.chartAgentes = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: labels,
-          datasets: [{
-            label: "Chats Finalizados",
-            data: values,
-            backgroundColor: "rgba(255, 99, 132, 0.7)"
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                precision: 0
+          if (window.chartAgentes) window.chartAgentes.destroy();
+          window.chartAgentes = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [{
+                label: "Chats Finalizados",
+                data: values,
+                backgroundColor: "rgba(255, 99, 132, 0.7)"
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    precision: 0
+                  }
+                }
               }
             }
-          }
-        }
-      });
-    });
-}
-const from = new Date(`${fromDate}T${fromTime}:00Z`);
+          });
+        });
+      const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
     }
@@ -942,7 +818,7 @@ const from = new Date(`${fromDate}T${fromTime}:00Z`);
       console.log('Cargando estadísticas para:', { from, to });
 
       fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-        credentials: 'include'
+        credentials: 'include',
       })
         .then(res => res.json())
         .then(data => {
@@ -1132,19 +1008,21 @@ const from = new Date(`${fromDate}T${fromTime}:00Z`);
     function loadDailyPerformance() {
       const from = document.getElementById("dailyFrom").value;
       const to = document.getElementById("dailyTo").value;
-      if (!from || !to) return alert("Seleccioná un rango válido.");
+      if (!from || !to) {
+        return alert("Seleccioná un rango válido.");
+      }
 
       fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ from, to })
+        body: JSON.stringify({ from, to }),
       })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         const tbody = document.getElementById("performanceTable");
         tbody.innerHTML = "";
-        data.logs.forEach(log => {
+        data.logs.forEach((log) => {
           const row = document.createElement("tr");
           row.innerHTML = `
             <td style="padding: 8px; border-bottom: 1px solid #333;">${log.date}</td>
@@ -1154,7 +1032,7 @@ const from = new Date(`${fromDate}T${fromTime}:00Z`);
           tbody.appendChild(row);
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Error al obtener el rendimiento diario:", err);
         alert("Error al obtener los datos.");
       });
@@ -1195,42 +1073,36 @@ const from = new Date(`${fromDate}T${fromTime}:00Z`);
       });
     }
 
-    
-function groupDataByPeriod(logs, period) {
-  const grouped = {};
-  logs.forEach(log => {
-    const date = new Date(log.timestamp);
-    let periodKey;
+    function groupDataByPeriod(logs, period) {
+      const grouped = {};
+      logs.forEach(log => {
+        const date = new Date(log.timestamp);
+        let periodKey;
 
-    switch (period) {
-      case "daily":
-      case "today":
-      case "yesterday":
-        periodKey = date.toISOString().split("T")[0];
-        break;
-      case "week":
-        const weekStart = new Date(date);
-        weekStart.setDate(date.getDate() - date.getDay());
-        periodKey = weekStart.toISOString().split("T")[0];
-        break;
-      case "month":
-        periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        break;
-      case "lastMonth":
-        const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-        periodKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
-        break;
-      default:
-        periodKey = "Desconocido";
-    }
+        switch (period) {
+          case "daily":
+          case "today":
+          case "yesterday":
+            periodKey = date.toISOString().split("T")[0];
+            break;
+          case "week":
+            const weekStart = new Date(date);
+            weekStart.setDate(date.getDate() - date.getDay());
+            periodKey = weekStart.toISOString().split("T")[0];
+            break;
+          case "month":
+            periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            break;
+          case "lastMonth":
+            const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+            periodKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+            break;
+          default:
+            periodKey = "Desconocido";
+        }
 
-    if (!grouped[periodKey]) grouped[periodKey] = {};
-    grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
-  });
-  return grouped;
-}
         if (!grouped[periodKey]) grouped[periodKey] = {};
-        grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + log.count;
+        grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
       });
       return grouped;
     }
@@ -1336,5 +1208,104 @@ function groupDataByPeriod(logs, period) {
       document.getElementById('dailyTo').value = today;
     });
   </script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Consolidated initialization logic
+  loadTimezoneFromServer().then(() => {
+    const userInput = document.getElementById('superUsername');
+    const passInput = document.getElementById('superPassword');
+
+    [userInput, passInput].forEach(input => {
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          loginSuperAdmin();
+        }
+      });
+    });
+
+    if (document.getElementById('section-stats').style.display !== 'none') {
+      setDefaultDates();
+    }
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dailyFrom').value = today;
+  document.getElementById('dailyTo').value = today;
+
+  const filter = document.getElementById("periodFilter");
+  if (filter) {
+    filter.addEventListener("change", () => {
+      const period = filter.value;
+      const today = new Date();
+      let from = new Date(today);
+      let to = new Date(today);
+
+      switch (period) {
+        case "today":
+          break;
+        case "yesterday":
+          from.setDate(today.getDate() - 1);
+          to.setDate(today.getDate() - 1);
+          break;
+        case "week":
+          from.setDate(today.getDate() - 6);
+          break;
+        case "month":
+          from = new Date(today.getFullYear(), today.getMonth(), 1);
+          break;
+        case "lastMonth":
+          from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          to = new Date(today.getFullYear(), today.getMonth(), 0);
+          break;
+      }
+
+      const toISO = to.toISOString().split("T")[0];
+      const fromISO = from.toISOString().split("T")[0];
+      document.getElementById("dailyFrom").value = fromISO;
+      document.getElementById("dailyTo").value = toISO;
+
+      if (typeof loadPerformance === "function") {
+        loadPerformance();
+      }
+    });
+  }
+});
+
+function groupDataByPeriod(logs, period) {
+  const grouped = {};
+  logs.forEach(log => {
+    const date = new Date(log.timestamp);
+    let periodKey;
+
+    switch (period) {
+      case "daily":
+      case "today":
+      case "yesterday":
+        periodKey = date.toISOString().split("T")[0];
+        break;
+      case "week":
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay());
+        periodKey = weekStart.toISOString().split("T")[0];
+        break;
+      case "month":
+        periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        break;
+      case "lastMonth":
+        const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+        periodKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+        break;
+      default:
+        periodKey = "Desconocido";
+    }
+
+    if (!grouped[periodKey]) grouped[periodKey] = {};
+    grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
+  });
+  return grouped;
+}
+
+// Removed duplicate and unreachable code
+</script>
 </body>
 </html>
