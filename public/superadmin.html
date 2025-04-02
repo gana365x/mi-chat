@@ -575,16 +575,32 @@
     let allAgents = [];
 
     function loadTimezoneFromServer() {
-      return fetch('/get-timezone', { credentials: 'include' })
-        .then(res => res.json())
-        .then(data => {
-          systemTimezone = data.timezone || "UTC";
-          console.log("Zona horaria cargada:", systemTimezone);
-        })
-        .catch(err => {
-          console.warn("Error al cargar timezone, usando UTC:", err);
-          systemTimezone = "UTC";
-        });
+      return fetch('https://mi-chat-9uti.onrender.com/get-timezone', {
+        credentials: 'include', // Asegura que las cookies se envíen con la solicitud
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}` // Incluye el token si es necesario
+        }
+      })
+      .then(res => {
+        if (res.status === 401) {
+          throw new Error("No autorizado. Verifica tus credenciales o inicia sesión nuevamente.");
+        }
+        return res.json();
+      })
+      .then(data => {
+        systemTimezone = data.timezone || "UTC";
+        console.log("Zona horaria cargada:", systemTimezone);
+      })
+      .catch(err => {
+        console.warn("Error al cargar timezone, usando UTC:", err.message);
+        systemTimezone = "UTC";
+      });
+    }
+
+    function getAuthToken() {
+      // Obtén el token de autenticación desde las cookies o almacenamiento local
+      const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+      return match ? match[1] : null;
     }
 
     function loginSuperAdmin() {
