@@ -557,6 +557,13 @@ function loadDailyPerformance() {
   });
 }
 
+
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dailyFrom').value = today;
+  document.getElementById('dailyTo').value = today;
+});
+
 </script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0">
 function loadDailyPerformance() {
@@ -589,6 +596,13 @@ function loadDailyPerformance() {
     alert("Error al obtener los datos.");
   });
 }
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dailyFrom').value = today;
+  document.getElementById('dailyTo').value = today;
+});
 
 </script>
   <!-- Socket.IO -->
@@ -623,6 +637,13 @@ function loadDailyPerformance() {
     alert("Error al obtener los datos.");
   });
 }
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dailyFrom').value = today;
+  document.getElementById('dailyTo').value = today;
+});
 
 </script>
 
@@ -1146,6 +1167,13 @@ function loadDailyPerformance() {
     alert("Error al obtener los datos.");
   });
 }
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dailyFrom').value = today;
+  document.getElementById('dailyTo').value = today;
+});
 
 </script>
 
