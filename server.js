@@ -915,8 +915,8 @@ app.get('/stats', async (req, res) => {
   }
 
   try {
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
+    onst fromDate = new Date(new Date(`${from} GMT-3`).toISOString());
+const toDate = new Date(new Date(`${to} GMT-3`).toISOString());
 
     if (isNaN(fromDate) || isNaN(toDate)) {
       return res.status(400).json({ error: 'Fechas inválidas' });
