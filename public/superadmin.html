@@ -465,7 +465,6 @@ document.addEventListener("DOMContentLoaded", function() {
       loadPerformance();
     }
   });
-});
 </script>
 
 
@@ -552,7 +551,6 @@ document.addEventListener("DOMContentLoaded", function() {
       loadPerformance();
     }
   });
-});
 </script>
 
 
@@ -627,7 +625,6 @@ document.addEventListener("DOMContentLoaded", function() {
       loadPerformance();
     }
   });
-});
 </script>
 
 
@@ -798,7 +795,6 @@ document.addEventListener("DOMContentLoaded", function() {
       if (!login || !name || !password || !role) {
         document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
         document.getElementById('createError').style.display = 'block';
-        return;
       }
 
       fetch('https://mi-chat-9uti.onrender.com/agents', {
@@ -891,7 +887,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   if (!fromDate || !toDate) {
     alert("Por favor seleccioná un rango de fechas.");
-    return;
   }
 
   const from = new Date(fromDate + "T" + fromTime);
@@ -941,7 +936,8 @@ document.addEventListener("DOMContentLoaded", function() {
 const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
-    
+    }
+
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
 
@@ -1237,7 +1233,8 @@ function groupDataByPeriod(logs, period) {
         grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + log.count;
       });
       return grouped;
-    
+    }
+
     let selectedUsernameToDelete = null;
     let selectedUsernameToEdit = null;
 
@@ -1281,7 +1278,6 @@ function groupDataByPeriod(logs, period) {
 
       if (!newName) {
         alert("El nombre no puede estar vacío.");
-        return;
       }
 
       const body = { name: newName };
