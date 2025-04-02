@@ -554,6 +554,33 @@
     </div>
   </div>
 
+  <!-- Filtros de rendimiento -->
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;" class="date-filters">
+    <div class="filter-group">
+      <label>De:</label>
+      <div class="filter-row">
+        <input type="date" id="pruebasFromDate">
+        <input type="time" id="pruebasFromTime">
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>A:</label>
+      <div class="filter-row">
+        <input type="date" id="pruebasToDate">
+        <input type="time" id="pruebasToTime">
+      </div>
+    </div>
+    <select id="pruebasQuickRange" onchange="setPruebasQuickRange()">
+      <option value="">Elegir el periodo</option>
+      <option value="today">Hoy</option>
+      <option value="yesterday">Ayer</option>
+      <option value="week">Esta semana</option>
+      <option value="month">Este mes</option>
+      <option value="lastMonth">Mes anterior</option>
+    </select>
+    <button onclick="confirmAndLoadPruebas()">Mostrar</button>
+  </div>
+
   <!-- Gráfico de rendimiento -->
   <div class="chart-container">
     <h3>📊 Rendimiento por Agente</h3>
@@ -583,502 +610,475 @@
     })
     .then(res => res.json())
     .then(data => {
-      // Actualizar KPIs
-      const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
-      document.getElementById("bestAgent").textContent = bestAgent.name;
-      document.getElementById("totalClosures").textContent = data.totalClosures;
-      document.getElementById("totalInteractions").textContent = data.totalInteractions;
-
-      // Actualizar gráfico
-      const ctx = document.getElementById("performanceChart").getContext("2d");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: data.agents.map(agent => agent.name),
-          datasets: [{
-            label: "Cierres",
-            data: data.agents.map(agent => agent.closures),
-            backgroundColor: "rgba(255, 99, 132, 0.7)"
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-
-      // Actualizar tabla
       const tableBody = document.querySelector("#performanceTable tbody");
-      tableBody.innerHTML = data.agents.map(agent => `
-        <tr>
+      tableBody.innerHTML = data.agents.map(agent => `) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
+        <tr>nt.getElementById("bestAgent").textContent = bestAgent.name;
           <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
-          <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
+          <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>ns;
           <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
-        </tr>
-      `).join("");
-    })
+        </tr>alizar gráfico
+      `).join("");document.getElementById("performanceChart").getContext("2d");
+    })new Chart(ctx, {
     .catch(err => console.error("Error al cargar datos de rendimiento:", err));
-  }
-
+  }     data: {
+          labels: data.agents.map(agent => agent.name),
   document.addEventListener("DOMContentLoaded", loadPerformanceData);
-</script>
-
-    <!-- Sección editar -->
+</script>   label: "Cierres",
+            data: data.agents.map(agent => agent.closures),
+    <!-- Sección editar -->: "rgba(255, 99, 132, 0.7)"
     <div id="section-customize" style="display:none;">
       <h2>🎨 Personalizar Estilo</h2>
       <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
       <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
-    </div>
-  </div>
-
+    </div>plugins: {
+  </div>    legend: { display: false }
+          }
   <!-- POPUP CONFIRMAR ELIMINACIÓN -->
   <div id="deletePopup" class="popup-overlay">
     <div class="popup-box">
       <div class="popup-icon">⚠️</div>
-      <p class="popup-text">¿Seguro que querés eliminar este agente?</p>
-      <div class="popup-actions">
+      <p class="popup-text">¿Seguro que querés eliminar este agente?</p>);
+      <div class="popup-actions">agents.map(agent => `
         <button class="popup-btn confirm" onclick="confirmDelete()">✔</button>
-        <button class="popup-btn cancel" onclick="closeDeletePopup()">✖</button>
-      </div>
-    </div>
-  </div>
-
+        <button class="popup-btn cancel" onclick="closeDeletePopup()">✖</button>>
+      </div>d style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
+    </div><td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
+  </div></tr>
+      `).join("");
   <!-- POPUP EDITAR AGENTE -->
-  <div id="editPopup" class="popup-overlay">
+  <div id="editPopup" class="popup-overlay">rgar datos de rendimiento:", err));
     <div class="popup-box">
       <div class="popup-icon">✏️</div>
-      <p class="popup-text">Editar agente</p>
+      <p class="popup-text">Editar agente</p>", loadPerformanceData);
       <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
         <input type="text" id="editAgentName" placeholder="Nuevo nombre visible" 
                style="padding: 8px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
         <input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" 
                style="padding: 8px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
-      </div>
-      <div class="popup-actions" style="margin-top: 15px;">
+      </div>ximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
+      <div class="popup-actions" style="margin-top: 15px;">del Sistema</button>
         <button class="popup-btn confirm" onclick="confirmEdit()">✔</button>
         <button class="popup-btn cancel" onclick="closeEditPopup()">✖</button>
       </div>
-    </div>
-  </div>
-
+    </div>UP CONFIRMAR ELIMINACIÓN -->
+  </div>d="deletePopup" class="popup-overlay">
+    <div class="popup-box">
   <!-- Chart.js y chartjs-plugin-datalabels desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>ente?</p>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-  <!-- Socket.IO -->
+  <!-- Socket.IO -->s="popup-btn confirm" onclick="confirmDelete()">✔</button>
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
-
+      </div>
   <script>
     Chart.register(ChartDataLabels);
 
     let systemTimezone = "UTC"; // Valor por defecto
     const socket = io('https://mi-chat-9uti.onrender.com');
     let chartInstance = null;
-    let allAgents = [];
-
-    function loadTimezoneFromServer() {
-      return fetch('https://mi-chat-9uti.onrender.com/get-timezone', {
-        credentials: 'include', // Asegura que las cookies se envíen con la solicitud
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}` // Incluye el token si es necesario
-        }
-      })
-      .then(res => {
-        if (res.status === 401) {
+    let allAgents = [];-icon">✏️</div>
+      <p class="popup-text">Editar agente</p>
+    function loadTimezoneFromServer() {irection: column; gap: 10px; margin-top: 10px;">
+      return fetch('https://mi-chat-9uti.onrender.com/get-timezone', {e visible" 
+        credentials: 'include', // Asegura que las cookies se envíen con la solicitudckground: #1a1a1a; color: white;" />
+        headers: {e="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" 
+          'Authorization': `Bearer ${getAuthToken()}` // Incluye el token si es necesarioound: #1a1a1a; color: white;" />
+        }iv>
+      })iv class="popup-actions" style="margin-top: 15px;">
+      .then(res => {s="popup-btn confirm" onclick="confirmEdit()">✔</button>
+        if (res.status === 401) {cancel" onclick="closeEditPopup()">✖</button>
           throw new Error("No autorizado. Verifica tus credenciales o inicia sesión nuevamente.");
-        }
+        }>
         return res.json();
       })
-      .then(data => {
-        systemTimezone = data.timezone || "UTC";
-        console.log("Zona horaria cargada:", systemTimezone);
-      })
-      .catch(err => {
+      .then(data => {rtjs-plugin-datalabels desde CDN -->
+        systemTimezone = data.timezone || "UTC";t.js"></script>
+        console.log("Zona horaria cargada:", systemTimezone);talabels@2.0.0"></script>
+      })ocket.IO -->
+      .catch(err => {//mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
         console.warn("Error al cargar timezone, usando UTC:", err.message);
         systemTimezone = "UTC";
-      });
+      });.register(ChartDataLabels);
     }
-
-    function getAuthToken() {
+    let systemTimezone = "UTC"; // Valor por defecto
+    function getAuthToken() {//mi-chat-9uti.onrender.com');
       // Obtén el token de autenticación desde las cookies o almacenamiento local
       const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
       return match ? match[1] : null;
-    }
-
-    function loginSuperAdmin() {
+    }unction loadTimezoneFromServer() {
+      return fetch('https://mi-chat-9uti.onrender.com/get-timezone', {
+    function loginSuperAdmin() {// Asegura que las cookies se envíen con la solicitud
       const username = document.getElementById('superUsername').value.trim();
-      const password = document.getElementById('superPassword').value.trim();
-
+      const password = document.getElementById('superPassword').value.trim();es necesario
+        }
       fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        credentials: 'include',utorizado. Verifica tus credenciales o inicia sesión nuevamente.");
         body: JSON.stringify({ username, password })
-      })
+      })return res.json();
       .then(res => {
         if (!res.ok) throw new Error();
-        return res.json();
-      })
+        return res.json();ata.timezone || "UTC";
+      })console.log("Zona horaria cargada:", systemTimezone);
       .then(data => {
         if (data.success) {
-          if (data.token) {
+          if (data.token) { al cargar timezone, usando UTC:", err.message);
             document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
           }
           document.getElementById('loginBox').style.display = 'none';
           document.getElementById('mainBox').style.display = 'block';
           showSection('home');
-          loadAgents();
-        } else {
-          throw new Error();
+          loadAgents(); de autenticación desde las cookies o almacenamiento local
+        } else {h = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+          throw new Error();] : null;
         }
       })
-      .catch(() => {
-        document.getElementById('loginError').style.display = 'block';
-      });
+      .catch(() => {perAdmin() {
+        document.getElementById('loginError').style.display = 'block';trim();
+      });st password = document.getElementById('superPassword').value.trim();
     }
-
+      fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
     function showSection(section) {
       document.getElementById("section-pruebas").style.display = (section === "pruebas") ? "block" : "none";
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
       document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
       document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
       document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
-
+        if (!res.ok) throw new Error();
       if (section === "stats") {
         setDefaultDates();
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-        loadStats(todayStart.toISOString(), todayEnd.toISOString());
-      }
-      if (section === "pruebas") {
-        setDefaultDates();
-      }
-    }
-
-    function loadAgents() {
+        loadStats(todayStart.toISOString(), todayEnd.toISOString());604800; secure`;
+      }   }
+      if (section === "pruebas") {'loginBox').style.display = 'none';
+        setDefaultDates();entById('mainBox').style.display = 'block';
+      }   showSection('home');
+    }     loadAgents();
+        } else {
+    function loadAgents() {;
       fetch('https://mi-chat-9uti.onrender.com/agents', {
         credentials: 'include'
-      })
-      .then(res => res.json())
+      })atch(() => {
+      .then(res => res.json())d('loginError').style.display = 'block';
       .then(agents => {
         allAgents = agents.filter(agent => agent.role === 'Admin').map(agent => agent.username);
         const table = document.getElementById('agentsTable');
-        table.innerHTML = '';
-        agents.forEach(agent => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td><strong>${agent.username}</strong></td>
-            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
+        table.innerHTML = '';ion) {
+        agents.forEach(agent => {ction-pruebas").style.display = (section === "pruebas") ? "block" : "none";
+          const row = document.createElement('tr');.display = (section === "home") ? "block" : "none";
+          row.innerHTML = `Id("section-agents").style.display = (section === "agents") ? "block" : "none";
+            <td><strong>${agent.username}</strong></td>splay = (section === "stats") ? "block" : "none";
+            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>tomize") ? "block" : "none";
             <td>${agent.role || 'Admin'}</td>
             <td style="display: flex; gap: 5px;">
               <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
               <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
-            </td>
-          `;
-          table.appendChild(row);
+            </td>ayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          `;t todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+          table.appendChild(row);OString(), todayEnd.toISOString());
         });
-      });
-    }
-
+      });(section === "pruebas") {
+    }   setDefaultDates();
+      }
     function createAgent() {
       const login = document.getElementById('newLogin').value.trim();
       const name = document.getElementById('newName').value.trim();
       const password = document.getElementById('newPassword').value.trim();
       const role = document.getElementById('newRole').value;
-
+      })
       if (!login || !name || !password || !role) {
         document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
-        document.getElementById('createError').style.display = 'block';
-      }
-
+        document.getElementById('createError').style.display = 'block';agent => agent.username);
+      } const table = document.getElementById('agentsTable');
+        table.innerHTML = '';
       fetch('https://mi-chat-9uti.onrender.com/agents', {
-        method: 'POST',
+        method: 'POST',ocument.createElement('tr');
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username: login, name, password, role })
-      })
-      .then(res => {
+        credentials: 'include',.username}</strong></td>
+        body: JSON.stringify({ username: login, name, password, role })nombre'}</td>
+      })    <td>${agent.role || 'Admin'}</td>
+      .then(res => {e="display: flex; gap: 5px;">
         if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
-        return res.json();
-      })
+        return res.json();s="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+      })    </td>
       .then(() => {
         document.getElementById('newLogin').value = '';
         document.getElementById('newName').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('newRole').value = 'Admin';
         document.getElementById('createError').style.display = 'none';
-        loadAgents();
-      })
-      .catch(err => {
-        console.error("Error al crear agente:", err);
+        loadAgents();ent() {
+      })nst login = document.getElementById('newLogin').value.trim();
+      .catch(err => {cument.getElementById('newName').value.trim();
+        console.error("Error al crear agente:", err);ssword').value.trim();
         document.getElementById('createError').textContent = err.message || 'Error al crear agente';
         document.getElementById('createError').style.display = 'block';
-      });
-    }
-
+      });(!login || !name || !password || !role) {
+    }   document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+        document.getElementById('createError').style.display = 'block';
     function setDefaultDates() {
       const today = new Date();
       const todayInTimezone = new Date(today.toLocaleString('en-US', { timeZone: systemTimezone }));
       const todayISO = todayInTimezone.toISOString().split('T')[0];
       document.getElementById('fromDate').value = todayISO;
       document.getElementById('fromTime').value = '00:00';
-      document.getElementById('toDate').value = todayISO;
+      document.getElementById('toDate').value = todayISO;sword, role })
       document.getElementById('toTime').value = '23:59';
       document.getElementById('dailyFrom').value = todayISO;
-      document.getElementById('dailyTo').value = todayISO;
-    }
-
+      document.getElementById('dailyTo').value = todayISO;w new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
+    }   return res.json();
+      })
     function setQuickRange() {
-      const now = new Date();
+      const now = new Date();Id('newLogin').value = '';
       const fromDateInput = document.getElementById("fromDate");
       const toDateInput = document.getElementById("toDate");
       const fromTimeInput = document.getElementById("fromTime");
-      const toTimeInput = document.getElementById("toTime");
+      const toTimeInput = document.getElementById("toTime"); = 'none';
       const value = document.getElementById("quickRange").value;
-
+      })
       let start = new Date();
-      let end = new Date();
-
-      switch (value) {
+      let end = new Date();r al crear agente:", err);
+        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+      switch (value) {ementById('createError').style.display = 'block';
         case "today":
           start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
           end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-          break;
-        case "yesterday":
+          break;DefaultDates() {
+        case "yesterday":ate();
           start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
           end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
-          break;
-        case "week":
+          break;etElementById('fromDate').value = todayISO;
+        case "week":ementById('fromTime').value = '00:00';
           const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1;
           start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
           end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-          break;
+          break;etElementById('dailyTo').value = todayISO;
         case "month":
           start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
           end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
-          break;
-        case "lastMonth":
+          break;= new Date();
+        case "lastMonth": = document.getElementById("fromDate");
           start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
           end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
-          break;
-      }
+          break;meInput = document.getElementById("toTime");
+      }onst value = document.getElementById("quickRange").value;
 
       fromDateInput.value = start.toISOString().split('T')[0];
       fromTimeInput.value = '00:00';
       toDateInput.value = end.toISOString().split('T')[0];
       toTimeInput.value = '23:59';
-
-      const from = start.toISOString();
-      const to = end.toISOString();
+        case "today":
+      const from = start.toISOString();.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const to = end.toISOString();ow.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
       loadStats(from, to);
-    }
-
-    function confirmAndLoadStats() {
+    }   case "yesterday":
+          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+    function confirmAndLoadStats() {w.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
       const fromDate = document.getElementById("fromDate").value;
       const fromTime = document.getElementById("fromTime").value || "00:00";
-      const toDate = document.getElementById("toDate").value;
-      const toTime = document.getElementById("toTime").value || "23:59";
-
+      const toDate = document.getElementById("toDate").value;etUTCDay() - 1;
+      const toTime = document.getElementById("toTime").value || "23:59";h(), now.getUTCDate() - dayOfWeek));
+          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
       if (!fromDate || !toDate) {
         alert("Por favor seleccioná un rango de fechas.");
-      }
-
+      }   start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+          end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
       const fromDateTime = new Date(fromDate + "T" + fromTime);
       const toDateTime = new Date(toDate + "T" + toTime);
-
-      fetch(`/performance-log?from=${fromDateTime.toISOString()}&to=${to.toISOString()}`)
+          start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+      fetch(`/performance-log?from=${fromDateTime.toISOString()}&to=${to.toISOString()}`) 999));
         .then(res => res.json())
         .then(data => {
           const ctx = document.getElementById("chartAgentes").getContext("2d");
-
-          const resumen = {};
-          data.forEach(log => {
+      fromDateInput.value = start.toISOString().split('T')[0];
+          const resumen = {};00:00';
+          data.forEach(log => {oISOString().split('T')[0];
             resumen[log.agent] = (resumen[log.agent] || 0) + 1;
           });
-
+      const from = start.toISOString();
           const labels = Object.keys(resumen);
           const values = Object.values(resumen);
-
+    }
           if (window.chartAgentes) window.chartAgentes.destroy();
           window.chartAgentes = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: labels,
-              datasets: [{
+            type: "bar",ocument.getElementById("fromDate").value;
+            data: {e = document.getElementById("fromTime").value || "00:00";
+              labels: labels,.getElementById("toDate").value;
+              datasets: [{ent.getElementById("toTime").value || "23:59";
                 label: "Chats Finalizados",
-                data: values,
+                data: values,e) {
                 backgroundColor: "rgba(255, 99, 132, 0.7)"
               }]
             },
-            options: {
-              responsive: true,
+            options: {me = new Date(fromDate + "T" + fromTime);
+              responsive: true,te(toDate + "T" + toTime);
               plugins: {
-                legend: { display: false }
-              },
+                legend: { display: false }ateTime.toISOString()}&to=${to.toISOString()}`)
+              },s => res.json())
               scales: {
-                y: {
+                y: {= document.getElementById("chartAgentes").getContext("2d");
                   beginAtZero: true,
-                  ticks: {
+                  ticks: {{};
                     precision: 0
-                  }
+                  }[log.agent] = (resumen[log.agent] || 0) + 1;
                 }
               }
-            }
-          });
+            }st labels = Object.keys(resumen);
+          });st values = Object.values(resumen);
         });
-      const from = new Date(`${fromDate}T${fromTime}:00Z`);
+      const from = new Date(`${fromDate}T${fromTime}:00Z`);roy();
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
-    }
-
+    }       data: {
+              labels: labels,
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
-
+                data: values,
       fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
         credentials: 'include',
-      })
+      })    },
         .then(res => res.json())
-        .then(data => {
+        .then(data => {e: true,
           document.getElementById("statMessages").textContent = data.messages || 0;
           document.getElementById("statCargar").textContent = data.cargarFichas || 0;
           document.getElementById("statRetiro").textContent = data.retiros || 0;
           document.getElementById("statImagenes").textContent = data.imagenes || 0;
-        })
+        })      y: {
         .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
-
+                  ticks: {
       fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
         credentials: 'include'
-      })
+      })        }
         .then(res => {
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           return res.json();
-        })
-        .then(agentData => {
+        });
+        .then(agentData => {`${fromDate}T${fromTime}:00Z`);
           console.log('Datos de agentes recibidos:', agentData);
-
+      loadStats(from.toISOString(), to.toISOString());
           const filteredData = agentData
             .filter(agent => agent.role !== 'SuperAdmin')
             .sort((a, b) => b.finalizados - a.finalizados);
-
+      console.log('Cargando estadísticas para:', { from, to });
           const labels = filteredData.map(agent => agent.name || agent.username);
-          const values = filteredData.map(agent => agent.finalizados || 0);
-
+          const values = filteredData.map(agent => agent.finalizados || 0);ent(from)}&to=${encodeURIComponent(to)}`, {
+        credentials: 'include',
           if (values.every(v => v === 0)) {
             console.log('No hay datos de agentes para mostrar en el gráfico.');
-          }
-
-          const ctx = document.getElementById('chartAgentes').getContext('2d');
-          if (chartInstance) chartInstance.destroy();
-
+          }en(data => {
+          document.getElementById("statMessages").textContent = data.messages || 0;
+          const ctx = document.getElementById('chartAgentes').getContext('2d'); || 0;
+          if (chartInstance) chartInstance.destroy();ontent = data.retiros || 0;
+          document.getElementById("statImagenes").textContent = data.imagenes || 0;
           chartInstance = new Chart(ctx, {
-            type: 'bar',
+            type: 'bar',nsole.error("Error al cargar estadísticas de interacciones:", err));
             data: {
-              labels: labels.length > 0 ? labels : ["Sin datos"],
-              datasets: [{
+              labels: labels.length > 0 ? labels : ["Sin datos"],${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+              datasets: [{ude'
                 label: 'Chats Finalizados',
                 data: values.length > 0 ? values : [0],
                 backgroundColor: values.length > 0 ? values.map((_, index) => 
                   index === 0 ? '#FFD700' :
                   index === 1 ? '#C0C0C0' :
                   index === 2 ? '#CD7F32' :
-                  '#1a1a1a'
+                  '#1a1a1a's de agentes recibidos:', agentData);
                 ) : ['#1a1a1a'],
-                borderColor: '#FF3B00',
-                borderWidth: 2,
-                borderRadius: 6,
+                borderColor: '#FF3B00',a
+                borderWidth: 2,ent.role !== 'SuperAdmin')
+                borderRadius: 6,nalizados - a.finalizados);
                 hoverBackgroundColor: '#2a2a2a'
-              }]
-            },
+              }]labels = filteredData.map(agent => agent.name || agent.username);
+            },t values = filteredData.map(agent => agent.finalizados || 0);
             options: {
-              indexAxis: 'y',
-              responsive: true,
+              indexAxis: 'y',=> v === 0)) {
+              responsive: true, datos de agentes para mostrar en el gráfico.');
               maintainAspectRatio: false,
               animation: {
-                duration: 1000,
-                easing: 'easeInOutQuart'
+                duration: 1000,getElementById('chartAgentes').getContext('2d');
+                easing: 'easeInOutQuart'ce.destroy();
               },
-              layout: {
+              layout: { = new Chart(ctx, {
                 padding: {
                   left: 5,
-                  right: 20,
-                  top: 5,
-                  bottom: 5
-                }
-              },
-              plugins: {
+                  right: 20,.length > 0 ? labels : ["Sin datos"],
+                  top: 5,{
+                  bottom: 5ts Finalizados',
+                }ata: values.length > 0 ? values : [0],
+              },backgroundColor: values.length > 0 ? values.map((_, index) => 
+              plugins: {=== 0 ? '#FFD700' :
                 legend: { display: false },
-                tooltip: {
+                tooltip: {= 2 ? '#CD7F32' :
                   backgroundColor: '#FF3B00',
                   titleColor: '#fff',
-                  bodyColor: '#fff',
-                  callbacks: {
+                  bodyColor: '#fff',0',
+                  callbacks: {,
                     label: function(context) {
                       const position = context.dataIndex + 1;
                       return `Posición #${position} - ${context.formattedValue} chats`;
                     }
-                  }
-                },
-                datalabels: {
-                  anchor: 'end',
+                  }: {
+                },xAxis: 'y',
+                datalabels: {e,
+                  anchor: 'end',o: false,
                   align: 'right',
-                  offset: 4,
-                  color: '#fff',
+                  offset: 4,00,
+                  color: '#fff',utQuart'
                   font: {
                     size: 10,
                     weight: 'bold'
-                  },
+                  },ft: 5,
                   formatter: (value, context) => {
                     const position = context.dataIndex + 1;
                     return `#${position} - ${value}`;
                   }
                 }
-              },
-              scales: {
-                x: {
-                  beginAtZero: true,
+              },ugins: {
+              scales: { { display: false },
+                x: {tip: {
+                  beginAtZero: true,#FF3B00',
                   grid: { color: '#333' },
-                  ticks: { 
+                  ticks: { : '#fff',
                     color: '#fff',
-                    font: { size: 10 }
-                  }
-                },
-                y: {
+                    font: { size: 10 }ntext) {
+                  }   const position = context.dataIndex + 1;
+                },    return `Posición #${position} - ${context.formattedValue} chats`;
+                y: {}
                   grid: { color: '#333' },
                   ticks: { 
                     color: '#fff',
                     callback: function(value, index) {
                       return `${labels[index] || "Sin datos"}`;
-                    },
+                    },et: 4,
                     font: { size: 10 }
-                  }
-                }
-              }
-            }
-          });
-        })
-        .catch(err => {
+                  }ont: {
+                }   size: 10,
+              }     weight: 'bold'
+            }     },
+          });     formatter: (value, context) => {
+        })          const position = context.dataIndex + 1;
+        .catch(err => {urn `#${position} - ${value}`;
           console.error("Error al cargar estadísticas de agentes:", err);
           const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
           const values = labels.map(() => 0);
-
+              scales: {
           const ctx = document.getElementById('chartAgentes').getContext('2d');
           if (chartInstance) chartInstance.destroy();
           chartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: labels,
+            type: 'bar', { 
+            data: { color: '#fff',
+              labels: labels,ize: 10 }
               datasets: [{
                 label: 'Chats Finalizados',
                 data: values,
                 backgroundColor: '#1a1a1a',
                 borderColor: '#FF3B00',
-                borderWidth: 2,
-                borderRadius: 6,
-                hoverBackgroundColor: '#2a2a2a'
-              }]
-            },
+                borderWidth: 2,f',
+                borderRadius: 6,nction(value, index) {
+                hoverBackgroundColor: '#2a2a2a'| "Sin datos"}`;
+              }]    },
+            },      font: { size: 10 }
             options: {
               indexAxis: 'y',
               responsive: true,
@@ -1086,57 +1086,57 @@
               plugins: {
                 legend: { display: false },
                 tooltip: {
-                  backgroundColor: '#FF3B00',
-                  titleColor: '#fff',
-                  bodyColor: '#fff'
+                  backgroundColor: '#FF3B00',dísticas de agentes:", err);
+                  titleColor: '#fff',ngth > 0 ? allAgents : ["No hay agentes registrados"];
+                  bodyColor: '#fff'(() => 0);
                 },
-                datalabels: {
-                  anchor: 'end',
-                  align: 'right',
+                datalabels: {t.getElementById('chartAgentes').getContext('2d');
+                  anchor: 'end',rtInstance.destroy();
+                  align: 'right',rt(ctx, {
                   offset: 4,
                   color: '#fff',
-                  font: {
+                  font: {els,
                     size: 10,
-                    weight: 'bold'
-                  },
+                    weight: 'bold'lizados',
+                  },: values,
                   formatter: (value) => value
-                }
-              },
-              scales: {
-                x: { 
+                }orderColor: '#FF3B00',
+              },borderWidth: 2,
+              scales: {adius: 6,
+                x: { BackgroundColor: '#2a2a2a'
                   beginAtZero: true, 
                   grid: { color: '#333' }, 
                   ticks: { 
                     color: '#fff',
                     font: { size: 10 }
-                  } 
-                },
-                y: { 
+                  } inAspectRatio: false,
+                },ins: {
+                y: { d: { display: false },
                   grid: { color: '#333' }, 
-                  ticks: { 
-                    color: '#fff',
+                  ticks: { dColor: '#FF3B00',
+                    color: '#fff',f',
                     font: { size: 10 }
                   } 
-                }
-              }
-            }
-          });
-        });
-    }
-
+                }atalabels: {
+              }   anchor: 'end',
+            }     align: 'right',
+          });     offset: 4,
+        });       color: '#fff',
+    }             font: {
+                    size: 10,
     function loadDailyPerformance() {
       const from = document.getElementById("dailyFrom").value;
       const to = document.getElementById("dailyTo").value;
       if (!from || !to) {
         return alert("Seleccioná un rango válido.");
-      }
-
+      }       scales: {
+                x: { 
       fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
-        method: "POST",
+        method: "POST", { color: '#333' }, 
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        credentials: "include",f',
         body: JSON.stringify({ from, to }),
-      })
+      })          } 
       .then((res) => res.json())
       .then((data) => {
         const tbody = document.getElementById("performanceTable");
@@ -1147,33 +1147,33 @@
             <td style="padding: 8px; border-bottom: 1px solid #333;">${log.date}</td>
             <td style="padding: 8px; border-bottom: 1px solid #333;">${log.agent}</td>
             <td style="padding: 8px; border-bottom: 1px solid #333;">${log.count}</td>
-          `;
+          `;;
           tbody.appendChild(row);
         });
       })
-      .catch((err) => {
+      .catch((err) => {erformance() {
         console.error("Error al obtener el rendimiento diario:", err);
-        alert("Error al obtener los datos.");
-      });
-    }
-
+        alert("Error al obtener los datos.");lyTo").value;
+      });(!from || !to) {
+    }   return alert("Seleccioná un rango válido.");
+      }
     function loadPerformance() {
-      const from = document.getElementById("dailyFrom").value;
+      const from = document.getElementById("dailyFrom").value;rmance", {
       const to = document.getElementById("dailyTo").value;
       const period = document.getElementById("periodFilter").value;
       if (!from || !to) return alert("Seleccioná un rango válido.");
-
+        body: JSON.stringify({ from, to }),
       fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
-        method: "POST",
+        method: "POST",s.json())
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        credentials: "include",getElementById("performanceTable");
         body: JSON.stringify({ from, to })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.getElementById("performanceTable");
-        tbody.innerHTML = "";
-        const groupedData = groupDataByPeriod(data.logs, period);
+      })data.logs.forEach((log) => {
+      .then(res => res.json()).createElement("tr");
+      .then(data => {ML = `
+        const tbody = document.getElementById("performanceTable");;">${log.date}</td>
+        tbody.innerHTML = "";g: 8px; border-bottom: 1px solid #333;">${log.agent}</td>
+        const groupedData = groupDataByPeriod(data.logs, period);3;">${log.count}</td>
         Object.entries(groupedData).forEach(([periodKey, agents]) => {
           Object.entries(agents).forEach(([agent, count]) => {
             const row = document.createElement("tr");
@@ -1184,225 +1184,364 @@
             `;
             tbody.appendChild(row);
           });
-        });
-      })
-      .catch(err => {
-        console.error("Error al obtener rendimiento:", err);
-        alert("Error al obtener los datos.");
+        });n loadPerformance() {
+      })nst from = document.getElementById("dailyFrom").value;
+      .catch(err => {ment.getElementById("dailyTo").value;
+        console.error("Error al obtener rendimiento:", err);.value;
+        alert("Error al obtener los datos.");oná un rango válido.");
       });
-    }
-
-    function groupDataByPeriod(logs, period) {
-      const grouped = {};
-      logs.forEach(log => {
+    } fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
+        method: "POST",
+    function groupDataByPeriod(logs, period) {n/json" },
+      const grouped = {};lude",
+      logs.forEach(log => {y({ from, to })
         const date = new Date(log.timestamp);
-        let periodKey;
-
-        switch (period) {
-          case "daily":
-          case "today":
-          case "yesterday":
-            periodKey = date.toISOString().split("T")[0];
+        let periodKey;.json())
+      .then(data => {
+        switch (period) {ument.getElementById("performanceTable");
+          case "daily": = "";
+          case "today":ta = groupDataByPeriod(data.logs, period);
+          case "yesterday":pedData).forEach(([periodKey, agents]) => {
+            periodKey = date.toISOString().split("T")[0]; => {
+            break;row = document.createElement("tr");
+          case "week":TML = `
+            const weekStart = new Date(date);-bottom: 1px solid #333;">${periodKey}</td>
+            weekStart.setDate(date.getDate() - date.getDay());d #333;">${agent}</td>
+            periodKey = weekStart.toISOString().split("T")[0];d #333;">${count}</td>
             break;
-          case "week":
-            const weekStart = new Date(date);
-            weekStart.setDate(date.getDate() - date.getDay());
-            periodKey = weekStart.toISOString().split("T")[0];
-            break;
-          case "month":
+          case "month":dChild(row);
             periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             break;
           case "lastMonth":
             const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
             periodKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
-            break;
+            break;or al obtener los datos.");
           default:
             periodKey = "Desconocido";
         }
-
+    function groupDataByPeriod(logs, period) {
         if (!grouped[periodKey]) grouped[periodKey] = {};
         grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
-      });
-      return grouped;
+      });onst date = new Date(log.timestamp);
+      return grouped;;
     }
-
+        switch (period) {
     let selectedUsernameToDelete = null;
     let selectedUsernameToEdit = null;
-
-    function openDeletePopup(username) {
+          case "yesterday":
+    function openDeletePopup(username) {().split("T")[0];
       selectedUsernameToDelete = username;
       document.getElementById("deletePopup").classList.add("active");
-    }
-
-    function closeDeletePopup() {
+    }       const weekStart = new Date(date);
+            weekStart.setDate(date.getDate() - date.getDay());
+    function closeDeletePopup() {.toISOString().split("T")[0];
       selectedUsernameToDelete = null;
       document.getElementById("deletePopup").classList.remove("active");
-    }
-
+    }       periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            break;
     function confirmDelete() {
-      if (!selectedUsernameToDelete) return;
-      fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToDelete}`, {
+      if (!selectedUsernameToDelete) return;getFullYear(), date.getMonth() - 1, 1);
+      fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToDelete}`, {).padStart(2, '0')}`;
         method: 'DELETE',
         credentials: 'include'
-      })
+      })    periodKey = "Desconocido";
       .then(() => {
         loadAgents();
-        closeDeletePopup();
-      });
-    }
-
+        closeDeletePopup();Key]) grouped[periodKey] = {};
+      });rouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
+    } });
+      return grouped;
     function openEditPopup(username, name) {
       selectedUsernameToEdit = username;
       document.getElementById("editAgentName").value = name || '';
       document.getElementById("editAgentPassword").value = '';
       document.getElementById("editPopup").classList.add("active");
-    }
-
-    function closeEditPopup() {
+    }unction openDeletePopup(username) {
+      selectedUsernameToDelete = username;
+    function closeEditPopup() {deletePopup").classList.add("active");
       selectedUsernameToEdit = null;
       document.getElementById("editPopup").classList.remove("active");
-    }
-
-    function confirmEdit() {
+    }unction closeDeletePopup() {
+      selectedUsernameToDelete = null;
+    function confirmEdit() {d("deletePopup").classList.remove("active");
       const newName = document.getElementById("editAgentName").value.trim();
       const newPass = document.getElementById("editAgentPassword").value.trim();
-
-      if (!newName) {
-        alert("El nombre no puede estar vacío.");
-      }
-
+    function confirmDelete() {
+      if (!newName) {ernameToDelete) return;
+        alert("El nombre no puede estar vacío.");ents/${selectedUsernameToDelete}`, {
+      } method: 'DELETE',
+        credentials: 'include'
       const body = { name: newName };
       if (newPass) body.password = newPass;
-
+        loadAgents();
       fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToEdit}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(body)
-      })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        loadAgents();
+        body: JSON.stringify(body)e, name) {
+      })lectedUsernameToEdit = username;
+      .then(res => {ementById("editAgentName").value = name || '';
+        if (!res.ok) throw new Error();tPassword").value = '';
+        loadAgents();mentById("editPopup").classList.add("active");
         closeEditPopup();
       })
       .catch(() => alert("Error al editar agente"));
-    }
-
+    } selectedUsernameToEdit = null;
+      document.getElementById("editPopup").classList.remove("active");
     socket.on('update username', (data) => {
       console.log('Evento update username recibido en superadmin:', data);
       const { userId, newUsername } = data;
-
-      const agentRow = document.getElementById(`agent-name-${userId}`);
+      const newName = document.getElementById("editAgentName").value.trim();
+      const agentRow = document.getElementById(`agent-name-${userId}`);e.trim();
       if (agentRow) {
         agentRow.textContent = newUsername;
-      }
+      } alert("El nombre no puede estar vacío.");
     });
 
     document.addEventListener('DOMContentLoaded', () => {
       loadTimezoneFromServer().then(() => {
         const userInput = document.getElementById('superUsername');
-        const passInput = document.getElementById('superPassword');
-
-        [userInput, passInput].forEach(input => {
+        const passInput = document.getElementById('superPassword');rnameToEdit}`, {
+        method: 'PUT',
+        [userInput, passInput].forEach(input => {son' },
           input.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
               loginSuperAdmin();
-            }
-          });
-        });
-
+            }es => {
+          });res.ok) throw new Error();
+        });dAgents();
+        closeEditPopup();
         if (document.getElementById('section-stats').style.display !== 'none') {
-          setDefaultDates();
+          setDefaultDates();ror al editar agente"));
         }
       });
-
-      const today = new Date().toISOString().split('T')[0];
+    socket.on('update username', (data) => {
+      const today = new Date().toISOString().split('T')[0];admin:', data);
       document.getElementById('dailyFrom').value = today;
       document.getElementById('dailyTo').value = today;
-    });
-
+    });onst agentRow = document.getElementById(`agent-name-${userId}`);
+      if (agentRow) {
     window.addEventListener('DOMContentLoaded', () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('dailyFrom').value = today;
       document.getElementById('dailyTo').value = today;
-    });
-  </script>
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
+    });ument.addEventListener('DOMContentLoaded', () => {
+  </script>imezoneFromServer().then(() => {
+  <script>nst userInput = document.getElementById('superUsername');
+document.addEventListener("DOMContentLoaded", () => {perPassword');
   // Consolidated initialization logic
-  loadTimezoneFromServer().then(() => {
+  loadTimezoneFromServer().then(() => {input => {
     const userInput = document.getElementById('superUsername');
     const passInput = document.getElementById('superPassword');
-
+              loginSuperAdmin();
     [userInput, passInput].forEach(input => {
       input.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
           loginSuperAdmin();
-        }
+        }f (document.getElementById('section-stats').style.display !== 'none') {
+      }); setDefaultDates();
+    }); }
       });
-    });
-
     if (document.getElementById('section-stats').style.display !== 'none') {
-      setDefaultDates();
-    }
-  });
-
+      setDefaultDates();Date().toISOString().split('T')[0];
+    } document.getElementById('dailyFrom').value = today;
+  }); document.getElementById('dailyTo').value = today;
+    });
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('dailyFrom').value = today;
-  document.getElementById('dailyTo').value = today;
-
+  document.getElementById('dailyFrom').value = today; {
+  document.getElementById('dailyTo').value = today;'T')[0];
+      document.getElementById('dailyFrom').value = today;
   const filter = document.getElementById("periodFilter");
   if (filter) {
     filter.addEventListener("change", () => {
       const period = filter.value;
-      const today = new Date();
-      let from = new Date(today);
-      let to = new Date(today);
-
-      switch (period) {
+      const today = new Date();ontentLoaded", () => {
+      let from = new Date(today);logic
+      let to = new Date(today);(() => {
+    const userInput = document.getElementById('superUsername');
+      switch (period) {ocument.getElementById('superPassword');
         case "today":
-          break;
-        case "yesterday":
+          break;passInput].forEach(input => {
+        case "yesterday":ner('keypress', function (e) {
           from.setDate(today.getDate() - 1);
           to.setDate(today.getDate() - 1);
           break;
         case "week":
           from.setDate(today.getDate() - 6);
           break;
-        case "month":
+        case "month":lementById('section-stats').style.display !== 'none') {
           from = new Date(today.getFullYear(), today.getMonth(), 1);
           break;
         case "lastMonth":
           from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
           to = new Date(today.getFullYear(), today.getMonth(), 0);
-          break;
-      }
+          break;ementById('dailyFrom').value = today;
+      }ent.getElementById('dailyTo').value = today;
 
-      const toISO = to.toISOString().split("T")[0];
+      const toISO = to.toISOString().split("T")[0];ter");
       const fromISO = from.toISOString().split("T")[0];
       document.getElementById("dailyFrom").value = fromISO;
       document.getElementById("dailyTo").value = toISO;
-
+      const today = new Date();
       if (typeof loadPerformance === "function") {
-        loadPerformance();
+        loadPerformance();day);
       }
-    });
-  }
-});
-
-function groupDataByPeriod(logs, period) {
-  const grouped = {};
+    });witch (period) {
+  }     case "today":
+});       break;
+        case "yesterday":
+function groupDataByPeriod(logs, period) {);
+  const grouped = {};today.getDate() - 1);
   logs.forEach(log => {
     const date = new Date(log.timestamp);
-    let periodKey;
-
+    let periodKey;Date(today.getDate() - 6);
+          break;
     switch (period) {
-      case "daily":
+      case "daily":w Date(today.getFullYear(), today.getMonth(), 1);
       case "today":
-      case "yesterday":
-        periodKey = date.toISOString().split("T")[0];
-        break;
+      case "yesterday":":
+        periodKey = date.toISOString().split("T")[0];getMonth() - 1, 1);
+        break; new Date(today.getFullYear(), today.getMonth(), 0);
       case "week":
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay());
+        periodKey = weekStart.toISOString().split("T")[0];
+        break;omISO = from.toISOString().split("T")[0];
+      case "month":lementById("dailyFrom").value = fromISO;
+        periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        break;
+      case "lastMonth":rformance === "function") {
+        const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+        periodKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+        break;
+      default:
+        periodKey = "Desconocido";
+    }
+function groupDataByPeriod(logs, period) {
+    if (!grouped[periodKey]) grouped[periodKey] = {};
+    grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
+  });onst date = new Date(log.timestamp);
+  return grouped;;
+}
+    switch (period) {
+// Removed duplicate and unreachable code
+</script>e "today":
+<script>ase "yesterday":
+// Función para establecer el rango rápido en la sección de Pruebas periodKey = date.toISOString().split("T")[0];
+function setPruebasQuickRange() {        break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html></body></script>}    .catch(err => console.error("Error al cargar datos de rendimiento:", err));    })      `).join("");        </tr>          <td>${agent.interactions}</td>          <td>${agent.closures}</td>          <td>${agent.name}</td>        <tr>      tableBody.innerHTML = data.agents.map(agent => `      const tableBody = document.querySelector("#performanceTable tbody");      // Actualizar tabla      });        }          }            legend: { display: false }          plugins: {          responsive: true,        options: {        },          }]            backgroundColor: "rgba(255, 99, 132, 0.7)"            data: data.agents.map(agent => agent.closures),            label: "Cierres",          datasets: [{          labels: data.agents.map(agent => agent.name),        data: {        type: "bar",      window.performanceChart = new Chart(ctx, {      if (window.performanceChart) window.performanceChart.destroy();      const ctx = document.getElementById("performanceChart").getContext("2d");      // Actualizar gráfico      document.getElementById("totalInteractions").textContent = data.totalInteractions;      document.getElementById("totalClosures").textContent = data.totalClosures;      document.getElementById("bestAgent").textContent = bestAgent.name;      const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });      // Actualizar KPIs    .then(data => {    .then(res => res.json())  })    credentials: "include"  fetch(`https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}`, {function loadPruebasData(from, to) {// Función para cargar los datos de rendimiento en la sección de Pruebas}  loadPruebasData(fromDateTime.toISOString(), toDateTime.toISOString());  const toDateTime = new Date(toDate + "T" + toTime);  const fromDateTime = new Date(fromDate + "T" + fromTime);  }    return;    alert("Por favor seleccioná un rango de fechas.");  if (!fromDate || !toDate) {  const toTime = document.getElementById("pruebasToTime").value || "23:59";  const toDate = document.getElementById("pruebasToDate").value;  const fromTime = document.getElementById("pruebasFromTime").value || "00:00";  const fromDate = document.getElementById("pruebasFromDate").value;function confirmAndLoadPruebas() {// Función para cargar los datos de la sección de Pruebas}  loadPruebasData(from, to);  const to = end.toISOString();  const from = start.toISOString();  toTimeInput.value = '23:59';  toDateInput.value = end.toISOString().split('T')[0];  fromTimeInput.value = '00:00';  fromDateInput.value = start.toISOString().split('T')[0];  }      break;      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));    case "lastMonth":      break;      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));    case "month":      break;      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));      const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1;    case "week":      break;      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));    case "yesterday":      break;      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));    case "today":  switch (value) {  let end = new Date();  let start = new Date();  const value = document.getElementById("pruebasQuickRange").value;  const toTimeInput = document.getElementById("pruebasToTime");  const fromTimeInput = document.getElementById("pruebasFromTime");  const toDateInput = document.getElementById("pruebasToDate");  const fromDateInput = document.getElementById("pruebasFromDate");  const now = new Date();      case "week":
         const weekStart = new Date(date);
         weekStart.setDate(date.getDate() - date.getDay());
         periodKey = weekStart.toISOString().split("T")[0];
