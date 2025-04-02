@@ -483,6 +483,7 @@
       <button onclick="showSection('home')">🏠 Home</button>
       <button onclick="showSection('agents')">👥 Agentes</button>
       <button onclick="showSection('pruebas')">🧪 Pruebas</button>
+      <button onclick="showSection('customize')">🎨 Personalizar</button> <!-- Mover botón aquí -->
     </div>
 
     <!-- Sección Home -->
@@ -516,8 +517,6 @@
         </thead>
         <tbody id="agentsTable"></tbody>
       </table>
-
-
     </div>
 
     <!-- Sección de pruebas -->
@@ -736,7 +735,7 @@
 </script>
 
     <!-- Sección editar -->
-    <div id="section-customize" class="main-box">
+    <div id="section-customize" style="display:none;">
       <h2>🎨 Personalizar Estilo</h2>
       <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
       <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
@@ -848,21 +847,14 @@
     }
 
     function showSection(section) {
-      document.getElementById("section-pruebas").style.display = (section === "pruebas") ? "block" : "none";
-      document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
-      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
-      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
-      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+      // Ocultar todas las secciones
+      document.querySelectorAll('.main-box > div').forEach(div => div.style.display = 'none');
 
-      if (section === "stats") {
-        setDefaultDates();
-        const today = new Date();
-        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-        loadStats(todayStart.toISOString(), todayEnd.toISOString());
-      }
-      if (section === "pruebas") {
-        setDefaultDates();
+      // Mostrar la sección seleccionada
+      document.getElementById(`section-${section}`).style.display = 'block';
+
+      if (section === 'agents') {
+        loadAgents(); // Cargar agentes al mostrar la sección
       }
     }
 
@@ -872,14 +864,13 @@
       })
       .then(res => res.json())
       .then(agents => {
-        allAgents = agents.filter(agent => agent.role === 'Admin').map(agent => agent.username);
         const table = document.getElementById('agentsTable');
-        table.innerHTML = '';
+        table.innerHTML = ''; // Limpiar la tabla antes de llenarla
         agents.forEach(agent => {
           const row = document.createElement('tr');
           row.innerHTML = `
             <td><strong>${agent.username}</strong></td>
-            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
+            <td>${agent.name || 'Sin nombre'}</td>
             <td>${agent.role || 'Admin'}</td>
             <td style="display: flex; gap: 5px;">
               <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
@@ -888,7 +879,8 @@
           `;
           table.appendChild(row);
         });
-      });
+      })
+      .catch(err => console.error('Error al cargar agentes:', err));
     }
 
     function createAgent() {
