@@ -426,37 +426,6 @@
     .table-container td {
       color: var(--text-light);
     }
-
-    /* Compact layout for custom date range */
-    #customDateRange {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    #customDateRange label {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 14px;
-      color: var(--text-light);
-    }
-
-    #customDateRange input[type="date"] {
-      height: 30px;
-      padding: 5px;
-      border-radius: var(--border-radius-sm);
-      border: 2px solid var(--primary-color);
-      background: var(--bg-input);
-      color: var(--text-light);
-      outline: none;
-    }
-
-    #customDateRange input[type="date"]::-webkit-calendar-picker-indicator {
-      cursor: pointer;
-      filter: invert(1);
-    }
   </style>
 </head>
 <body>
@@ -482,8 +451,9 @@
     <div class="home-buttons">
       <button onclick="showSection('home')">🏠 Home</button>
       <button onclick="showSection('agents')">👥 Agentes</button>
+      <button onclick="showSection('stats')">📊 Estadísticas</button>
+      <button onclick="showSection('customize')">🎨 Editar</button>
       <button onclick="showSection('pruebas')">🧪 Pruebas</button>
-      <button onclick="showSection('customize')">🎨 Personalizar</button> <!-- Mover botón aquí -->
     </div>
 
     <!-- Sección Home -->
@@ -517,35 +487,56 @@
         </thead>
         <tbody id="agentsTable"></tbody>
       </table>
+
+
+    </div>
+
+    <!-- Sección estadísticas -->
+    <div id="section-stats" style="display:none;">
+      <h2>📊 Estadísticas</h2>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;" class="date-filters">
+        <div class="filter-group">
+          <label>De:</label>
+          <div class="filter-row">
+            <input type="date" id="fromDate">
+            <input type="time" id="fromTime">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>A:</label>
+          <div class="filter-row">
+            <input type="date" id="toDate">
+            <input type="time" id="toTime">
+          </div>
+        </div>
+        <select id="quickRange" onchange="setQuickRange()">
+          <option value="">Elegir el periodo</option>
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+          <option value="lastMonth">Mes anterior</option>
+        </select>
+
+        <button onclick="confirmAndLoadStats()">Mostrar</button>
+      </div>
+      <div>
+        <h3 style="color: orange;">📈 Estadísticas de Agentes</h3>
+        <canvas id="chartAgentes" height="100"></canvas>
+        <h3 style="color: lightblue; margin-top: 20px;">💬 Interacciones</h3>
+        <div id="statsResults">
+          <p>Mensajes entrantes: <span id="statMessages">0</span></p>
+          <p>Cargar Fichas: <span id="statCargar">0</span></p>
+          <p>Retirar: <span id="statRetiro">0</span></p>
+          <p>Imágenes enviadas: <span id="statImagenes">0</span></p>
+        </div>
+      </div>
     </div>
 
     <!-- Sección de pruebas -->
     <div id="section-pruebas" style="display:none;">
   <h2>🧪 Panel de Pruebas</h2>
   <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
-
-  <!-- Filtros de rendimiento -->
-  <div class="filter-container">
-    <select id="performanceFilter" onchange="applyPerformanceFilter()">
-      <option value="today">Hoy</option>
-      <option value="yesterday">Ayer</option>
-      <option value="week">Esta semana</option>
-      <option value="month">Este mes</option>
-      <option value="lastMonth">Mes anterior</option>
-      <option value="custom">Personalizado</option>
-    </select>
-    <div id="customDateRange" style="display: none;">
-      <label>
-        <span>De:</span>
-        <input type="date" id="customFromDate">
-      </label>
-      <label>
-        <span>A:</span>
-        <input type="date" id="customToDate">
-      </label>
-      <button onclick="applyCustomDateRange()">Aplicar</button>
-    </div>
-  </div>
 
   <!-- KPIs destacados -->
   <div class="kpi-container">
@@ -634,106 +625,6 @@
   document.addEventListener("DOMContentLoaded", loadPerformanceData);
 </script>
 
-<script>
-  function applyPerformanceFilter() {
-    const filter = document.getElementById("performanceFilter").value;
-    const today = new Date();
-    let from, to;
-
-    switch (filter) {
-      case "today":
-        from = new Date(today.setHours(0, 0, 0, 0));
-        to = new Date(today.setHours(23, 59, 59, 999));
-        break;
-      case "yesterday":
-        from = new Date(today.setDate(today.getDate() - 1));
-        from.setHours(0, 0, 0, 0);
-        to = new Date(today.setHours(23, 59, 59, 999));
-        break;
-      case "week":
-        from = new Date(today.setDate(today.getDate() - today.getDay()));
-        from.setHours(0, 0, 0, 0);
-        to = new Date();
-        break;
-      case "month":
-        from = new Date(today.getFullYear(), today.getMonth(), 1);
-        to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        break;
-      case "lastMonth":
-        from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        to = new Date(today.getFullYear(), today.getMonth(), 0);
-        break;
-      case "custom":
-        document.getElementById("customDateRange").style.display = "flex";
-        return;
-    }
-
-    document.getElementById("customDateRange").style.display = "none";
-    loadPerformanceData(from.toISOString(), to.toISOString());
-  }
-
-  function applyCustomDateRange() {
-    const from = document.getElementById("customFromDate").value;
-    const to = document.getElementById("customToDate").value;
-
-    if (!from || !to) {
-      alert("Por favor selecciona un rango de fechas válido.");
-      return;
-    }
-
-    loadPerformanceData(new Date(from).toISOString(), new Date(to).toISOString());
-  }
-
-  function loadPerformanceData(from, to) {
-    fetch(`https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}`, {
-      credentials: "include"
-    })
-      .then(res => res.json())
-      .then(data => {
-        // Update KPIs
-        document.getElementById("bestAgent").textContent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 }).name;
-        document.getElementById("totalClosures").textContent = data.totalClosures;
-        document.getElementById("totalInteractions").textContent = data.totalInteractions;
-
-        // Update chart
-        const ctx = document.getElementById("performanceChart").getContext("2d");
-        if (window.performanceChart) window.performanceChart.destroy();
-        window.performanceChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: data.agents.map(agent => agent.name),
-            datasets: [{
-              label: "Cierres",
-              data: data.agents.map(agent => agent.closures),
-              backgroundColor: "rgba(255, 99, 132, 0.7)"
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              datalabels: {
-                color: "black", // Set numbers to black
-                font: { weight: "bold" }
-              }
-            }
-          }
-        });
-
-        // Update table
-        const tableBody = document.querySelector("#performanceTable tbody");
-        tableBody.innerHTML = data.agents.map(agent => `
-          <tr>
-            <td>${agent.name}</td>
-            <td>${agent.closures}</td>
-            <td>${agent.interactions}</td>
-          </tr>
-        `).join("");
-      })
-      .catch(err => console.error("Error al cargar datos de rendimiento:", err));
-  }
-</script>
-
     <!-- Sección editar -->
     <div id="section-customize" style="display:none;">
       <h2>🎨 Personalizar Estilo</h2>
@@ -777,6 +668,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <!-- Socket.IO -->
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
+
   <script>
     Chart.register(ChartDataLabels);
 
@@ -847,24 +739,21 @@
     }
 
     function showSection(section) {
-      // Ocultar todas las secciones
-      document.querySelectorAll('.main-box > div').forEach(div => {
-        div.style.display = 'none';
-      });
+      document.getElementById("section-pruebas").style.display = (section === "pruebas") ? "block" : "none";
+      document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
+      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+      document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
+      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
 
-      // Mostrar la sección seleccionada
-      const selectedSection = document.getElementById(`section-${section}`);
-      if (selectedSection) {
-        selectedSection.style.display = 'block';
-      } else {
-        console.error(`Sección no encontrada: section-${section}`);
+      if (section === "stats") {
+        setDefaultDates();
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+        loadStats(todayStart.toISOString(), todayEnd.toISOString());
       }
-
-      // Cargar datos específicos si es necesario
-      if (section === 'agents') {
-        loadAgents(); // Cargar agentes al mostrar la sección
-      } else if (section === 'pruebas') {
-        loadPerformanceData(); // Cargar datos de rendimiento
+      if (section === "pruebas") {
+        setDefaultDates();
       }
     }
 
@@ -874,13 +763,14 @@
       })
       .then(res => res.json())
       .then(agents => {
+        allAgents = agents.filter(agent => agent.role === 'Admin').map(agent => agent.username);
         const table = document.getElementById('agentsTable');
-        table.innerHTML = ''; // Limpiar la tabla antes de llenarla
+        table.innerHTML = '';
         agents.forEach(agent => {
           const row = document.createElement('tr');
           row.innerHTML = `
             <td><strong>${agent.username}</strong></td>
-            <td>${agent.name || 'Sin nombre'}</td>
+            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
             <td>${agent.role || 'Admin'}</td>
             <td style="display: flex; gap: 5px;">
               <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
@@ -889,8 +779,7 @@
           `;
           table.appendChild(row);
         });
-      })
-      .catch(err => console.error('Error al cargar agentes:', err));
+      });
     }
 
     function createAgent() {
