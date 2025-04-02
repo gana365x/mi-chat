@@ -932,7 +932,7 @@ document.getElementById("periodFilter").addEventListener("change", () => {
 const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
-  
+    
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
 
@@ -1190,35 +1190,45 @@ const from = new Date(`${fromDate}T${fromTime}:00Z`);
       });
     }
 
-    function groupDataByPeriod(logs, period) {
-      const grouped = {};
-      logs.forEach(log => {
-        const date = new Date(log.date);
-        let periodKey;
-        switch (period) {
-          case "daily":
-            periodKey = log.date;
-            break;
-          case "weekly":
-            const weekStart = new Date(date);
-            weekStart.setDate(date.getDate() - date.getDay());
-            periodKey = weekStart.toISOString().split('T')[0];
-            break;
-          case "biweekly":
-            const biweekStart = new Date(date);
-            biweekStart.setDate(date.getDate() - (date.getDate() % 14));
-            periodKey = biweekStart.toISOString().split('T')[0];
-            break;
-          case "monthly":
-            periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            break;
-        }
-        if (!grouped[periodKey]) grouped[periodKey] = {};
-        grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + log.count;
-      });
-      return grouped;
+    
+function groupDataByPeriod(logs, period) {
+  const grouped = {};
+  logs.forEach(log => {
+    const date = new Date(log.timestamp);
+    let periodKey;
+
+    switch (period) {
+      case "daily":
+      case "today":
+      case "yesterday":
+        periodKey = date.toISOString().split("T")[0];
+        break;
+      case "week":
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay());
+        periodKey = weekStart.toISOString().split("T")[0];
+        break;
+      case "month":
+        periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        break;
+      case "lastMonth":
+        const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+        periodKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+        break;
+      default:
+        periodKey = "Desconocido";
     }
 
+    if (!grouped[periodKey]) grouped[periodKey] = {};
+    grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
+  });
+  return grouped;
+}
+        if (!grouped[periodKey]) grouped[periodKey] = {};
+        grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + log.count;
+      ;
+      return grouped;
+    
     let selectedUsernameToDelete = null;
     let selectedUsernameToEdit = null;
 
