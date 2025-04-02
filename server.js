@@ -1056,20 +1056,20 @@ app.post('/get-performance-logs', async (req, res) => {
 });
 
 
-app.post('/get-daily-performance', async (req, res) => {
+
+  } catch (e) {
+    console.error("❌ Error en /get-daily-performance", e);
+    res.status(500).json({ success: false });
+  }
+});
   const { from, to } = req.body;
   try {
-    const fromDate = new Date(from);
-    fromDate.setHours(0, 0, 0, 0);
-    const toDate = new Date(to);
-    toDate.setHours(23, 59, 59, 999);
-
     const logs = await PerformanceLog.aggregate([
       {
         $match: {
           timestamp: {
-            $gte: fromDate,
-            $lte: toDate
+            $gte: new Date(from),
+            $lte: new Date(to)
           }
         }
       },
@@ -1099,14 +1099,22 @@ app.post('/get-daily-performance', async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
+
+app.post('/get-daily-performance', async (req, res) => {
   const { from, to } = req.body;
   try {
+    const fromDate = new Date(from);
+    fromDate.setHours(0, 0, 0, 0);
+    const toDate = new Date(to);
+    toDate.setHours(23, 59, 59, 999);
+
     const logs = await PerformanceLog.aggregate([
       {
         $match: {
           timestamp: {
-            $gte: new Date(from),
-            $lte: new Date(to)
+            $gte: fromDate,
+            $lte: toDate
           }
         }
       },
