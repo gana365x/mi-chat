@@ -374,8 +374,6 @@ io.on('connection', (socket) => {
     timestamp: getTimestamp(),
     username: username
   };
-  // ...
-}
   await new ChatMessage(retiroMsg).save();
   io.emit('user list', await getAllChatsSorted());
   if (userSocket) userSocket.emit('chat message', retiroMsg);
