@@ -128,6 +128,12 @@ const performanceSchema = new mongoose.Schema({
 });
 
 const Performance = mongoose.model('Performance', performanceSchema);
+const performanceLogSchema = new mongoose.Schema({
+  agent: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now }
+});
+
+const PerformanceLog = mongoose.model('PerformanceLog', performanceLogSchema);
 
 const chatMessageSchema = new mongoose.Schema({
   userId: { type: String, required: true },
@@ -485,6 +491,7 @@ io.on('connection', (socket) => {
 
   if (adminUsername) {
     await incrementPerformance(adminUsername);
+    await PerformanceLog.create({ agent: adminUsername });
   }
 
   if (userSessions.has(userId)) {
@@ -1017,4 +1024,33 @@ app.get('/stats-agents', async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
+});
+
+
+app.post('/get-performance-logs', async (req, res) => {
+  const { from, to } = req.body;
+
+  try {
+    const start = new Date(from);
+    const end = new Date(to);
+
+    const logs = await PerformanceLog.aggregate([
+      {
+        $match: {
+          timestamp: { $gte: start, $lte: end }
+        }
+      },
+      {
+        $group: {
+          _id: "$agent",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json({ success: true, data: logs });
+  } catch (err) {
+    console.error("❌ Error al obtener performance logs:", err);
+    res.status(500).json({ success: false, error: 'Error al obtener logs' });
+  }
 });
