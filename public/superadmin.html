@@ -476,7 +476,19 @@
         <h3 style="color: orange;">📈 Estadísticas de Agentes</h3>
         <canvas id="chartAgentes" height="100"></canvas>
         <h3 style="color: lightblue; margin-top: 20px;">💬 Interacciones</h3>
-        <div id="statsResults">
+        
+        <h3 style="color: #fff; margin-top: 20px;">📋 Detalle de cierres por agente</h3>
+        <table id="performanceTable" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding: 8px; border-bottom: 1px solid #555;">Agente</th>
+              <th style="text-align:left; padding: 8px; border-bottom: 1px solid #555;">Cantidad de cierres</th>
+            </tr>
+          </thead>
+          <tbody id="performanceTableBody"></tbody>
+        </table>
+
+<div id="statsResults">
           <p>Mensajes entrantes: <span id="statMessages">0</span></p>
           <p>Cargar Fichas: <span id="statCargar">0</span></p>
           <p>Retirar: <span id="statRetiro">0</span></p>
@@ -513,6 +525,24 @@ async function loadPerformanceLogs() {
 
   const data = await res.json();
   if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
 
   const labels = data.data.map(e => e._id);
   const counts = data.data.map(e => e.count);
@@ -566,6 +596,24 @@ async function loadPerformanceLogs() {
 
   const data = await res.json();
   if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
 
   const labels = data.data.map(e => e._id);
   const counts = data.data.map(e => e.count);
@@ -620,6 +668,24 @@ async function loadPerformanceLogs() {
 
   const data = await res.json();
   if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
 
   const labels = data.data.map(e => e._id);
   const counts = data.data.map(e => e.count);
@@ -1162,6 +1228,24 @@ async function loadPerformanceLogs() {
 
   const data = await res.json();
   if (!data.success) return;
+  const tableBody = document.getElementById("performanceTableBody");
+  tableBody.innerHTML = "";
+  data.data.forEach(entry => {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const countCell = document.createElement("td");
+
+    nameCell.textContent = entry._id;
+    countCell.textContent = entry.count;
+
+    nameCell.style.padding = "8px";
+    countCell.style.padding = "8px";
+
+    row.appendChild(nameCell);
+    row.appendChild(countCell);
+    tableBody.appendChild(row);
+  });
+
 
   const labels = data.data.map(e => e._id);
   const counts = data.data.map(e => e.count);
