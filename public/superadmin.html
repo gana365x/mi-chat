@@ -750,17 +750,61 @@
     }
 
     function confirmAndLoadStats() {
-      const fromDate = document.getElementById("fromDate").value;
-      const fromTime = document.getElementById("fromTime").value;
-      const toDate = document.getElementById("toDate").value;
-      const toTime = document.getElementById("toTime").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const fromTime = document.getElementById("fromTime").value || "00:00";
+  const toDate = document.getElementById("toDate").value;
+  const toTime = document.getElementById("toTime").value || "23:59";
 
-      if (!fromDate || !fromTime || !toDate || !toTime) {
-        alert("Debes completar todos los campos de fecha y hora.");
-        return;
-      }
+  if (!fromDate || !toDate) {
+    alert("Por favor seleccioná un rango de fechas.");
+    return;
+  }
 
-      const from = new Date(`${fromDate}T${fromTime}:00Z`);
+  const from = new Date(fromDate + "T" + fromTime);
+  const to = new Date(toDate + "T" + toTime);
+
+  fetch(`/performance-log?from=${from.toISOString()}&to=${to.toISOString()}`)
+    .then(res => res.json())
+    .then(data => {
+      const ctx = document.getElementById("chartAgentes").getContext("2d");
+
+      const resumen = {};
+      data.forEach(log => {
+        resumen[log.agent] = (resumen[log.agent] || 0) + 1;
+      });
+
+      const labels = Object.keys(resumen);
+      const values = Object.values(resumen);
+
+      if (window.chartAgentes) window.chartAgentes.destroy();
+      window.chartAgentes = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Chats Finalizados",
+            data: values,
+            backgroundColor: "rgba(255, 99, 132, 0.7)"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    });
+}
+const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
     }
