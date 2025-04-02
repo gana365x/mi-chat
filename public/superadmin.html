@@ -489,38 +489,89 @@
 
     <!-- Sección de pruebas -->
     <div id="section-pruebas" style="display:none;">
-      <h2>🧪 Panel de Pruebas</h2>
-      <p>Aquí probaremos nuevas formas de visualizar el rendimiento de los agentes.</p>
-      <p style="color: gray;">(Esta sección está en desarrollo y puede cambiar)</p>
-      <div style="margin-top: 20px;">
-        <h3 style="color: lightgreen;">📅 Rendimiento por agente</h3>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-          <input type="date" id="dailyFrom" />
-          <input type="date" id="dailyTo" />
-          <select id="periodFilter">
-            <option value="today">Hoy</option>
-            <option value="yesterday">Ayer</option>
-            <option value="week">Semanal</option>
-            <option value="month">Este mes</option>
-            <option value="lastMonth">Mes anterior</option>
-          </select>
+  <h2>🧪 Panel de Pruebas</h2>
+  <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
 
-          <button onclick="loadPerformance()">Filtrar</button>
-        </div>
-        <table style="width:100%; border-collapse: collapse; background-color: #1a1a1a;">
-          <thead>
-            <tr>
-              <th style="padding: 8px; border-bottom: 1px solid #444;">Periodo</th>
-              <th style="padding: 8px; border-bottom: 1px solid #444;">Agente</th>
-              <th style="padding: 8px; border-bottom: 1px solid #444;">Cierres</th>
-            </tr>
-          </thead>
-          <tbody id="performanceTable"></tbody>
-        </table>
-
-
-      </div>
+  <!-- KPIs destacados -->
+  <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+    <div style="flex: 1; background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg); text-align: center;">
+      <h3 style="color: var(--primary-color);">👑 Mejor Agente</h3>
+      <p id="bestAgent" style="font-size: 24px; color: var(--text-light);">-</p>
     </div>
+    <div style="flex: 1; background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg); text-align: center;">
+      <h3 style="color: var(--primary-color);">📈 Total Cierres</h3>
+      <p id="totalClosures" style="font-size: 24px; color: var(--text-light);">0</p>
+    </div>
+  </div>
+
+  <!-- Gráfico de rendimiento -->
+  <div style="background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg); margin-bottom: 20px;">
+    <h3 style="color: var(--primary-color);">📊 Rendimiento por Agente</h3>
+    <canvas id="performanceChart" height="100"></canvas>
+  </div>
+
+  <!-- Tabla dinámica -->
+  <div style="background: var(--bg-darker); padding: 20px; border-radius: var(--border-radius-lg);">
+    <h3 style="color: var(--primary-color);">📋 Detalles de Rendimiento</h3>
+    <table id="performanceTable" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+      <thead>
+        <tr>
+          <th style="padding: 10px; background: var(--bg-hover); color: var(--primary-color);">Agente</th>
+          <th style="padding: 10px; background: var(--bg-hover); color: var(--primary-color);">Cierres</th>
+          <th style="padding: 10px; background: var(--bg-hover); color: var(--primary-color);">Interacciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script>
+  function loadPerformanceData() {
+    fetch("https://mi-chat-9uti.onrender.com/get-performance-data", {
+      credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Actualizar KPIs
+      const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
+      document.getElementById("bestAgent").textContent = bestAgent.name;
+      document.getElementById("totalClosures").textContent = data.totalClosures;
+
+      // Actualizar gráfico
+      const ctx = document.getElementById("performanceChart").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: data.agents.map(agent => agent.name),
+          datasets: [{
+            label: "Cierres",
+            data: data.agents.map(agent => agent.closures),
+            backgroundColor: "rgba(255, 99, 132, 0.7)"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      // Actualizar tabla
+      const tableBody = document.querySelector("#performanceTable tbody");
+      tableBody.innerHTML = data.agents.map(agent => `
+        <tr>
+          <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
+          <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
+          <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
+        </tr>
+      `).join("");
+    })
+    .catch(err => console.error("Error al cargar datos de rendimiento:", err));
+  }
+
+  document.addEventListener("DOMContentLoaded", loadPerformanceData);
+</script>
 
     <!-- Sección editar -->
     <div id="section-customize" style="display:none;">
