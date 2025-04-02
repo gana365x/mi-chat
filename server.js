@@ -1101,6 +1101,13 @@ app.post('/get-performance-logs', async (req, res) => {
 });
 
 
+} catch (e) {
+    console.error("❌ Error en /get-daily-performance", e);
+    res.status(500).json({ success: false });
+  }
+});
+
+
 app.post('/get-daily-performance', async (req, res) => {
   const { from, to } = req.body;
   try {
