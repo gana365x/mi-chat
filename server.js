@@ -1120,12 +1120,19 @@ app.get('/get-performance-data', async (req, res) => {
     return res.status(401).json({ success: false, message: 'No autorizado' });
   }
 
+  const { from, to } = req.query;
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(to) : null;
+
   try {
-    const agents = await Agent.find({}, 'username name');
+    const agents = await Agent.find({ role: 'Admin' }, 'username name');
+    const closuresQuery = { ...(fromDate && { timestamp: { $gte: fromDate } }), ...(toDate && { timestamp: { $lte: toDate } }) };
     const closures = await PerformanceLog.aggregate([
+      { $match: closuresQuery },
       { $group: { _id: "$agent", count: { $sum: 1 } } }
     ]);
     const interactions = await ChatMessage.aggregate([
+      { $match: closuresQuery },
       { $group: { _id: "$username", count: { $sum: 1 } } }
     ]);
 
