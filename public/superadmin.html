@@ -632,13 +632,15 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     }
 
     function setDefaultDates() {
-      const today = new Date();
-      const todayISO = today.toISOString().split('T')[0];
-      document.getElementById('fromDate').value = todayISO;
-      document.getElementById('fromTime').value = '00:00';
-      document.getElementById('toDate').value = todayISO;
-      document.getElementById('toTime').value = '23:59';
-    }
+  const today = new Date();
+  // Convertir la fecha a la zona horaria del sistema
+  const todayInTimezone = new Date(today.toLocaleString('en-US', { timeZone: systemTimezone }));
+  const todayISO = todayInTimezone.toISOString().split('T')[0];
+  document.getElementById('fromDate').value = todayISO;
+  document.getElementById('fromTime').value = '00:00';
+  document.getElementById('toDate').value = todayISO;
+  document.getElementById('toTime').value = '23:59';
+}
 
     function setQuickRange() {
   const now = new Date();
@@ -978,6 +980,11 @@ const socket = io('https://mi-chat-9uti.onrender.com');
         }
       });
     });
+
+    // Si la sección de estadísticas se carga al inicio, asegúrate de que las fechas se establezcan después de cargar la zona horaria
+    if (document.getElementById('section-stats').style.display !== 'none') {
+      setDefaultDates();
+    }
   });
 });
   </script>
