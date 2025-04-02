@@ -492,6 +492,27 @@
   <h2>🧪 Panel de Pruebas</h2>
   <p>Aquí probaremos nuevas formas de visualizar el rendimiento de los agentes.</p>
   <p style="color: gray;">(Esta sección está en desarrollo y puede cambiar)</p>
+
+  <div style="margin-top: 20px;">
+    <h3 style="color: lightgreen;">📅 Rendimiento diario por agente</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+      <input type="date" id="dailyFrom" />
+      <input type="date" id="dailyTo" />
+      <button onclick="loadDailyPerformance()">Filtrar</button>
+    </div>
+    <table style="width:100%; border-collapse: collapse; background-color: #1a1a1a;">
+      <thead>
+        <tr>
+          <th style="padding: 8px; border-bottom: 1px solid #444;">Fecha</th>
+          <th style="padding: 8px; border-bottom: 1px solid #444;">Agente</th>
+          <th style="padding: 8px; border-bottom: 1px solid #444;">Cierres</th>
+        </tr>
+      </thead>
+      <tbody id="dailyPerformanceTable">
+      </tbody>
+    </table>
+  </div>
+
 </div>
 
 
@@ -504,10 +525,106 @@
   </div>
 
   <!-- Chart.js y chartjs-plugin-datalabels desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js">
+function loadDailyPerformance() {
+  const from = document.getElementById("dailyFrom").value;
+  const to = document.getElementById("dailyTo").value;
+  if (!from || !to) return alert("Seleccioná un rango válido.");
+
+  fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ from, to })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById("dailyPerformanceTable");
+    tbody.innerHTML = "";
+    data.logs.forEach(log => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.date}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.agent}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.count}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  })
+  .catch(err => {
+    console.error("Error al obtener el rendimiento diario:", err);
+    alert("Error al obtener los datos.");
+  });
+}
+
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0">
+function loadDailyPerformance() {
+  const from = document.getElementById("dailyFrom").value;
+  const to = document.getElementById("dailyTo").value;
+  if (!from || !to) return alert("Seleccioná un rango válido.");
+
+  fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ from, to })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById("dailyPerformanceTable");
+    tbody.innerHTML = "";
+    data.logs.forEach(log => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.date}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.agent}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.count}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  })
+  .catch(err => {
+    console.error("Error al obtener el rendimiento diario:", err);
+    alert("Error al obtener los datos.");
+  });
+}
+
+</script>
   <!-- Socket.IO -->
-  <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
+  <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js">
+function loadDailyPerformance() {
+  const from = document.getElementById("dailyFrom").value;
+  const to = document.getElementById("dailyTo").value;
+  if (!from || !to) return alert("Seleccioná un rango válido.");
+
+  fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ from, to })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById("dailyPerformanceTable");
+    tbody.innerHTML = "";
+    data.logs.forEach(log => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.date}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.agent}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.count}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  })
+  .catch(err => {
+    console.error("Error al obtener el rendimiento diario:", err);
+    alert("Error al obtener los datos.");
+  });
+}
+
+</script>
 
   <script>
     Chart.register(ChartDataLabels);
@@ -998,7 +1115,39 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     }
   });
 });
-  </script>
+  
+function loadDailyPerformance() {
+  const from = document.getElementById("dailyFrom").value;
+  const to = document.getElementById("dailyTo").value;
+  if (!from || !to) return alert("Seleccioná un rango válido.");
+
+  fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ from, to })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById("dailyPerformanceTable");
+    tbody.innerHTML = "";
+    data.logs.forEach(log => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.date}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.agent}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #333;">${log.count}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  })
+  .catch(err => {
+    console.error("Error al obtener el rendimiento diario:", err);
+    alert("Error al obtener los datos.");
+  });
+}
+
+</script>
 
   <!-- POPUP CONFIRMAR ELIMINACIÓN -->
   <div id="deletePopup" class="popup-overlay">
