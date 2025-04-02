@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Super Admin - Gestión de Accesos</title>
   <style>
+    /* Variables CSS */
     :root {
       --primary-color: #FF3B00;
       --secondary-color: #ffa500;
@@ -20,6 +22,7 @@
       --shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
 
+    /* Estilos base */
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
@@ -31,6 +34,7 @@
       align-items: center;
     }
 
+    /* Estilos específicos para el login box */
     #loginBox {
       position: fixed;
       top: 0;
@@ -55,6 +59,7 @@
       max-width: 400px;
     }
 
+    /* Estilos para el main box */
     .main-box {
       background: var(--bg-darker);
       border-radius: var(--border-radius-lg);
@@ -121,6 +126,7 @@
       background-color: var(--bg-input);
     }
 
+    /* Desktop (≥1024px) */
     @media (min-width: 1024px) {
       body {
         padding: 30px;
@@ -160,6 +166,7 @@
         padding: 30px;
       }
 
+      /* Estilos específicos de estadísticas para desktop */
       #section-stats .date-filters {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -189,6 +196,7 @@
       }
     }
 
+    /* Tablet (≥768px y <1024px) */
     @media (min-width: 768px) and (max-width: 1023px) {
       .main-box {
         width: 90%;
@@ -219,6 +227,7 @@
       }
     }
 
+    /* Mobile (<768px) */
     @media (max-width: 767px) {
       #loginBox .login-content {
         padding: 20px;
@@ -270,6 +279,7 @@
         padding: 15px;
       }
 
+      /* Estilos específicos de estadísticas para móvil */
       #section-stats {
         padding: 10px;
       }
@@ -310,6 +320,7 @@
       }
     }
 
+    /* Estilos para popups */
     .popup-overlay {
       position: fixed;
       top: 0;
@@ -387,8 +398,8 @@
         <label for="superPassword">Contraseña</label>
       </div>
       <div class="button-wrapper">
-        <button onclick="loginSuperAdmin()">Ingresar</button>
-      </div>
+  <button onclick="loginSuperAdmin()">Ingresar</button>
+</div>
       <p id="loginError" style="color: #ff5555; display: none; font-size: 12px; text-align: center;">Credenciales inválidas</p>
     </div>
   </div>
@@ -401,11 +412,13 @@
       <button onclick="showSection('customize')">🎨 Editar</button>
     </div>
 
+    <!-- Sección Home -->
     <div id="section-home">
       <h2>🏠 Home</h2>
       <p>Próximamente se agregará información aquí.</p>
     </div>
 
+    <!-- Sección de agentes -->
     <div id="section-agents" style="display:none;">
       <h2>Crear nuevo agente</h2>
       <input type="text" id="newLogin" placeholder="Login del agente">
@@ -431,6 +444,7 @@
       </table>
     </div>
 
+    <!-- Sección estadísticas -->
     <div id="section-stats" style="display:none;">
       <h2>📊 Estadísticas</h2>
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
@@ -471,6 +485,7 @@
       </div>
     </div>
 
+    <!-- Sección editar -->
     <div id="section-customize" style="display:none;">
       <h2>🎨 Personalizar Estilo</h2>
       <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
@@ -478,81 +493,75 @@
     </div>
   </div>
 
+  <!-- Chart.js y chartjs-plugin-datalabels desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <!-- Socket.IO -->
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
 
   <script>
     Chart.register(ChartDataLabels);
 
-    let systemTimezone = "UTC";
+let systemTimezone = "UTC"; // Valor por defecto
+
+function loadTimezoneFromServer() {
+  return fetch('/get-timezone', { credentials: 'include' })
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch timezone: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      systemTimezone = data.timezone || "UTC";
+      console.log("Zona horaria cargada:", systemTimezone);
+    })
+    .catch(err => {
+      console.error("Error al cargar timezone:", err);
+      systemTimezone = "UTC";
+    });
+}
+
+const socket = io('https://mi-chat-9uti.onrender.com');
     let chartInstance = null;
     let allAgents = [];
-
-    function loadTimezoneFromServer() {
-      return fetch('/get-timezone', { credentials: 'include' })
-        .then(res => {
-          if (!res.ok) throw new Error(`Failed to fetch timezone: ${res.status}`);
-          return res.json();
-        })
-        .then(data => {
-          systemTimezone = data.timezone || "UTC";
-          console.log("Zona horaria cargada:", systemTimezone);
-        })
-        .catch(err => {
-          console.error("Error al cargar timezone:", err);
-          systemTimezone = "UTC";
-        });
-    }
-
-    const socket = io('https://mi-chat-9uti.onrender.com');
 
     function loginSuperAdmin() {
   const username = document.getElementById('superUsername').value.trim();
   const password = document.getElementById('superPassword').value.trim();
-  const loginError = document.getElementById('loginError');
 
   if (!username || !password) {
-    loginError.textContent = "Por favor, completa ambos campos";
-    loginError.style.display = 'block';
+    document.getElementById('loginError').textContent = "Por favor, completa ambos campos.";
+    document.getElementById('loginError').style.display = 'block';
     return;
   }
 
   fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ username, password })
   })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => {
+        throw new Error(`Error ${res.status}: ${err.message || 'Error desconocido'}`);
+      });
     }
-    return response.json();
+    return res.json();
   })
   .then(data => {
     if (data.success) {
-      // Verificar que el token esté en las cookies
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-      if (!token) {
-        throw new Error('No se recibió el token de autenticación');
-      }
-      console.log('Login exitoso, token recibido:', token);
       document.getElementById('loginBox').style.display = 'none';
       document.getElementById('mainBox').style.display = 'block';
       showSection('home');
       loadAgents();
     } else {
-      throw new Error(data.message || 'Error de autenticación');
+      throw new Error(data.message || 'Login no exitoso');
     }
   })
-  .catch(error => {
-    console.error('Error en login:', error);
-    loginError.textContent = error.message || 'Error al intentar iniciar sesión';
-    loginError.style.display = 'block';
+  .catch(err => {
+    console.error('Error en login:', err.message);
+    document.getElementById('loginError').textContent = err.message;
+    document.getElementById('loginError').style.display = 'block';
   });
 }
     
@@ -564,6 +573,7 @@
 
       if (section === "stats") {
         setDefaultDates();
+        // Cargar estadísticas automáticamente al mostrar la sección
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
@@ -588,7 +598,7 @@
             <td>${agent.role || 'Admin'}</td>
             <td style="display: flex; gap: 5px;">
               <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
-              <button class="騁delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+              <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
             </td>
           `;
           table.appendChild(row);
@@ -643,46 +653,49 @@
     }
 
     function setQuickRange() {
-      const now = new Date();
-      const fromDateInput = document.getElementById("fromDate");
-      const toDateInput = document.getElementById("toDate");
-      const fromTimeInput = document.getElementById("fromTime");
-      const toTimeInput = document.getElementById("toTime");
-      const value = document.getElementById("quickRange").value;
+  const now = new Date();
+  const fromDateInput = document.getElementById("fromDate");
+  const toDateInput = document.getElementById("toDate");
+  const fromTimeInput = document.getElementById("fromTime");
+  const toTimeInput = document.getElementById("toTime");
+  const value = document.getElementById("quickRange").value;
 
-      let start = new Date();
-      let end = new Date();
+  let start = new Date();
+  let end = new Date();
 
-      switch (value) {
-        case "today":
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-          break;
-        case "yesterday":
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
-          break;
-        case "week":
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6); // 7 días incluyendo hoy
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-          break;
-        case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-          break;
-        case "lastMonth":
-          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-          break;
-      }
+  switch (value) {
+    case "today":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+      break;
+    case "yesterday":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
+      break;
+    case "week":
+      const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1;
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+      break;
+    case "month":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+      break;
+    case "lastMonth":
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+      end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
+      break;
+  }
 
-      fromDateInput.value = start.toISOString().split('T')[0];
-      fromTimeInput.value = '00:00';
-      toDateInput.value = end.toISOString().split('T')[0];
-      toTimeInput.value = '23:59';
+  fromDateInput.value = start.toISOString().split('T')[0];
+  fromTimeInput.value = '00:00';
+  toDateInput.value = end.toISOString().split('T')[0];
+  toTimeInput.value = '23:59';
 
-      loadStats(start.toISOString(), end.toISOString());
-    }
+  const from = start.toISOString();
+  const to = end.toISOString();
+  loadStats(from, to);
+}
 
     function confirmAndLoadStats() {
   const fromDate = document.getElementById("fromDate").value;
@@ -695,131 +708,315 @@
     return;
   }
 
-  // Crear fechas en UTC y luego ajustarlas a la zona horaria del servidor
-  const fromUTC = new Date(`${fromDate}T${fromTime}:00Z`); // Z asegura UTC
-  const toUTC = new Date(`${toDate}T${toTime}:59Z`);
+  const from = new Date(`${fromDate}T${fromTime}:00Z`); // UTC directo
+  const to = new Date(`${toDate}T${toTime}:00Z`); // UTC directo
 
-  // Convertir a la zona horaria del servidor
-  const from = fromUTC.toLocaleString('en-US', { timeZone: systemTimezone });
-  const to = toUTC.toLocaleString('en-US', { timeZone: systemTimezone });
-
-  loadStats(new Date(from).toISOString(), new Date(to).toISOString());
+  loadStats(from.toISOString(), to.toISOString());
 }
     
     function loadStats(from, to) {
-      fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-        credentials: 'include'
-      })
-      .then(res => {
-        if (!res.ok) throw new Error(`Error al cargar stats: ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        document.getElementById("statMessages").textContent = data.messages || 0;
-        document.getElementById("statCargar").textContent = data.cargarFichas || 0;
-        document.getElementById("statRetiro").textContent = data.retiros || 0;
-        document.getElementById("statImagenes").textContent = data.imagenes || 0;
-      })
-      .catch(err => {
-        console.error("Error al cargar estadísticas de interacciones:", err);
-        document.getElementById("statMessages").textContent = 0;
-        document.getElementById("statCargar").textContent = 0;
-        document.getElementById("statRetiro").textContent = 0;
-        document.getElementById("statImagenes").textContent = 0;
-      });
+  // Cargar estadísticas de interacciones
+  fetch(`https://mi-chat-9uti.onrender.com/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+    credentials: 'include'
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`Error al cargar stats: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById("statMessages").textContent = data.messages || 0;
+      document.getElementById("statCargar").textContent = data.cargarFichas || 0;
+      document.getElementById("statRetiro").textContent = data.retiros || 0;
+      document.getElementById("statImagenes").textContent = data.imagenes || 0;
+    })
+    .catch(err => {
+      console.error("Error al cargar estadísticas de interacciones:", err);
+      document.getElementById("statMessages").textContent = 0;
+      document.getElementById("statCargar").textContent = 0;
+      document.getElementById("statRetiro").textContent = 0;
+      document.getElementById("statImagenes").textContent = 0;
+    });
 
-      fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-        credentials: 'include'
-      })
-      .then(res => {
-        if (!res.ok) throw new Error(`Error al cargar stats-agents: ${res.status}`);
-        return res.json();
-      })
-      .then(agentData => {
-        const filteredData = agentData
-          .filter(agent => agent.role !== 'SuperAdmin')
-          .sort((a, b) => b.finalizados - a.finalizados);
+  // Cargar estadísticas de agentes para el gráfico
+  fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+    credentials: 'include'
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`Error al cargar stats-agents: ${res.status}`);
+      return res.json();
+    })
+    .then(agentData => {
+      const filteredData = agentData
+        .filter(agent => agent.role !== 'SuperAdmin')
+        .sort((a, b) => b.finalizados - a.finalizados);
 
-        const labels = filteredData.length > 0 ? filteredData.map(agent => agent.name || agent.username) : ['Sin datos'];
-        const values = filteredData.length > 0 ? filteredData.map(agent => agent.finalizados || 0) : [0];
+      const labels = filteredData.length > 0 ? filteredData.map(agent => agent.name || agent.username) : ['Sin datos'];
+      const values = filteredData.length > 0 ? filteredData.map(agent => agent.finalizados || 0) : [0];
 
-        const ctx = document.getElementById('chartAgentes').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
+      const ctx = document.getElementById('chartAgentes').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
 
-        chartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Chats Finalizados',
-              data: values,
-              backgroundColor: values.length > 0 ? values.map((_, index) => 
-                index === 0 ? '#FFD700' :
-                index === 1 ? '#C0C0C0' :
-                index === 2 ? '#CD7F32' : '#1a1a1a'
-              ) : ['#1a1a1a'],
-              borderColor: '#FF3B00',
-              borderWidth: 2,
-              borderRadius: 6,
-              hoverBackgroundColor: '#2a2a2a'
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: '#FF3B00',
-                titleColor: '#fff',
-                bodyColor: '#fff',
-                callbacks: {
-                  label: function(context) {
-                    const position = context.dataIndex + 1;
-                    return `Posición #${position} - ${context.formattedValue} chats`;
-                  }
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Chats Finalizados',
+            data: values,
+            backgroundColor: values.length > 0 ? values.map((_, index) => 
+              index === 0 ? '#FFD700' :
+              index === 1 ? '#C0C0C0' :
+              index === 2 ? '#CD7F32' : '#1a1a1a'
+            ) : ['#1a1a1a'],
+            borderColor: '#FF3B00',
+            borderWidth: 2,
+            borderRadius: 6,
+            hoverBackgroundColor: '#2a2a2a'
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#FF3B00',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              callbacks: {
+                label: function(context) {
+                  const position = context.dataIndex + 1;
+                  return `Posición #${position} - ${context.formattedValue} chats`;
                 }
-              },
-              datalabels: {
-                anchor: 'end',
-                align: 'right',
-                offset: 4,
-                color: '#fff',
-                font: { size: 10, weight: 'bold' },
-                formatter: (value, context) => `#${context.dataIndex + 1} - ${value}`
               }
             },
-            scales: {
-              x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
-              y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              offset: 4,
+              color: '#fff',
+              font: { size: 10, weight: 'bold' },
+              formatter: (value, context) => `#${context.dataIndex + 1} - ${value}`
             }
-          }
-        });
-      })
-      .catch(err => {
-        console.error("Error al cargar estadísticas de agentes:", err);
-        const ctx = document.getElementById('chartAgentes').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: ['Sin datos'],
-            datasets: [{ label: 'Chats Finalizados', data: [0], backgroundColor: '#1a1a1a', borderColor: '#FF3B00', borderWidth: 2, borderRadius: 6 }]
           },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false }, datalabels: { display: false } },
-            scales: {
-              x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
-              y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
+          scales: {
+            x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
+            y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
+          }
+        }
+      });
+    })
+    .catch(err => {
+      console.error("Error al cargar estadísticas de agentes:", err);
+      const ctx = document.getElementById('chartAgentes').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Sin datos'],
+          datasets: [{ label: 'Chats Finalizados', data: [0], backgroundColor: '#1a1a1a', borderColor: '#FF3B00', borderWidth: 2, borderRadius: 6 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: {
+            x: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } },
+            y: { grid: { color: '#333' }, ticks: { color: '#fff', font: { size: 10 } } }
+          }
+        }
+      });
+    });
+}
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch stats: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+  document.getElementById("statMessages").textContent.Concurrent = data.messages || 0;
+  document.getElementById("statCargar").textContent = data.cargarFichas || 0;
+  document.getElementById("statRetiro").textContent = data.retiros || 0;
+  document.getElementById("statImagenes").textContent = data.imagenes || 0;
+})
+    .catch(err => console.error("Error al cargar estadísticas de interacciones:", err));
+
+  fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
+    credentials: 'include'
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch stats-agents: ${res.status}`);
+      return res.json();
+    })
+    .then(agentData => {
+      console.log('Datos de agentes recibidos:', agentData);
+
+      const filteredData = agentData
+        .filter(agent => agent.role !== 'SuperAdmin')
+        .sort((a, b) => b.finalizados - a.finalizados);
+
+      const labels = filteredData.map(agent => agent.name || agent.username);
+      const values = filteredData.map(agent => agent.finalizados || 0);
+
+      if (values.every(v => v === 0)) {
+        console.log('No hay datos de agentes para mostrar en el gráfico.');
+      }
+
+      const ctx = document.getElementById('chartAgentes').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels.length > 0 ? labels : ["Sin datos"],
+          datasets: [{
+            label: 'Chats Finalizados',
+            data: values.length > 0 ? values : [0],
+            backgroundColor: values.length > 0 ? values.map((_, index) => 
+              index === 0 ? '#FFD700' :
+              index === 1 ? '#C0C0C0' :
+              index === 2 ? '#CD7F32' :
+              '#1a1a1a'
+            ) : ['#1a1a1a'],
+            borderColor: '#FF3B00',
+            borderWidth: 2,
+            borderRadius: 6,
+            hoverBackgroundColor: '#2a2a2a'
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 1000,
+            easing: 'easeInOutQuart'
+          },
+          layout: {
+            padding: {
+              left: 5,
+              right: 20,
+              top: 5,
+              bottom: 5
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#FF3B00',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              callbacks: {
+                label: function(context) {
+                  const position = context.dataIndex + 1;
+                  return `Posición #${position} - ${context.formattedValue} chats`;
+                }
+              }
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              offset: 4,
+              color: '#fff',
+              font: {
+                size: 10,
+                weight: 'bold'
+              },
+              formatter: (value, context) => {
+                const position = context.dataIndex + 1;
+                return `#${position} - ${value}`;
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: '#333' },
+              ticks: { 
+                color: '#fff',
+                font: { size: 10 }
+              }
+            },
+            y: {
+              grid: { color: '#333' },
+              ticks: { 
+                color: '#fff',
+                callback: function(value, index) {
+                  return `${labels[index] || "Sin datos"}`;
+                },
+                font: { size: 10 }
+              }
             }
           }
-        });
+        }
       });
-    }
+    })
+    .catch(err => {
+      console.error("Error al cargar estadísticas de agentes:", err);
+      const labels = allAgents.length > 0 ? allAgents : ["No hay agentes registrados"];
+      const values = labels.map(() => 0);
+
+      const ctx = document.getElementById('chartAgentes').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Chats Finalizados',
+            data: values,
+            backgroundColor: '#1a1a1a',
+            borderColor: '#FF3B00',
+            borderWidth: 2,
+            borderRadius: 6,
+            hoverBackgroundColor: '#2a2a2a'
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#FF3B00',
+              titleColor: '#fff',
+              bodyColor: '#fff'
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              offset: 4,
+              color: '#fff',
+              font: {
+                size: 10,
+                weight: 'bold'
+              },
+              formatter: (value) => value
+            }
+          },
+          scales: {
+            x: { 
+              beginAtZero: true, 
+              grid: { color: '#333' }, 
+              ticks: { 
+                color: '#fff',
+                font: { size: 10 }
+              } 
+            },
+            y: { 
+              grid: { color: '#333' }, 
+              ticks: { 
+                color: '#fff',
+                font: { size: 10 }
+              } 
+            }
+          }
+        }
+      });
+    });
+}
 
     let selectedUsernameToDelete = null;
     let selectedUsernameToEdit = null;
@@ -895,21 +1092,22 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      loadTimezoneFromServer().then(() => {
-        const userInput = document.getElementById('superUsername');
-        const passInput = document.getElementById('superPassword');
+  loadTimezoneFromServer().then(() => {
+    const userInput = document.getElementById('superUsername');
+    const passInput = document.getElementById('superPassword');
 
-        [userInput, passInput].forEach(input => {
-          input.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-              loginSuperAdmin();
-            }
-          });
-        });
+    [userInput, passInput].forEach(input => {
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          loginSuperAdmin();
+        }
       });
     });
+  });
+});
   </script>
 
+  <!-- POPUP CONFIRMAR ELIMINACIÓN -->
   <div id="deletePopup" class="popup-overlay">
     <div class="popup-box">
       <div class="popup-icon">⚠️</div>
@@ -921,6 +1119,7 @@
     </div>
   </div>
 
+  <!-- POPUP EDITAR AGENTE -->
   <div id="editPopup" class="popup-overlay">
     <div class="popup-box">
       <div class="popup-icon">✏️</div>
@@ -937,5 +1136,5 @@
       </div>
     </div>
   </div>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'929bd9834ec544ef',t:'MTc0MzU0OTk2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
