@@ -428,7 +428,10 @@
       </select>
 
 <script>
-document.getElementById("periodFilter").addEventListener("change", () => {
+document.addEventListener("DOMContentLoaded", function() {
+  const filter = document.getElementById("periodFilter");
+  if (!filter) return;
+  filter.addEventListener("change", () => {
   const period = document.getElementById("periodFilter").value;
   const today = new Date();
   let from = new Date(today);
@@ -458,10 +461,10 @@ document.getElementById("periodFilter").addEventListener("change", () => {
   document.getElementById("dailyFrom").value = fromISO;
   document.getElementById("dailyTo").value = toISO;
 
-  // Llama automáticamente a loadPerformance() cuando cambia el período
-  if (typeof loadPerformance === "function") {
-    loadPerformance();
-  }
+    if (typeof loadPerformance === "function") {
+      loadPerformance();
+    }
+  });
 });
 </script>
 
@@ -512,7 +515,10 @@ document.getElementById("periodFilter").addEventListener("change", () => {
         </select>
 
 <script>
-document.getElementById("periodFilter").addEventListener("change", () => {
+document.addEventListener("DOMContentLoaded", function() {
+  const filter = document.getElementById("periodFilter");
+  if (!filter) return;
+  filter.addEventListener("change", () => {
   const period = document.getElementById("periodFilter").value;
   const today = new Date();
   let from = new Date(today);
@@ -542,10 +548,10 @@ document.getElementById("periodFilter").addEventListener("change", () => {
   document.getElementById("dailyFrom").value = fromISO;
   document.getElementById("dailyTo").value = toISO;
 
-  // Llama automáticamente a loadPerformance() cuando cambia el período
-  if (typeof loadPerformance === "function") {
-    loadPerformance();
-  }
+    if (typeof loadPerformance === "function") {
+      loadPerformance();
+    }
+  });
 });
 </script>
 
@@ -584,7 +590,10 @@ document.getElementById("periodFilter").addEventListener("change", () => {
           </select>
 
 <script>
-document.getElementById("periodFilter").addEventListener("change", () => {
+document.addEventListener("DOMContentLoaded", function() {
+  const filter = document.getElementById("periodFilter");
+  if (!filter) return;
+  filter.addEventListener("change", () => {
   const period = document.getElementById("periodFilter").value;
   const today = new Date();
   let from = new Date(today);
@@ -614,10 +623,10 @@ document.getElementById("periodFilter").addEventListener("change", () => {
   document.getElementById("dailyFrom").value = fromISO;
   document.getElementById("dailyTo").value = toISO;
 
-  // Llama automáticamente a loadPerformance() cuando cambia el período
-  if (typeof loadPerformance === "function") {
-    loadPerformance();
-  }
+    if (typeof loadPerformance === "function") {
+      loadPerformance();
+    }
+  });
 });
 </script>
 
@@ -1226,7 +1235,7 @@ function groupDataByPeriod(logs, period) {
 }
         if (!grouped[periodKey]) grouped[periodKey] = {};
         grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + log.count;
-      ;
+      });
       return grouped;
     
     let selectedUsernameToDelete = null;
