@@ -361,7 +361,7 @@ io.on('connection', (socket) => {
     userId: data.userId,
     sender: 'Bot',
     message: `
-      <div style="font-size:11px;font-family:'Segoe UI',sans-serif;color:#222;line-height:1.1;margin:0;padding:0;">
+      <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
         <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
         👉👉👉<br>
         <strong>USUARIO:</strong><br>
@@ -374,6 +374,8 @@ io.on('connection', (socket) => {
     timestamp: getTimestamp(),
     username: username
   };
+  // ...
+}
   await new ChatMessage(retiroMsg).save();
   io.emit('user list', await getAllChatsSorted());
   if (userSocket) userSocket.emit('chat message', retiroMsg);
