@@ -440,89 +440,7 @@
         </thead>
         <tbody id="agentsTable"></tbody>
       </table>
-<canvas id="miniChart" height="100" style="margin-top: 30px;"></canvas>
-<script>
-function renderMiniChart(data) {
-  const resumen = {};
-  data.forEach(log => {
-    resumen[log.agent] = (resumen[log.agent] || 0) + 1;
-  });
 
-  const labels = Object.keys(resumen);
-  const values = Object.values(resumen);
-
-  if (window.miniChartInstance) window.miniChartInstance.destroy();
-  const ctx = document.getElementById("miniChart").getContext("2d");
-  window.miniChartInstance = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Cierres por agente",
-        data: values,
-        backgroundColor: "rgba(0, 200, 255, 0.6)"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      animation: {
-        duration: 800,
-        easing: 'easeOutBounce'
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0
-          }
-        }
-      }
-    }
-  });
-}
-
-// Interceptamos loadPerformance para actualizar también el mini gráfico
-if (typeof originalLoadPerformance === 'undefined') {
-  const originalLoadPerformance = loadPerformance;
-}
-loadPerformance = function() {
-  const from = document.getElementById("dailyFrom").value;
-  const to = document.getElementById("dailyTo").value;
-
-  if (!from || !to) {
-    alert("Seleccioná un rango de fechas.");
-    return;
-  }
-
-  fetch(`/performance-log?from=${from}T00:00:00.000Z&to=${to}T23:59:59.999Z`)
-    .then(res => res.json())
-    .then(data => {
-      const grouped = {};
-      data.forEach(log => {
-        const key = log.agent;
-        grouped[key] = (grouped[key] || 0) + 1;
-      });
-
-      const tbody = document.getElementById("performanceTable");
-      tbody.innerHTML = "";
-
-      Object.entries(grouped).forEach(([agent, count]) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td style="padding: 8px;">${from} - ${to}</td>
-          <td style="padding: 8px;">${agent}</td>
-          <td style="padding: 8px;">${count}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      renderMiniChart(data); // 👉 actualizamos el gráfico mini
-    });
-}
-</script>
 
     </div>
 
@@ -595,87 +513,7 @@ loadPerformance = function() {
           </thead>
           <tbody id="performanceTable"></tbody>
         </table>
-<canvas id="miniChart" height="100" style="margin-top: 30px;"></canvas>
-<script>
-function renderMiniChart(data) {
-  const resumen = {};
-  data.forEach(log => {
-    resumen[log.agent] = (resumen[log.agent] || 0) + 1;
-  });
 
-  const labels = Object.keys(resumen);
-  const values = Object.values(resumen);
-
-  if (window.miniChartInstance) window.miniChartInstance.destroy();
-  const ctx = document.getElementById("miniChart").getContext("2d");
-  window.miniChartInstance = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Cierres por agente",
-        data: values,
-        backgroundColor: "rgba(0, 200, 255, 0.6)"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      animation: {
-        duration: 800,
-        easing: 'easeOutBounce'
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0
-          }
-        }
-      }
-    }
-  });
-}
-
-// Interceptamos loadPerformance para actualizar también el mini gráfico
-const originalLoadPerformance = loadPerformance;
-loadPerformance = function() {
-  const from = document.getElementById("dailyFrom").value;
-  const to = document.getElementById("dailyTo").value;
-
-  if (!from || !to) {
-    alert("Seleccioná un rango de fechas.");
-    return;
-  }
-
-  fetch(`/performance-log?from=${from}T00:00:00.000Z&to=${to}T23:59:59.999Z`)
-    .then(res => res.json())
-    .then(data => {
-      const grouped = {};
-      data.forEach(log => {
-        const key = log.agent;
-        grouped[key] = (grouped[key] || 0) + 1;
-      });
-
-      const tbody = document.getElementById("performanceTable");
-      tbody.innerHTML = "";
-
-      Object.entries(grouped).forEach(([agent, count]) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td style="padding: 8px;">${from} - ${to}</td>
-          <td style="padding: 8px;">${agent}</td>
-          <td style="padding: 8px;">${count}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      renderMiniChart(data); // 👉 actualizamos el gráfico mini
-    });
-}
-</script>
 
       </div>
     </div>
@@ -973,7 +811,7 @@ loadPerformance = function() {
 const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
-    
+
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
 
