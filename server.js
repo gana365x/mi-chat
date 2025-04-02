@@ -10,7 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-const cors = require("cors"); // Agregado
+const cors = require("cors");
 
 console.log("MONGO_URI:", process.env.MONGO_URI);
 console.log("SECRET_KEY:", process.env.SECRET_KEY);
@@ -19,20 +19,17 @@ console.log("PORT:", process.env.PORT);
 const app = express();
 const server = http.createServer(app);
 
-// Definimos los orígenes permitidos
 const allowedOrigins = [
   "http://localhost:3000",
   "https://mi-chat-gln5.vercel.app",
-  "https://mi-chat-9uti.onrender.com" // Agrega el dominio donde se ejecuta superadmin.html
+  "https://mi-chat-9uti.onrender.com"
 ];
 
-// Configuración de CORS para Express
 app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
 
-// Configuración de Socket.IO con CORS
 const io = socketIo(server, {
   cors: {
     origin: allowedOrigins,
@@ -109,8 +106,8 @@ const agentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   name: String,
   password: String,
-  type: { type: String }, // Campo antiguo, mantenido por compatibilidad
-  role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' } // Campo actualizado
+  type: { type: String },
+  role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' }
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
@@ -128,6 +125,7 @@ const performanceSchema = new mongoose.Schema({
 });
 
 const Performance = mongoose.model('Performance', performanceSchema);
+
 const performanceLogSchema = new mongoose.Schema({
   agent: { type: String, required: true },
   timestamp: { type: Date, default: Date.now }
@@ -344,7 +342,7 @@ io.on('connection', (socket) => {
       const botMsg = {
         userId: data.userId,
         sender: 'Bot',
-        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULAR CTA BANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
+        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULARctaBANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
         timestamp: getTimestamp(),
         username: username
       };
@@ -484,54 +482,54 @@ io.on('connection', (socket) => {
   });
 
   socket.on('close chat', async ({ userId, adminUsername }) => {
-  const userSocket = userSessions.get(userId)?.socket;
-  if (userSocket) {
-    userSocket.emit('chat closed', { userId });
-  }
-
-  if (adminUsername) {
-    await incrementPerformance(adminUsername);
-    await PerformanceLog.create({ agent: adminUsername });
-  }
-
-  if (userSessions.has(userId)) {
-    const session = userSessions.get(userId);
-    userSessions.set(userId, { ...session, socket: null });
-  }
-
-  let username = userSessions.get(userId)?.username || 'Usuario';
-  try {
-    const savedName = await UserName.findOne({ userId });
-    if (savedName) {
-      username = savedName.name;
+    const userSocket = userSessions.get(userId)?.socket;
+    if (userSocket) {
+      userSocket.emit('chat closed', { userId });
     }
-  } catch (e) {
-    console.error("❌ Error obteniendo nombre del usuario:", e.message);
-  }
 
-  const closeMsg = {
-    userId,
-    sender: 'System',
-    message: '💬 Chat cerrado',
-    timestamp: getTimestamp(),
-    status: 'closed',
-    adminUsername: adminUsername,
-    username: username
-  };
-  await new ChatMessage(closeMsg).save();
-
-  if (userSocket) {
-    userSocket.emit('chat message', closeMsg);
-  }
-
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === userId) {
-      io.to(adminSocketId).emit('admin message', closeMsg);
+    if (adminUsername) {
+      await incrementPerformance(adminUsername);
+      await PerformanceLog.create({ agent: adminUsername });
     }
-  }
 
-  io.emit('user list', await getAllChatsSorted());
-});
+    if (userSessions.has(userId)) {
+      const session = userSessions.get(userId);
+      userSessions.set(userId, { ...session, socket: null });
+    }
+
+    let username = userSessions.get(userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+    }
+
+    const closeMsg = {
+      userId,
+      sender: 'System',
+      message: '💬 Chat cerrado',
+      timestamp: getTimestamp(),
+      status: 'closed',
+      adminUsername: adminUsername,
+      username: username
+    };
+    await new ChatMessage(closeMsg).save();
+
+    if (userSocket) {
+      userSocket.emit('chat message', closeMsg);
+    }
+
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === userId) {
+        io.to(adminSocketId).emit('admin message', closeMsg);
+      }
+    }
+
+    io.emit('user list', await getAllChatsSorted());
+  });
 
   socket.on('disconnect', async () => {
     adminSubscriptions.delete(socket.id);
@@ -545,7 +543,6 @@ io.on('connection', (socket) => {
   });
 });
 
-
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -555,9 +552,9 @@ app.post('/superadmin-login', async (req, res) => {
 
   try {
     const agent = await Agent.findOne({ 
-  username, 
-  $or: [{ role: 'SuperAdmin' }, { type: 'superadmin' }]
-});
+      username, 
+      $or: [{ role: 'SuperAdmin' }, { type: 'superadmin' }]
+    });
     if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
@@ -616,7 +613,7 @@ app.get('/agents', async (req, res) => {
     const formattedAgents = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
-      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin') // Mapea type a role si no existe role
+      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin')
     }));
     res.json(formattedAgents);
   } catch (err) {
@@ -683,7 +680,6 @@ app.put('/agents/:username', async (req, res) => {
   }
 });
 
-// Aquí agregas el nuevo endpoint
 app.post('/agents', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
@@ -1005,11 +1001,11 @@ app.get('/stats-agents', async (req, res) => {
     const agentStatsMap = {};
     closedMessages.forEach(msg => {
       if (msg.adminUsername) {
-  agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
-}
+        agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
+      }
     });
 
-    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name'); // Solo Agents
+    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name');
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
@@ -1021,11 +1017,6 @@ app.get('/stats-agents', async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-
-server.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
-
 
 app.post('/get-performance-logs', async (req, res) => {
   const { from, to } = req.body;
@@ -1054,59 +1045,6 @@ app.post('/get-performance-logs', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error al obtener logs' });
   }
 });
-
-
-
-  } catch (e) {
-    console.error("❌ Error en /get-daily-performance", e);
-    res.status(500).json({ success: false });
-  }
-});
-  const { from, to } = req.body;
-  try {
-    const logs = await PerformanceLog.aggregate([
-      {
-        $match: {
-          timestamp: {
-            $gte: new Date(from),
-            $lte: new Date(to)
-          }
-        }
-      },
-      {
-        $group: {
-          _id: {
-            day: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
-            agent: "$agent"
-          },
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { "_id.day": -1, count: -1 }
-      }
-    ]);
-
-    const formatted = logs.map(l => ({
-      date: l._id.day,
-      agent: l._id.agent,
-      count: l.count
-    }));
-
-    res.json({ success: true, logs: formatted });
-  } catch (e) {
-    console.error("❌ Error en /get-daily-performance", e);
-    res.status(500).json({ success: false });
-  }
-});
-
-
-} catch (e) {
-    console.error("❌ Error en /get-daily-performance", e);
-    res.status(500).json({ success: false });
-  }
-});
-
 
 app.post('/get-daily-performance', async (req, res) => {
   const { from, to } = req.body;
@@ -1150,4 +1088,8 @@ app.post('/get-daily-performance', async (req, res) => {
     console.error("❌ Error en /get-daily-performance", e);
     res.status(500).json({ success: false });
   }
+});
+
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
