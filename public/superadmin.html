@@ -538,6 +538,23 @@
   <h2>🧪 Panel de Pruebas</h2>
   <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
 
+  <!-- Filtros de rendimiento -->
+  <div class="filter-container">
+    <select id="performanceFilter" onchange="applyPerformanceFilter()">
+      <option value="today">Hoy</option>
+      <option value="yesterday">Ayer</option>
+      <option value="week">Esta semana</option>
+      <option value="month">Este mes</option>
+      <option value="lastMonth">Mes anterior</option>
+      <option value="custom">Personalizado</option>
+    </select>
+    <div id="customDateRange" style="display: none; margin-top: 10px;">
+      <label>De: <input type="date" id="customFromDate"></label>
+      <label>A: <input type="date" id="customToDate"></label>
+      <button onclick="applyCustomDateRange()">Aplicar</button>
+    </div>
+  </div>
+
   <!-- KPIs destacados -->
   <div class="kpi-container">
     <div class="kpi-box">
@@ -625,8 +642,102 @@
   document.addEventListener("DOMContentLoaded", loadPerformanceData);
 </script>
 
+<script>
+  function applyPerformanceFilter() {
+    const filter = document.getElementById("performanceFilter").value;
+    const today = new Date();
+    let from, to;
+
+    switch (filter) {
+      case "today":
+        from = new Date(today.setHours(0, 0, 0, 0));
+        to = new Date(today.setHours(23, 59, 59, 999));
+        break;
+      case "yesterday":
+        from = new Date(today.setDate(today.getDate() - 1));
+        from.setHours(0, 0, 0, 0);
+        to = new Date(today.setHours(23, 59, 59, 999));
+        break;
+      case "week":
+        from = new Date(today.setDate(today.getDate() - today.getDay()));
+        from.setHours(0, 0, 0, 0);
+        to = new Date();
+        break;
+      case "month":
+        from = new Date(today.getFullYear(), today.getMonth(), 1);
+        to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        break;
+      case "lastMonth":
+        from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        to = new Date(today.getFullYear(), today.getMonth(), 0);
+        break;
+      case "custom":
+        document.getElementById("customDateRange").style.display = "block";
+        return;
+    }
+
+    document.getElementById("customDateRange").style.display = "none";
+    loadPerformanceData(from.toISOString(), to.toISOString());
+  }
+
+  function applyCustomDateRange() {
+    const from = document.getElementById("customFromDate").value;
+    const to = document.getElementById("customToDate").value;
+
+    if (!from || !to) {
+      alert("Por favor selecciona un rango de fechas válido.");
+      return;
+    }
+
+    loadPerformanceData(new Date(from).toISOString(), new Date(to).toISOString());
+  }
+
+  function loadPerformanceData(from, to) {
+    fetch(`https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}`, {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+        // Actualizar KPIs y tabla
+        const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
+        document.getElementById("bestAgent").textContent = bestAgent.name;
+        document.getElementById("totalClosures").textContent = data.totalClosures;
+        document.getElementById("totalInteractions").textContent = data.totalInteractions;
+
+        const ctx = document.getElementById("performanceChart").getContext("2d");
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: data.agents.map(agent => agent.name),
+            datasets: [{
+              label: "Cierres",
+              data: data.agents.map(agent => agent.closures),
+              backgroundColor: "rgba(255, 99, 132, 0.7)"
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+
+        const tableBody = document.querySelector("#performanceTable tbody");
+        tableBody.innerHTML = data.agents.map(agent => `
+          <tr>
+            <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
+            <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
+            <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
+          </tr>
+        `).join("");
+      })
+      .catch(err => console.error("Error al cargar datos de rendimiento:", err));
+  }
+</script>
+
     <!-- Sección editar -->
-    <div id="section-customize" style="display:none;">
+    <div id="section-customize" style="display:none;"></div>
       <h2>🎨 Personalizar Estilo</h2>
       <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
       <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
@@ -668,7 +779,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <!-- Socket.IO -->
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
-
   <script>
     Chart.register(ChartDataLabels);
 
