@@ -1059,6 +1059,48 @@ app.post('/get-performance-logs', async (req, res) => {
 app.post('/get-daily-performance', async (req, res) => {
   const { from, to } = req.body;
   try {
+    const fromDate = new Date(from);
+    fromDate.setHours(0, 0, 0, 0);
+    const toDate = new Date(to);
+    toDate.setHours(23, 59, 59, 999);
+
+    const logs = await PerformanceLog.aggregate([
+      {
+        $match: {
+          timestamp: {
+            $gte: fromDate,
+            $lte: toDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            day: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+            agent: "$agent"
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id.day": -1, count: -1 }
+      }
+    ]);
+
+    const formatted = logs.map(l => ({
+      date: l._id.day,
+      agent: l._id.agent,
+      count: l.count
+    }));
+
+    res.json({ success: true, logs: formatted });
+  } catch (e) {
+    console.error("❌ Error en /get-daily-performance", e);
+    res.status(500).json({ success: false });
+  }
+});
+  const { from, to } = req.body;
+  try {
     const logs = await PerformanceLog.aggregate([
       {
         $match: {
