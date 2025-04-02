@@ -508,41 +508,53 @@
     const socket = io('https://mi-chat-9uti.onrender.com');
 
     function loginSuperAdmin() {
-      const username = document.getElementById('superUsername').value.trim();
-      const password = document.getElementById('superPassword').value.trim();
-      const loginError = document.getElementById('loginError');
+  const username = document.getElementById('superUsername').value.trim();
+  const password = document.getElementById('superPassword').value.trim();
+  const loginError = document.getElementById('loginError');
 
-      if (!username || !password) {
-        loginError.textContent = "Por favor, completa ambos campos";
-        loginError.style.display = 'block';
-        return;
-      }
+  if (!username || !password) {
+    loginError.textContent = "Por favor, completa ambos campos";
+    loginError.style.display = 'block';
+    return;
+  }
 
-      fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({ username, password })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          document.getElementById('loginBox').style.display = 'none';
-          document.getElementById('mainBox').style.display = 'block';
-          showSection('home');
-          loadAgents();
-        } else {
-          throw new Error(data.message || 'Error de autenticación');
-        }
-      })
-      .catch(error => {
-        loginError.textContent = error.message || 'Error al intentar iniciar sesión';
-        loginError.style.display = 'block';
-      });
+  fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ username, password })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
     }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      // Verificar que el token esté en las cookies
+      const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+      if (!token) {
+        throw new Error('No se recibió el token de autenticación');
+      }
+      console.log('Login exitoso, token recibido:', token);
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('mainBox').style.display = 'block';
+      showSection('home');
+      loadAgents();
+    } else {
+      throw new Error(data.message || 'Error de autenticación');
+    }
+  })
+  .catch(error => {
+    console.error('Error en login:', error);
+    loginError.textContent = error.message || 'Error al intentar iniciar sesión';
+    loginError.style.display = 'block';
+  });
+}
     
     function showSection(section) {
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
