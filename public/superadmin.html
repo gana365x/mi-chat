@@ -426,6 +426,37 @@
     .table-container td {
       color: var(--text-light);
     }
+
+    /* Compact layout for custom date range */
+    #customDateRange {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #customDateRange label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    #customDateRange input[type="date"] {
+      height: 30px;
+      padding: 5px;
+      border-radius: var(--border-radius-sm);
+      border: 2px solid var(--primary-color);
+      background: var(--bg-input);
+      color: var(--text-light);
+      outline: none;
+    }
+
+    #customDateRange input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      filter: invert(1);
+    }
   </style>
 </head>
 <body>
@@ -548,9 +579,15 @@
       <option value="lastMonth">Mes anterior</option>
       <option value="custom">Personalizado</option>
     </select>
-    <div id="customDateRange" style="display: none; margin-top: 10px;">
-      <label>De: <input type="date" id="customFromDate"></label>
-      <label>A: <input type="date" id="customToDate"></label>
+    <div id="customDateRange" style="display: none;">
+      <label>
+        <span>De:</span>
+        <input type="date" id="customFromDate">
+      </label>
+      <label>
+        <span>A:</span>
+        <input type="date" id="customToDate">
+      </label>
       <button onclick="applyCustomDateRange()">Aplicar</button>
     </div>
   </div>
@@ -672,7 +709,7 @@
         to = new Date(today.getFullYear(), today.getMonth(), 0);
         break;
       case "custom":
-        document.getElementById("customDateRange").style.display = "block";
+        document.getElementById("customDateRange").style.display = "flex";
         return;
     }
 
@@ -698,14 +735,15 @@
     })
       .then(res => res.json())
       .then(data => {
-        // Actualizar KPIs y tabla
-        const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
-        document.getElementById("bestAgent").textContent = bestAgent.name;
+        // Update KPIs
+        document.getElementById("bestAgent").textContent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 }).name;
         document.getElementById("totalClosures").textContent = data.totalClosures;
         document.getElementById("totalInteractions").textContent = data.totalInteractions;
 
+        // Update chart
         const ctx = document.getElementById("performanceChart").getContext("2d");
-        new Chart(ctx, {
+        if (window.performanceChart) window.performanceChart.destroy();
+        window.performanceChart = new Chart(ctx, {
           type: "bar",
           data: {
             labels: data.agents.map(agent => agent.name),
@@ -723,12 +761,13 @@
           }
         });
 
+        // Update table
         const tableBody = document.querySelector("#performanceTable tbody");
         tableBody.innerHTML = data.agents.map(agent => `
           <tr>
-            <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
-            <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
-            <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
+            <td>${agent.name}</td>
+            <td>${agent.closures}</td>
+            <td>${agent.interactions}</td>
           </tr>
         `).join("");
       })
