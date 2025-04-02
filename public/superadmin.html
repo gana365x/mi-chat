@@ -410,6 +410,7 @@
       <button onclick="showSection('agents')">👥 Agentes</button>
       <button onclick="showSection('stats')">📊 Estadísticas</button>
       <button onclick="showSection('customize')">🎨 Editar</button>
+<button onclick="showSection('pruebas')">🧪 Pruebas</button>
     </div>
 
     <!-- Sección Home -->
@@ -485,7 +486,16 @@
       </div>
     </div>
 
-    <!-- Sección editar -->
+    
+<!-- Sección de pruebas -->
+<div id="section-pruebas" style="display:none;">
+  <h2>🧪 Panel de Pruebas</h2>
+  <p>Aquí probaremos nuevas formas de visualizar el rendimiento de los agentes.</p>
+  <p style="color: gray;">(Esta sección está en desarrollo y puede cambiar)</p>
+</div>
+
+
+<!-- Sección editar -->
     <div id="section-customize" style="display:none;">
       <h2>🎨 Personalizar Estilo</h2>
       <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
@@ -554,6 +564,7 @@ const socket = io('https://mi-chat-9uti.onrender.com');
     }
 
     function showSection(section) {
+      document.getElementById("section-pruebas").style.display = (section === "pruebas") ? "block" : "none";
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
       document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
       document.getElementById("section-stats").style.display = (section === "stats") ? "block" : "none";
