@@ -426,6 +426,40 @@
         <option value="Admin">Admin</option>
         <option value="SuperAdmin">SuperAdmin</option>
       </select>
+<script>
+document.getElementById("periodFilter").addEventListener("change", () => {
+  const period = document.getElementById("periodFilter").value;
+  const today = new Date();
+  let from = new Date(today);
+  let to = new Date(today);
+
+  switch (period) {
+    case "today":
+      // ambos son hoy
+      break;
+    case "yesterday":
+      from.setDate(today.getDate() - 1);
+      to.setDate(today.getDate() - 1);
+      break;
+    case "week":
+      from.setDate(today.getDate() - 6); // incluye hoy
+      break;
+    case "month":
+      from = new Date(today.getFullYear(), today.getMonth(), 1);
+      break;
+    case "lastMonth":
+      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      to = new Date(today.getFullYear(), today.getMonth(), 0); // último día del mes anterior
+      break;
+  }
+
+  const toISO = to.toISOString().split("T")[0];
+  const fromISO = from.toISOString().split("T")[0];
+  document.getElementById("dailyFrom").value = fromISO;
+  document.getElementById("dailyTo").value = toISO;
+});
+</script>
+
       <button onclick="createAgent()">Crear</button>
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
@@ -470,6 +504,40 @@
           <option value="month">Este mes</option>
           <option value="lastMonth">Mes anterior</option>
         </select>
+<script>
+document.getElementById("periodFilter").addEventListener("change", () => {
+  const period = document.getElementById("periodFilter").value;
+  const today = new Date();
+  let from = new Date(today);
+  let to = new Date(today);
+
+  switch (period) {
+    case "today":
+      // ambos son hoy
+      break;
+    case "yesterday":
+      from.setDate(today.getDate() - 1);
+      to.setDate(today.getDate() - 1);
+      break;
+    case "week":
+      from.setDate(today.getDate() - 6); // incluye hoy
+      break;
+    case "month":
+      from = new Date(today.getFullYear(), today.getMonth(), 1);
+      break;
+    case "lastMonth":
+      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      to = new Date(today.getFullYear(), today.getMonth(), 0); // último día del mes anterior
+      break;
+  }
+
+  const toISO = to.toISOString().split("T")[0];
+  const fromISO = from.toISOString().split("T")[0];
+  document.getElementById("dailyFrom").value = fromISO;
+  document.getElementById("dailyTo").value = toISO;
+});
+</script>
+
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
       <div>
@@ -502,6 +570,40 @@
             <option value="month">Este mes</option>
             <option value="lastMonth">Mes anterior</option>
           </select>
+<script>
+document.getElementById("periodFilter").addEventListener("change", () => {
+  const period = document.getElementById("periodFilter").value;
+  const today = new Date();
+  let from = new Date(today);
+  let to = new Date(today);
+
+  switch (period) {
+    case "today":
+      // ambos son hoy
+      break;
+    case "yesterday":
+      from.setDate(today.getDate() - 1);
+      to.setDate(today.getDate() - 1);
+      break;
+    case "week":
+      from.setDate(today.getDate() - 6); // incluye hoy
+      break;
+    case "month":
+      from = new Date(today.getFullYear(), today.getMonth(), 1);
+      break;
+    case "lastMonth":
+      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      to = new Date(today.getFullYear(), today.getMonth(), 0); // último día del mes anterior
+      break;
+  }
+
+  const toISO = to.toISOString().split("T")[0];
+  const fromISO = from.toISOString().split("T")[0];
+  document.getElementById("dailyFrom").value = fromISO;
+  document.getElementById("dailyTo").value = toISO;
+});
+</script>
+
           <button onclick="loadPerformance()">Filtrar</button>
         </div>
         <table style="width:100%; border-collapse: collapse; background-color: #1a1a1a;">
@@ -812,7 +914,7 @@
 const from = new Date(`${fromDate}T${fromTime}:00Z`);
       const to = new Date(`${toDate}T${toTime}:00Z`);
       loadStats(from.toISOString(), to.toISOString());
-    
+  
     function loadStats(from, to) {
       console.log('Cargando estadísticas para:', { from, to });
 
