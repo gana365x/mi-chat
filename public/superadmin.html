@@ -683,58 +683,99 @@
 
 <script>
   function applyPerformanceFilter() {
-    const filter = document.getElementById("performanceFilter").value;
-    const today = new Date();
-    let from, to;
+  const filter = document.getElementById("performanceFilter").value;
+  const today = new Date();
+  let from, to;
 
-    switch (filter) {
-      case "today":
-        from = new Date(today.setHours(0, 0, 0, 0));
-        to = new Date(today.setHours(23, 59, 59, 999));
-        break;
-      case "yesterday":
-        from = new Date(today.setDate(today.getDate() - 1));
-        from.setHours(0, 0, 0, 0);
-        to = new Date(today.setHours(23, 59, 59, 999));
-        break;
-      case "week":
-        from = new Date(today.setDate(today.getDate() - today.getDay()));
-        from.setHours(0, 0, 0, 0);
-        to = new Date();
-        break;
-      case "month":
-        from = new Date(today.getFullYear(), today.getMonth(), 1);
-        to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        break;
-      case "lastMonth":
-        from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        to = new Date(today.getFullYear(), today.getMonth(), 0);
-        break;
-      case "custom":
-        document.getElementById("customDateRange").style.display = "block";
-        return;
-    }
-
-    document.getElementById("customDateRange").style.display = "none";
-    loadPerformanceData(from.toISOString(), to.toISOString());
+  switch (filter) {
+    case "today":
+      from = new Date(today.setHours(0, 0, 0, 0));
+      to = new Date(today.setHours(23, 59, 59, 999));
+      break;
+    case "yesterday":
+      from = new Date(today.setDate(today.getDate() - 1));
+      from.setHours(0, 0, 0, 0);
+      to = new Date(today.setHours(23, 59, 59, 999));
+      break;
+    case "week":
+      from = new Date(today.setDate(today.getDate() - today.getDay()));
+      from.setHours(0, 0, 0, 0);
+      to = new Date();
+      break;
+    case "month":
+      from = new Date(today.getFullYear(), today.getMonth(), 1);
+      to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      break;
+    case "lastMonth":
+      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      to = new Date(today.getFullYear(), today.getMonth(), 0);
+      break;
   }
 
-  function applyCustomDateRange() {
-    const from = document.getElementById("customFromDate").value;
-    const to = document.getElementById("customToDate").value;
+  document.getElementById("customFromDate").value = from.toISOString().split("T")[0];
+  document.getElementById("customToDate").value = to.toISOString().split("T")[0];
+  loadPerformanceData(from.toISOString(), to.toISOString());
+}
 
-    if (!from || !to) {
-      alert("Por favor selecciona un rango de fechas válido.");
-      return;
-    }
+function applyCustomDateRange() {
+  const from = document.getElementById("customFromDate").value;
+  const to = document.getElementById("customToDate").value;
 
-    loadPerformanceData(new Date(from).toISOString(), new Date(to).toISOString());
+  if (!from || !to) {
+    alert("Por favor selecciona un rango de fechas válido.");
+    return;
   }
 
-  function loadPerformanceData(from, to) {
-    fetch(`https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}`, {
-      credentials: "include"
+  const fromDate = new Date(from + "T00:00:00Z");
+  const toDate = new Date(to + "T23:59:59Z");
+  loadPerformanceData(fromDate.toISOString(), toDate.toISOString());
+}
+
+function loadPerformanceData(from, to) {
+  fetch(`https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}`, {
+    credentials: "include"
+  })
+    .then(res => res.json())
+    .then(data => {
+      // Actualizar KPIs
+      const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
+      document.getElementById("bestAgent").textContent = bestAgent.name;
+      document.getElementById("totalClosures").textContent = data.totalClosures;
+      document.getElementById("totalInteractions").textContent = data.totalInteractions;
+
+      // Actualizar gráfico
+      const ctx = document.getElementById("performanceChart").getContext("2d");
+      if (window.performanceChart) window.performanceChart.destroy();
+      window.performanceChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: data.agents.map(agent => agent.name),
+          datasets: [{
+            label: "Cierres",
+            data: data.agents.map(agent => agent.closures),
+            backgroundColor: "rgba(255, 99, 132, 0.7)"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      // Actualizar tabla
+      const tableBody = document.querySelector("#performanceTable tbody");
+      tableBody.innerHTML = data.agents.map(agent => `
+        <tr>
+          <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
+          <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
+          <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
+        </tr>
+      `).join("");
     })
+    .catch(err => console.error("Error al cargar datos de rendimiento:", err));
+}
       .then(res => res.json())
       .then(data => {
         // Actualizar KPIs y tabla
