@@ -339,24 +339,30 @@ io.on('connection', (socket) => {
     };
     await new ChatMessage(messageData).save();
 
-    const reopenMsg = {
-      userId: data.userId,
-      sender: 'System',
-      message: '💬 Chat iniciado',
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(reopenMsg).save();
-    io.emit('user list', await getAllChatsSorted());
-    const statusMsg = {
-      userId: data.userId,
-      sender: 'System',
-      message: '🔓 Chat abierto',
-      timestamp: getTimestamp(),
-      status: 'open',
-      username: username
-    };
-    await new ChatMessage(statusMsg).save();
+    // Verificar si el último mensaje fue un cierre antes de marcar como nuevo chat abierto
+    const lastMessage = await ChatMessage.findOne({ userId: data.userId }).sort({ timestamp: -1 });
+    if (!lastMessage || lastMessage.status === 'closed') {
+      const reopenMsg = {
+        userId: data.userId,
+        sender: 'System',
+        message: '💬 Chat iniciado',
+        timestamp: getTimestamp(),
+        username: username
+      };
+      await new ChatMessage(reopenMsg).save();
+
+      const statusMsg = {
+        userId: data.userId,
+        sender: 'System',
+        message: '🔓 Chat abierto',
+        timestamp: getTimestamp(),
+        status: 'open',
+        username: username
+      };
+      await new ChatMessage(statusMsg).save();
+
+      io.emit('user list', await getAllChatsSorted());
+    }
 
 
     const userSocket = userSessions.get(data.userId)?.socket;
