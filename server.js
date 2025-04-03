@@ -193,25 +193,28 @@ async function incrementPerformance(agentUsername) {
 
 async function getAllChatsSorted() {
   const lastMessages = await ChatMessage.aggregate([
-    { $match: { sender: { $ne: 'System' } } },
+    { $match: { sender: { $ne: 'System' } } }, // Excluir mensajes del sistema para el último mensaje visible
     { $sort: { timestamp: -1 } },
-    {
-      $group: {
-        _id: "$userId",
-        lastMessage: { $first: "$$ROOT" }
-      }
-    }
+    { $group: { _id: "$userId", lastMessage: { $first: "$$ROOT" } } }
   ]);
 
   const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
     const savedName = await UserName.findOne({ userId: _id });
     const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
-    const isClosed = await ChatMessage.findOne({ userId: _id, status: 'closed' });
+    
+    // Buscar el mensaje de estado más reciente (open o closed)
+    const latestStatusMessage = await ChatMessage.findOne(
+      { userId: _id, status: { $in: ['open', 'closed'] } },
+      null,
+      { sort: { timestamp: -1 } }
+    );
+    const isClosed = latestStatusMessage?.status === 'closed';
+
     return {
       userId: _id,
       username: username,
       lastMessageTime: lastMessage.timestamp,
-      isClosed: !!isClosed
+      isClosed: isClosed
     };
   }));
 
@@ -318,52 +321,67 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chat message', async (data) => {
-    if (!data.userId || !data.sender || !data.message) return;
+  if (!data.userId || !data.sender || !data.message) return;
 
-    let username = userSessions.get(data.userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId: data.userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+  let username = userSessions.get(data.userId)?.username || 'Usuario';
+  try {
+    const savedName = await UserName.findOne({ userId: data.userId });
+    if (savedName) {
+      username = savedName.name;
     }
+  } catch (e) {
+    console.error("❌ Error obteniendo nombre del usuario:", e.message);
+  }
 
-    const messageData = {
+  const messageData = {
+    userId: data.userId,
+    sender: data.sender,
+    message: data.message,
+    timestamp: getTimestamp(),
+    username: username
+  };
+  await new ChatMessage(messageData).save();
+
+  // Verificar el estado más reciente del chat
+  const lastStatusMessage = await ChatMessage.findOne(
+    { userId: data.userId, status: { $in: ['open', 'closed'] } },
+    null,
+    { sort: { timestamp: -1 } }
+  );
+
+  if (!lastStatusMessage || lastStatusMessage.status === 'closed') {
+    const reopenMsg = {
       userId: data.userId,
-      sender: data.sender,
-      message: data.message,
+      sender: 'System',
+      message: '💬 Chat iniciado',
       timestamp: getTimestamp(),
       username: username
     };
-    await new ChatMessage(messageData).save();
+    await new ChatMessage(reopenMsg).save();
 
-    // Verificar si el último mensaje fue un cierre antes de marcar como nuevo chat abierto
-    const lastMessage = await ChatMessage.findOne({ userId: data.userId }).sort({ timestamp: -1 });
-    if (!lastMessage || lastMessage.status === 'closed') {
-      const reopenMsg = {
-        userId: data.userId,
-        sender: 'System',
-        message: '💬 Chat iniciado',
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(reopenMsg).save();
+    const statusMsg = {
+      userId: data.userId,
+      sender: 'System',
+      message: '🔓 Chat abierto',
+      timestamp: getTimestamp(),
+      status: 'open',
+      username: username
+    };
+    await new ChatMessage(statusMsg).save();
+  }
 
-      const statusMsg = {
-        userId: data.userId,
-        sender: 'System',
-        message: '🔓 Chat abierto',
-        timestamp: getTimestamp(),
-        status: 'open',
-        username: username
-      };
-      await new ChatMessage(statusMsg).save();
+  const userSocket = userSessions.get(data.userId)?.socket;
+  if (userSocket) userSocket.emit('chat message', messageData);
 
-      io.emit('user list', await getAllChatsSorted());
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === data.userId) {
+      io.to(adminSocketId).emit('admin message', messageData);
     }
+  }
 
+  io.emit('user list', await getAllChatsSorted());
+  // ... (lógica adicional para 'Cargar Fichas' y 'Retirar')
+});
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
