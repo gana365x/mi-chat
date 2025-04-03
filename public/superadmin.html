@@ -472,7 +472,6 @@
         <option value="Admin">Admin</option>
         <option value="SuperAdmin">SuperAdmin</option>
       </select>
-
       <button onclick="createAgent()">Crear</button>
       <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
@@ -487,8 +486,6 @@
         </thead>
         <tbody id="agentsTable"></tbody>
       </table>
-
-
     </div>
 
     <!-- Sección estadísticas -->
@@ -517,7 +514,6 @@
           <option value="month">Este mes</option>
           <option value="lastMonth">Mes anterior</option>
         </select>
-
         <button onclick="confirmAndLoadStats()">Mostrar</button>
       </div>
       <div>
@@ -535,293 +531,67 @@
 
     <!-- Sección de pruebas -->
     <div id="section-pruebas" style="display:none;">
-  <h2>🧪 Panel de Pruebas</h2>
-  <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
-
-  <!-- Filtros de rendimiento -->
-  <div class="filter-container" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-    <select id="performanceFilter" onchange="applyPerformanceFilter()" style="width: 150px; height: 30px;">
-      <option value="today">Hoy</option>
-      <option value="yesterday">Ayer</option>
-      <option value="week">Esta semana</option>
-      <option value="month">Este mes</option>
-      <option value="lastMonth">Mes anterior</option>
-    </select>
-    <div id="customDateRange" style="display: flex; gap: 5px; align-items: center;">
-      <label style="font-size: 14px;">De:</label>
-      <input type="date" id="customFromDate" style="width: 80px; height: 30px; font-size: 12px;" value="2025-04-03">
-      <label style="font-size: 14px;">A:</label>
-      <input type="date" id="customToDate" style="width: 80px; height: 30px; font-size: 12px;" value="2025-04-03">
-      <button onclick="applyCustomDateRange()" style="width: 60px; height: 30px; font-size: 12px; padding: 0;">Aplicar</button>
+      <h2>🧪 Panel de Pruebas</h2>
+      <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
+      <!-- Filtros de rendimiento -->
+      <div class="filter-container" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+        <select id="performanceFilter" onchange="applyPerformanceFilter()" style="width: 150px; height: 30px;">
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+          <option value="lastMonth">Mes anterior</option>
+        </select>
+        <div id="customDateRange" style="display: flex; gap: 5px; align-items: center;">
+          <label style="font-size: 14px;">De:</label>
+          <input type="date" id="customFromDate" style="width: 80px; height: 30px; font-size: 12px;" value="2025-04-03">
+          <label style="font-size: 14px;">A:</label>
+          <input type="date" id="customToDate" style="width: 80px; height: 30px; font-size: 12px;" value="2025-04-03">
+          <button onclick="applyCustomDateRange()" style="width: 60px; height: 30px; font-size: 12px; padding: 0;">Aplicar</button>
+        </div>
+      </div>
+      <!-- KPIs destacados -->
+      <div class="kpi-container">
+        <div class="kpi-box">
+          <h3>👑 Mejor Agente</h3>
+          <p id="bestAgent">-</p>
+        </div>
+        <div class="kpi-box">
+          <h3>📈 Total Cierres</h3>
+          <p id="totalClosures">0</p>
+        </div>
+        <div class="kpi-box">
+          <h3>💬 Total Interacciones</h3>
+          <p id="totalInteractions">0</p>
+        </div>
+      </div>
+      <!-- Gráfico de rendimiento -->
+      <div class="chart-container">
+        <h3>📊 Rendimiento por Agente</h3>
+        <canvas id="performanceChart" height="100"></canvas>
+      </div>
+      <!-- Tabla dinámica -->
+      <div class="table-container">
+        <h3>📋 Detalles de Rendimiento</h3>
+        <table id="performanceTable">
+          <thead>
+            <tr>
+              <th>Agente</th>
+              <th>Cierres</th>
+              <th>Interacciones</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-  </div>
-
-  <!-- KPIs destacados -->
-  <div class="kpi-container">
-    <div class="kpi-box">
-      <h3>👑 Mejor Agente</h3>
-      <p id="bestAgent">-</p>
-    </div>
-    <div class="kpi-box">
-      <h3>📈 Total Cierres</h3>
-      <p id="totalClosures">0</p>
-    </div>
-    <div class="kpi-box">
-      <h3>💬 Total Interacciones</h3>
-      <p id="totalInteractions">0</p>
-    </div>
-  </div>
-
-  <!-- Gráfico de rendimiento -->
-  <div class="chart-container">
-    <h3>📊 Rendimiento por Agente</h3>
-    <canvas id="performanceChart" height="100"></canvas>
-  </div>
-
-  <!-- Tabla dinámica -->
-  <div class="table-container">
-    <h3>📋 Detalles de Rendimiento</h3>
-    <table id="performanceTable">
-      <thead>
-        <tr>
-          <th>Agente</th>
-          <th>Cierres</th>
-          <th>Interacciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-  <!-- KPIs destacados -->
-  <div class="kpi-container">
-    <div class="kpi-box">
-      <h3>👑 Mejor Agente</h3>
-      <p id="bestAgent">-</p>
-    </div>
-    <div class="kpi-box">
-      <h3>📈 Total Cierres</h3>
-      <p id="totalClosures">0</p>
-    </div>
-    <div class="kpi-box">
-      <h3>💬 Total Interacciones</h3>
-      <p id="totalInteractions">0</p>
-    </div>
-  </div>
-
-  <!-- Gráfico de rendimiento -->
-  <div class="chart-container">
-    <h3>📊 Rendimiento por Agente</h3>
-    <canvas id="performanceChart" height="100"></canvas>
-  </div>
-
-  <!-- Tabla dinámica -->
-  <div class="table-container">
-    <h3>📋 Detalles de Rendimiento</h3>
-    <table id="performanceTable">
-      <thead>
-        <tr>
-          <th>Agente</th>
-          <th>Cierres</th>
-          <th>Interacciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-<script>
-  function loadPerformanceData() {
-    fetch("https://mi-chat-9uti.onrender.com/get-performance-data", {
-      credentials: "include"
-    })
-    .then(res => res.json())
-    .then(data => {
-      // Actualizar KPIs
-      const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
-      document.getElementById("bestAgent").textContent = bestAgent.name;
-      document.getElementById("totalClosures").textContent = data.totalClosures;
-      document.getElementById("totalInteractions").textContent = data.totalInteractions;
-
-      // Actualizar gráfico
-      const ctx = document.getElementById("performanceChart").getContext("2d");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: data.agents.map(agent => agent.name),
-          datasets: [{
-            label: "Cierres",
-            data: data.agents.map(agent => agent.closures),
-            backgroundColor: "rgba(255, 99, 132, 0.7)"
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-
-      // Actualizar tabla
-      const tableBody = document.querySelector("#performanceTable tbody");
-      tableBody.innerHTML = data.agents.map(agent => `
-        <tr>
-          <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
-          <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
-          <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
-        </tr>
-      `).join("");
-    })
-    .catch(err => console.error("Error al cargar datos de rendimiento:", err));
-  }
-
-  document.addEventListener("DOMContentLoaded", loadPerformanceData);
-</script>
-
-<script>
-  function applyPerformanceFilter() {
-  const filter = document.getElementById("performanceFilter").value;
-  const today = new Date();
-  let from, to;
-
-  switch (filter) {
-    case "today":
-      from = new Date(today.setHours(0, 0, 0, 0));
-      to = new Date(today.setHours(23, 59, 59, 999));
-      break;
-    case "yesterday":
-      from = new Date(today.setDate(today.getDate() - 1));
-      from.setHours(0, 0, 0, 0);
-      to = new Date(today.setHours(23, 59, 59, 999));
-      break;
-    case "week":
-      from = new Date(today.setDate(today.getDate() - today.getDay()));
-      from.setHours(0, 0, 0, 0);
-      to = new Date();
-      break;
-    case "month":
-      from = new Date(today.getFullYear(), today.getMonth(), 1);
-      to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      break;
-    case "lastMonth":
-      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0);
-      break;
-  }
-
-  document.getElementById("customFromDate").value = from.toISOString().split("T")[0];
-  document.getElementById("customToDate").value = to.toISOString().split("T")[0];
-  loadPerformanceData(from.toISOString(), to.toISOString());
-}
-
-function applyCustomDateRange() {
-  const from = document.getElementById("customFromDate").value;
-  const to = document.getElementById("customToDate").value;
-
-  if (!from || !to) {
-    alert("Por favor selecciona un rango de fechas válido.");
-    return;
-  }
-
-  const fromDate = new Date(from + "T00:00:00Z");
-  const toDate = new Date(to + "T23:59:59Z");
-  loadPerformanceData(fromDate.toISOString(), toDate.toISOString());
-}
-
-function loadPerformanceData(from, to) {
-  fetch(`https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}`, {
-    credentials: "include"
-  })
-    .then(res => res.json())
-    .then(data => {
-      // Actualizar KPIs
-      const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
-      document.getElementById("bestAgent").textContent = bestAgent.name;
-      document.getElementById("totalClosures").textContent = data.totalClosures;
-      document.getElementById("totalInteractions").textContent = data.totalInteractions;
-
-      // Actualizar gráfico
-      const ctx = document.getElementById("performanceChart").getContext("2d");
-      if (window.performanceChart) window.performanceChart.destroy();
-      window.performanceChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: data.agents.map(agent => agent.name),
-          datasets: [{
-            label: "Cierres",
-            data: data.agents.map(agent => agent.closures),
-            backgroundColor: "rgba(255, 99, 132, 0.7)"
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-
-      // Actualizar tabla
-      const tableBody = document.querySelector("#performanceTable tbody");
-      tableBody.innerHTML = data.agents.map(agent => `
-        <tr>
-          <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
-          <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
-          <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
-        </tr>
-      `).join("");
-    })
-    .catch(err => console.error("Error al cargar datos de rendimiento:", err));
-}
-      .then(res => res.json())
-      .then(data => {
-        // Actualizar KPIs y tabla
-        const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
-        document.getElementById("bestAgent").textContent = bestAgent.name;
-        document.getElementById("totalClosures").textContent = data.totalClosures;
-        document.getElementById("totalInteractions").textContent = data.totalInteractions;
-
-        const ctx = document.getElementById("performanceChart").getContext("2d");
-        new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: data.agents.map(agent => agent.name),
-            datasets: [{
-              label: "Cierres",
-              data: data.agents.map(agent => agent.closures),
-              backgroundColor: "rgba(255, 99, 132, 0.7)"
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false }
-            }
-          }
-        });
-
-        const tableBody = document.querySelector("#performanceTable tbody");
-        tableBody.innerHTML = data.agents.map(agent => `
-          <tr>
-            <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
-            <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
-            <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
-          </tr>
-        `).join("");
-      })
-      .catch(err => console.error("Error al cargar datos de rendimiento:", err));
-  }
-</script>
 
     <!-- Sección editar -->
-   <div id="section-customize" style="display:none;">
-  <h2>🎨 Personalizar Estilo</h2>
-  <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
-  <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
-</div>
+    <div id="section-customize" style="display:none;">
+      <h2>🎨 Personalizar Estilo</h2>
+      <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
+      <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
+    </div>
   </div>
 
   <!-- POPUP CONFIRMAR ELIMINACIÓN -->
@@ -869,9 +639,9 @@ function loadPerformanceData(from, to) {
 
     function loadTimezoneFromServer() {
       return fetch('https://mi-chat-9uti.onrender.com/get-timezone', {
-        credentials: 'include', // Asegura que las cookies se envíen con la solicitud
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${getAuthToken()}` // Incluye el token si es necesario
+          'Authorization': `Bearer ${getAuthToken()}`
         }
       })
       .then(res => {
@@ -891,7 +661,6 @@ function loadPerformanceData(from, to) {
     }
 
     function getAuthToken() {
-      // Obtén el token de autenticación desde las cookies o almacenamiento local
       const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
       return match ? match[1] : null;
     }
@@ -943,7 +712,10 @@ function loadPerformanceData(from, to) {
         loadStats(todayStart.toISOString(), todayEnd.toISOString());
       }
       if (section === "pruebas") {
-        setDefaultDates();
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+        loadPerformanceData(todayStart.toISOString(), todayEnd.toISOString());
       }
     }
 
@@ -1016,8 +788,6 @@ function loadPerformanceData(from, to) {
       document.getElementById('fromTime').value = '00:00';
       document.getElementById('toDate').value = todayISO;
       document.getElementById('toTime').value = '23:59';
-      document.getElementById('dailyFrom').value = todayISO;
-      document.getElementById('dailyTo').value = todayISO;
     }
 
     function setQuickRange() {
@@ -1078,7 +848,7 @@ function loadPerformanceData(from, to) {
       const fromDateTime = new Date(fromDate + "T" + fromTime);
       const toDateTime = new Date(toDate + "T" + toTime);
 
-      fetch(`/performance-log?from=${fromDateTime.toISOString()}&to=${to.toISOString()}`)
+      fetch(`/performance-log?from=${fromDateTime.toISOString()}&to=${toDateTime.toISOString()}`)
         .then(res => res.json())
         .then(data => {
           const ctx = document.getElementById("chartAgentes").getContext("2d");
@@ -1314,6 +1084,101 @@ function loadPerformanceData(from, to) {
         });
     }
 
+    function applyPerformanceFilter() {
+      const filter = document.getElementById("performanceFilter").value;
+      const today = new Date();
+      let from, to;
+
+      switch (filter) {
+        case "today":
+          from = new Date(today.setHours(0, 0, 0, 0));
+          to = new Date(today.setHours(23, 59, 59, 999));
+          break;
+        case "yesterday":
+          from = new Date(today.setDate(today.getDate() - 1));
+          from.setHours(0, 0, 0, 0);
+          to = new Date(today.setHours(23, 59, 59, 999));
+          break;
+        case "week":
+          from = new Date(today.setDate(today.getDate() - today.getDay()));
+          from.setHours(0, 0, 0, 0);
+          to = new Date();
+          break;
+        case "month":
+          from = new Date(today.getFullYear(), today.getMonth(), 1);
+          to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+          break;
+        case "lastMonth":
+          from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          to = new Date(today.getFullYear(), today.getMonth(), 0);
+          break;
+      }
+
+      document.getElementById("customFromDate").value = from.toISOString().split("T")[0];
+      document.getElementById("customToDate").value = to.toISOString().split("T")[0];
+      loadPerformanceData(from.toISOString(), to.toISOString());
+    }
+
+    function applyCustomDateRange() {
+      const from = document.getElementById("customFromDate").value;
+      const to = document.getElementById("customToDate").value;
+
+      if (!from || !to) {
+        alert("Por favor selecciona un rango de fechas válido.");
+        return;
+      }
+
+      const fromDate = new Date(from + "T00:00:00Z");
+      const toDate = new Date(to + "T23:59:59Z");
+      loadPerformanceData(fromDate.toISOString(), toDate.toISOString());
+    }
+
+    function loadPerformanceData(from, to) {
+      fetch(`https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}`, {
+        credentials: "include"
+      })
+        .then(res => res.json())
+        .then(data => {
+          // Actualizar KPIs
+          const bestAgent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 });
+          document.getElementById("bestAgent").textContent = bestAgent.name;
+          document.getElementById("totalClosures").textContent = data.totalClosures;
+          document.getElementById("totalInteractions").textContent = data.totalInteractions;
+
+          // Actualizar gráfico
+          const ctx = document.getElementById("performanceChart").getContext("2d");
+          if (window.performanceChart) window.performanceChart.destroy();
+          window.performanceChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: data.agents.map(agent => agent.name),
+              datasets: [{
+                label: "Cierres",
+                data: data.agents.map(agent => agent.closures),
+                backgroundColor: "rgba(255, 99, 132, 0.7)"
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false }
+              }
+            }
+          });
+
+          // Actualizar tabla
+          const tableBody = document.querySelector("#performanceTable tbody");
+          tableBody.innerHTML = data.agents.map(agent => `
+            <tr>
+              <td style="padding: 10px; color: var(--text-light);">${agent.name}</td>
+              <td style="padding: 10px; color: var(--text-light);">${agent.closures}</td>
+              <td style="padding: 10px; color: var(--text-light);">${agent.interactions}</td>
+            </tr>
+          `).join("");
+        })
+        .catch(err => console.error("Error al cargar datos de rendimiento:", err));
+    }
+
     function loadDailyPerformance() {
       const from = document.getElementById("dailyFrom").value;
       const to = document.getElementById("dailyTo").value;
@@ -1325,7 +1190,7 @@ function loadPerformanceData(from, to) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ from, to }),
+        body: JSON.stringify({ from, to })
       })
       .then((res) => res.json())
       .then((data) => {
@@ -1350,7 +1215,7 @@ function loadPerformanceData(from, to) {
     function loadPerformance() {
       const from = document.getElementById("dailyFrom").value;
       const to = document.getElementById("dailyTo").value;
-      const period = document.getElementById("periodFilter").value;
+      const period = document.getElementById("periodFilter") ? document.getElementById("periodFilter").value : "daily";
       if (!from || !to) return alert("Seleccioná un rango válido.");
 
       fetch("https://mi-chat-9uti.onrender.com/get-daily-performance", {
@@ -1505,116 +1370,8 @@ function loadPerformanceData(from, to) {
           setDefaultDates();
         }
       });
-
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('dailyFrom').value = today;
-      document.getElementById('dailyTo').value = today;
-    });
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('dailyFrom').value = today;
-      document.getElementById('dailyTo').value = today;
     });
   </script>
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
-  // Consolidated initialization logic
-  loadTimezoneFromServer().then(() => {
-    const userInput = document.getElementById('superUsername');
-    const passInput = document.getElementById('superPassword');
-
-    [userInput, passInput].forEach(input => {
-      input.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-          loginSuperAdmin();
-        }
-      });
-    });
-
-    if (document.getElementById('section-stats').style.display !== 'none') {
-      setDefaultDates();
-    }
-  });
-
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('dailyFrom').value = today;
-  document.getElementById('dailyTo').value = today;
-
-  const filter = document.getElementById("periodFilter");
-  if (filter) {
-    filter.addEventListener("change", () => {
-      const period = filter.value;
-      const today = new Date();
-      let from = new Date(today);
-      let to = new Date(today);
-
-      switch (period) {
-        case "today":
-          break;
-        case "yesterday":
-          from.setDate(today.getDate() - 1);
-          to.setDate(today.getDate() - 1);
-          break;
-        case "week":
-          from.setDate(today.getDate() - 6);
-          break;
-        case "month":
-          from = new Date(today.getFullYear(), today.getMonth(), 1);
-          break;
-        case "lastMonth":
-          from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-          to = new Date(today.getFullYear(), today.getMonth(), 0);
-          break;
-      }
-
-      const toISO = to.toISOString().split("T")[0];
-      const fromISO = from.toISOString().split("T")[0];
-      document.getElementById("dailyFrom").value = fromISO;
-      document.getElementById("dailyTo").value = toISO;
-
-      if (typeof loadPerformance === "function") {
-        loadPerformance();
-      }
-    });
-  }
-});
-
-function groupDataByPeriod(logs, period) {
-  const grouped = {};
-  logs.forEach(log => {
-    const date = new Date(log.timestamp);
-    let periodKey;
-
-    switch (period) {
-      case "daily":
-      case "today":
-      case "yesterday":
-        periodKey = date.toISOString().split("T")[0];
-        break;
-      case "week":
-        const weekStart = new Date(date);
-        weekStart.setDate(date.getDate() - date.getDay());
-        periodKey = weekStart.toISOString().split("T")[0];
-        break;
-      case "month":
-        periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        break;
-      case "lastMonth":
-        const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-        periodKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
-        break;
-      default:
-        periodKey = "Desconocido";
-    }
-
-    if (!grouped[periodKey]) grouped[periodKey] = {};
-    grouped[periodKey][log.agent] = (grouped[periodKey][log.agent] || 0) + 1;
-  });
-  return grouped;
-}
-
-// Removed duplicate and unreachable code
-</script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92a8478d5d10bd54',t:'MTc0MzY4MDMwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
