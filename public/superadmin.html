@@ -539,21 +539,60 @@
   <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
 
   <!-- Filtros de rendimiento -->
-  <div class="filter-container">
-    <select id="performanceFilter" onchange="applyPerformanceFilter()">
+  <div class="filter-container" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+    <select id="performanceFilter" onchange="applyPerformanceFilter()" style="width: 150px; height: 30px;">
       <option value="today">Hoy</option>
       <option value="yesterday">Ayer</option>
       <option value="week">Esta semana</option>
       <option value="month">Este mes</option>
       <option value="lastMonth">Mes anterior</option>
-      <option value="custom">Personalizado</option>
     </select>
-    <div id="customDateRange" style="display: none; margin-top: 10px;">
-      <label>De: <input type="date" id="customFromDate"></label>
-      <label>A: <input type="date" id="customToDate"></label>
-      <button onclick="applyCustomDateRange()">Aplicar</button>
+    <div id="customDateRange" style="display: flex; gap: 5px; align-items: center;">
+      <label style="font-size: 14px;">De:</label>
+      <input type="date" id="customFromDate" style="width: 80px; height: 30px; font-size: 12px;" value="2025-04-03">
+      <label style="font-size: 14px;">A:</label>
+      <input type="date" id="customToDate" style="width: 80px; height: 30px; font-size: 12px;" value="2025-04-03">
+      <button onclick="applyCustomDateRange()" style="width: 60px; height: 30px; font-size: 12px; padding: 0;">Aplicar</button>
     </div>
   </div>
+
+  <!-- KPIs destacados -->
+  <div class="kpi-container">
+    <div class="kpi-box">
+      <h3>👑 Mejor Agente</h3>
+      <p id="bestAgent">-</p>
+    </div>
+    <div class="kpi-box">
+      <h3>📈 Total Cierres</h3>
+      <p id="totalClosures">0</p>
+    </div>
+    <div class="kpi-box">
+      <h3>💬 Total Interacciones</h3>
+      <p id="totalInteractions">0</p>
+    </div>
+  </div>
+
+  <!-- Gráfico de rendimiento -->
+  <div class="chart-container">
+    <h3>📊 Rendimiento por Agente</h3>
+    <canvas id="performanceChart" height="100"></canvas>
+  </div>
+
+  <!-- Tabla dinámica -->
+  <div class="table-container">
+    <h3>📋 Detalles de Rendimiento</h3>
+    <table id="performanceTable">
+      <thead>
+        <tr>
+          <th>Agente</th>
+          <th>Cierres</th>
+          <th>Interacciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
   <!-- KPIs destacados -->
   <div class="kpi-container">
