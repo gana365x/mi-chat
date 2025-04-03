@@ -518,7 +518,21 @@
       </div>
       <div>
         <h3 style="color: orange;">📈 Estadísticas de Agentes</h3>
-        <canvas id="chartAgentes" height="100"></canvas>
+<div class="table-container">
+  <h3>📋 Cierres por Agente</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Agente</th>
+        <th>Cierres</th>
+      </tr>
+    </thead>
+    <tbody id="statsAgentesTable">
+    </tbody>
+  </table>
+</div>
+
+        
         <h3 style="color: lightblue; margin-top: 20px;">💬 Interacciones</h3>
         <div id="statsResults">
           <p>Mensajes entrantes: <span id="statMessages">0</span></p>
@@ -901,6 +915,18 @@
         const values = filteredData.map(agent => agent.finalizados || 0);
 
         if (values.every(v => v === 0)) console.log('No hay datos de agentes para mostrar en el gráfico.');
+        const table = document.getElementById("statsAgentesTable");
+        table.innerHTML = "";
+
+        filteredData.forEach(agent => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${agent.name || agent.username}</td>
+            <td>${agent.finalizados || 0}</td>
+          `;
+          table.appendChild(row);
+        });
+
 
         const ctx = document.getElementById('chartAgentes').getContext('2d');
         if (chartInstance) chartInstance.destroy();
