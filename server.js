@@ -349,25 +349,30 @@ io.on('connection', (socket) => {
     { sort: { timestamp: -1 } }
   );
 
+  // Solo reabrir el chat si no fue cerrado explícitamente por un admin
   if (!lastStatusMessage || lastStatusMessage.status === 'closed') {
-    const reopenMsg = {
-      userId: data.userId,
-      sender: 'System',
-      message: '💬 Chat iniciado',
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(reopenMsg).save();
+    if (lastStatusMessage?.adminUsername) {
+      console.log(`Chat cerrado por admin, no se reabrirá automáticamente: ${data.userId}`);
+    } else {
+      const reopenMsg = {
+        userId: data.userId,
+        sender: 'System',
+        message: '💬 Chat iniciado',
+        timestamp: getTimestamp(),
+        username: username
+      };
+      await new ChatMessage(reopenMsg).save();
 
-    const statusMsg = {
-      userId: data.userId,
-      sender: 'System',
-      message: '🔓 Chat abierto',
-      timestamp: getTimestamp(),
-      status: 'open',
-      username: username
-    };
-    await new ChatMessage(statusMsg).save();
+      const statusMsg = {
+        userId: data.userId,
+        sender: 'System',
+        message: '🔓 Chat abierto',
+        timestamp: getTimestamp(),
+        status: 'open',
+        username: username
+      };
+      await new ChatMessage(statusMsg).save();
+    }
   }
 
   const userSocket = userSessions.get(data.userId)?.socket;
@@ -380,7 +385,6 @@ io.on('connection', (socket) => {
   }
 
   io.emit('user list', await getAllChatsSorted());
-  // ... (lógica adicional para 'Cargar Fichas' y 'Retirar')
 });
 
     const userSocket = userSessions.get(data.userId)?.socket;
@@ -595,7 +599,7 @@ io.on('connection', (socket) => {
       }
     }
   });
-});
+;
 
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
