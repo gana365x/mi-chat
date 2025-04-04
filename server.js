@@ -415,32 +415,32 @@ io.on('connection', (socket) => {
     }
 
     if (data.message === 'Retirar') {
-  const retiroMsg = {
-    userId: data.userId,
-    sender: 'Bot',
-    message: `
-      <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
-        <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
-        👉👉👉<br>
-        <strong>USUARIO:</strong><br>
-        <strong>MONTO A RETIRAR:</strong><br>
-        <strong>NOMBRE DE CTA BANCARIA:</strong><br>
-        <strong>CBU:</strong><br>
-        <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong>
-      </div>
-    `,
-    timestamp: getTimestamp(),
-    username: username
-  };
-  await new ChatMessage(retiroMsg).save();
-  io.emit('user list', await getAllChatsSorted());
-  if (userSocket) userSocket.emit('chat message', retiroMsg);
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === data.userId) {
-      io.to(adminSocketId).emit('admin message', retiroMsg);
+      const retiroMsg = {
+        userId: data.userId,
+        sender: 'Bot',
+        message: `
+          <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
+            <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
+            👉👉👉<br>
+            <strong>USUARIO:</strong><br>
+            <strong>MONTO A RETIRAR:</strong><br>
+            <strong>NOMBRE DE CTA BANCARIA:</strong><br>
+            <strong>CBU:</strong><br>
+            <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong>
+          </div>
+        `,
+        timestamp: getTimestamp(),
+        username: username
+      };
+      await new ChatMessage(retiroMsg).save();
+      io.emit('user list', await getAllChatsSorted());
+      if (userSocket) userSocket.emit('chat message', retiroMsg);
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
+          io.to(adminSocketId).emit('admin message', retiroMsg);
+        }
+      }
     }
-  }
-}
   });
 
   socket.on('image', async (data) => {
@@ -599,7 +599,7 @@ io.on('connection', (socket) => {
       }
     }
   });
-;
+});
 
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
