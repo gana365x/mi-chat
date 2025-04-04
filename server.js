@@ -599,7 +599,6 @@ io.on('connection', (socket) => {
       }
     }
   });
-});
 
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
