@@ -914,8 +914,7 @@
         height: calc(100% - 44px);
         overflow-y: auto;
       }
-    }
-
+  
     .popup-edit-icon {
       background-color: #1f1f1f;
       color: white;
@@ -1432,14 +1431,9 @@
   const sendButton = document.querySelector("#chatInputArea button");
   const popupInput = document.getElementById("popupInput");
   const popupSendButton = document.querySelector("#chatPopup .popup-input button");
+
+  // Habilitar el input si el chat se reabre
   if (user.isClosed) {
-    chatInput.disabled = true;
-    chatInput.placeholder = "Chat cerrado - Solo lectura";
-    sendButton.disabled = true;
-    popupInput.disabled = true;
-    popupInput.placeholder = "Chat cerrado - Solo lectura";
-    popupSendButton.disabled = true;
-  } else {
     chatInput.disabled = false;
     chatInput.placeholder = "Escribir mensaje...";
     sendButton.disabled = false;
