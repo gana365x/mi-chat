@@ -1,3 +1,4 @@
+
 const moment = require("moment-timezone");
 require('dotenv').config();
 
@@ -193,28 +194,25 @@ async function incrementPerformance(agentUsername) {
 
 async function getAllChatsSorted() {
   const lastMessages = await ChatMessage.aggregate([
-    { $match: { sender: { $ne: 'System' } } }, // Excluir mensajes del sistema para el último mensaje visible
+    { $match: { sender: { $ne: 'System' } } },
     { $sort: { timestamp: -1 } },
-    { $group: { _id: "$userId", lastMessage: { $first: "$$ROOT" } } }
+    {
+      $group: {
+        _id: "$userId",
+        lastMessage: { $first: "$$ROOT" }
+      }
+    }
   ]);
 
   const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
     const savedName = await UserName.findOne({ userId: _id });
     const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
-    
-    // Buscar el mensaje de estado más reciente (open o closed)
-    const latestStatusMessage = await ChatMessage.findOne(
-      { userId: _id, status: { $in: ['open', 'closed'] } },
-      null,
-      { sort: { timestamp: -1 } }
-    );
-    const isClosed = latestStatusMessage?.status === 'closed';
-
+    const isClosed = await ChatMessage.findOne({ userId: _id, status: 'closed' });
     return {
       userId: _id,
       username: username,
       lastMessageTime: lastMessage.timestamp,
-      isClosed: isClosed
+      isClosed: !!isClosed
     };
   }));
 
@@ -342,38 +340,25 @@ io.on('connection', (socket) => {
     };
     await new ChatMessage(messageData).save();
 
-    // Verificar el estado más reciente del chat
-    const lastStatusMessage = await ChatMessage.findOne(
-      { userId: data.userId, status: { $in: ['open', 'closed'] } },
-      null,
-      { sort: { timestamp: -1 } }
-    );
+    const reopenMsg = {
+      userId: data.userId,
+      sender: 'System',
+      message: '💬 Chat iniciado',
+      timestamp: getTimestamp(),
+      username: username
+    };
+    await new ChatMessage(reopenMsg).save();
+    io.emit('user list', await getAllChatsSorted());
+    const statusMsg = {
+      userId: data.userId,
+      sender: 'System',
+      message: '🔓 Chat abierto',
+      timestamp: getTimestamp(),
+      status: 'open',
+      username: username
+    };
+    await new ChatMessage(statusMsg).save();
 
-    // Solo reabrir el chat si no fue cerrado explícitamente por un admin
-    if (!lastStatusMessage || lastStatusMessage.status === 'closed') {
-      if (lastStatusMessage?.adminUsername) {
-        console.log(`Chat cerrado por admin, no se reabrirá automáticamente: ${data.userId}`);
-      } else {
-        const reopenMsg = {
-          userId: data.userId,
-          sender: 'System',
-          message: '💬 Chat iniciado',
-          timestamp: getTimestamp(),
-          username: username
-        };
-        await new ChatMessage(reopenMsg).save();
-
-        const statusMsg = {
-          userId: data.userId,
-          sender: 'System',
-          message: '🔓 Chat abierto',
-          timestamp: getTimestamp(),
-          status: 'open',
-          username: username
-        };
-        await new ChatMessage(statusMsg).save();
-      }
-    }
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -384,7 +369,51 @@ io.on('connection', (socket) => {
       }
     }
 
-    io.emit('user list', await getAllChatsSorted());
+    if (data.message === 'Cargar Fichas') {
+      const botMsg = {
+        userId: data.userId,
+        sender: 'Bot',
+        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULARctaBANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
+        timestamp: getTimestamp(),
+        username: username
+      };
+      await new ChatMessage(botMsg).save();
+      io.emit('user list', await getAllChatsSorted());
+      if (userSocket) userSocket.emit('chat message', botMsg);
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
+          io.to(adminSocketId).emit('admin message', botMsg);
+        }
+      }
+    }
+
+    if (data.message === 'Retirar') {
+  const retiroMsg = {
+    userId: data.userId,
+    sender: 'Bot',
+    message: `
+      <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
+        <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
+        👉👉👉<br>
+        <strong>USUARIO:</strong><br>
+        <strong>MONTO A RETIRAR:</strong><br>
+        <strong>NOMBRE DE CTA BANCARIA:</strong><br>
+        <strong>CBU:</strong><br>
+        <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong>
+      </div>
+    `,
+    timestamp: getTimestamp(),
+    username: username
+  };
+  await new ChatMessage(retiroMsg).save();
+  io.emit('user list', await getAllChatsSorted());
+  if (userSocket) userSocket.emit('chat message', retiroMsg);
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === data.userId) {
+      io.to(adminSocketId).emit('admin message', retiroMsg);
+    }
+  }
+}
   });
 
   socket.on('image', async (data) => {
