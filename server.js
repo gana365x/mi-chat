@@ -339,15 +339,19 @@ io.on('connection', (socket) => {
     };
     await new ChatMessage(messageData).save();
 
-    const reopenMsg = {
-      userId: data.userId,
-      sender: 'System',
-      message: '💬 Chat iniciado',
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(reopenMsg).save();
-    io.emit('user list', await getAllChatsSorted());
+    const wasClosed = await ChatMessage.findOne({ userId: data.userId, status: 'closed' });
+    if (wasClosed) {
+      await ChatMessage.deleteMany({ userId: data.userId, status: 'closed' });
+      const reopenMsg = {
+        userId: data.userId,
+        sender: 'System',
+        message: '🔄 El chat fue reabierto por el cliente',
+        timestamp: getTimestamp(),
+        username: username
+      };
+      await new ChatMessage(reopenMsg).save();
+      io.emit('user list', await getAllChatsSorted());
+    }
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
