@@ -1,4 +1,3 @@
-
 const moment = require("moment-timezone");
 require('dotenv').config();
 
@@ -349,16 +348,6 @@ io.on('connection', (socket) => {
     };
     await new ChatMessage(reopenMsg).save();
     io.emit('user list', await getAllChatsSorted());
-    const statusMsg = {
-      userId: data.userId,
-      sender: 'System',
-      message: '🔓 Chat abierto',
-      timestamp: getTimestamp(),
-      status: 'open',
-      username: username
-    };
-    await new ChatMessage(statusMsg).save();
-
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
