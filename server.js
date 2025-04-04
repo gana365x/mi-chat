@@ -321,71 +321,59 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chat message', async (data) => {
-  if (!data.userId || !data.sender || !data.message) return;
+    if (!data.userId || !data.sender || !data.message) return;
 
-  let username = userSessions.get(data.userId)?.username || 'Usuario';
-  try {
-    const savedName = await UserName.findOne({ userId: data.userId });
-    if (savedName) {
-      username = savedName.name;
+    let username = userSessions.get(data.userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId: data.userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
     }
-  } catch (e) {
-    console.error("❌ Error obteniendo nombre del usuario:", e.message);
-  }
 
-  const messageData = {
-    userId: data.userId,
-    sender: data.sender,
-    message: data.message,
-    timestamp: getTimestamp(),
-    username: username
-  };
-  await new ChatMessage(messageData).save();
+    const messageData = {
+      userId: data.userId,
+      sender: data.sender,
+      message: data.message,
+      timestamp: getTimestamp(),
+      username: username
+    };
+    await new ChatMessage(messageData).save();
 
-  // Verificar el estado más reciente del chat
-  const lastStatusMessage = await ChatMessage.findOne(
-    { userId: data.userId, status: { $in: ['open', 'closed'] } },
-    null,
-    { sort: { timestamp: -1 } }
-  );
+    // Verificar el estado más reciente del chat
+    const lastStatusMessage = await ChatMessage.findOne(
+      { userId: data.userId, status: { $in: ['open', 'closed'] } },
+      null,
+      { sort: { timestamp: -1 } }
+    );
 
-  // Solo reabrir el chat si no fue cerrado explícitamente por un admin
-  if (!lastStatusMessage || lastStatusMessage.status === 'closed') {
-    if (lastStatusMessage?.adminUsername) {
-      console.log(`Chat cerrado por admin, no se reabrirá automáticamente: ${data.userId}`);
-    } else {
-      const reopenMsg = {
-        userId: data.userId,
-        sender: 'System',
-        message: '💬 Chat iniciado',
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(reopenMsg).save();
+    // Solo reabrir el chat si no fue cerrado explícitamente por un admin
+    if (!lastStatusMessage || lastStatusMessage.status === 'closed') {
+      if (lastStatusMessage?.adminUsername) {
+        console.log(`Chat cerrado por admin, no se reabrirá automáticamente: ${data.userId}`);
+      } else {
+        const reopenMsg = {
+          userId: data.userId,
+          sender: 'System',
+          message: '💬 Chat iniciado',
+          timestamp: getTimestamp(),
+          username: username
+        };
+        await new ChatMessage(reopenMsg).save();
 
-      const statusMsg = {
-        userId: data.userId,
-        sender: 'System',
-        message: '🔓 Chat abierto',
-        timestamp: getTimestamp(),
-        status: 'open',
-        username: username
-      };
-      await new ChatMessage(statusMsg).save();
+        const statusMsg = {
+          userId: data.userId,
+          sender: 'System',
+          message: '🔓 Chat abierto',
+          timestamp: getTimestamp(),
+          status: 'open',
+          username: username
+        };
+        await new ChatMessage(statusMsg).save();
+      }
     }
-  }
-
-  const userSocket = userSessions.get(data.userId)?.socket;
-  if (userSocket) userSocket.emit('chat message', messageData);
-
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === data.userId) {
-      io.to(adminSocketId).emit('admin message', messageData);
-    }
-  }
-
-  io.emit('user list', await getAllChatsSorted());
-});
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -396,51 +384,7 @@ io.on('connection', (socket) => {
       }
     }
 
-    if (data.message === 'Cargar Fichas') {
-      const botMsg = {
-        userId: data.userId,
-        sender: 'Bot',
-        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULARctaBANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(botMsg).save();
-      io.emit('user list', await getAllChatsSorted());
-      if (userSocket) userSocket.emit('chat message', botMsg);
-      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-        if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', botMsg);
-        }
-      }
-    }
-
-    if (data.message === 'Retirar') {
-      const retiroMsg = {
-        userId: data.userId,
-        sender: 'Bot',
-        message: `
-          <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
-            <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
-            👉👉👉<br>
-            <strong>USUARIO:</strong><br>
-            <strong>MONTO A RETIRAR:</strong><br>
-            <strong>NOMBRE DE CTA BANCARIA:</strong><br>
-            <strong>CBU:</strong><br>
-            <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong>
-          </div>
-        `,
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(retiroMsg).save();
-      io.emit('user list', await getAllChatsSorted());
-      if (userSocket) userSocket.emit('chat message', retiroMsg);
-      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-        if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', retiroMsg);
-        }
-      }
-    }
+    io.emit('user list', await getAllChatsSorted());
   });
 
   socket.on('image', async (data) => {
@@ -599,6 +543,7 @@ io.on('connection', (socket) => {
       }
     }
   });
+});
 
 app.post('/superadmin-login', async (req, res) => {
   const { username, password } = req.body;
