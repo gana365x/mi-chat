@@ -65,20 +65,33 @@ function isValidToken(token) {
   return token === process.env.SECRET_KEY;
 }
 
+async function isSuperAdmin(username) {
+  const agent = await Agent.findOne({ username });
+  return agent && (agent.role === 'SuperAdmin' || agent.type === 'superadmin');
+}
+
+// Protección para superadmin.html
+app.get('/superadmin.html', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
+  }
+
+  // Verificar si el usuario es SuperAdmin
+  const username = req.query.username; // Podrías pasar el username en la cookie o en otra forma segura
+  if (!username || !(await isSuperAdmin(username))) {
+    return res.redirect('/index.html');
+  }
+
+  res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
+});
+
 app.get('/admin.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.redirect('/index.html');
   }
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-app.get('/superadmin.html', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
 });
 
 app.get('/agent-performance.html', (req, res) => {
@@ -161,14 +174,11 @@ const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
 function getTimestamp() {
-  const timezone = "America/Argentina/Buenos_Aires"; // Forzar Argentina para depurar
+  const timezone = "America/Argentina/Buenos_Aires";
   const time = moment().tz(timezone);
-  
-  // Logs para depurar
   console.log("Hora del servidor:", new Date());
   console.log("Hora ajustada a Argentina:", time.format());
-  
-  return time.toISOString(true); // true incluye el offset local
+  return time.toISOString(true);
 }
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
@@ -176,7 +186,6 @@ if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify(
 
 async function incrementPerformance(agentUsername) {
   try {
-    // Registrar el cierre en PerformanceLog
     await PerformanceLog.create({ agent: agentUsername });
     console.log(`✅ Interacción registrada para ${agentUsername}`);
   } catch (err) {
@@ -374,32 +383,32 @@ io.on('connection', (socket) => {
     }
 
     if (data.message === 'Retirar') {
-  const retiroMsg = {
-    userId: data.userId,
-    sender: 'Bot',
-    message: `
-      <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
-        <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
-        👉👉👉<br>
-        <strong>USUARIO:</strong><br>
-        <strong>MONTO A RETIRAR:</strong><br>
-        <strong>NOMBRE DE CTA BANCARIA:</strong><br>
-        <strong>CBU:</strong><br>
-        <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong>
-      </div>
-    `,
-    timestamp: getTimestamp(),
-    username: username
-  };
-  await new ChatMessage(retiroMsg).save();
-  io.emit('user list', await getAllChatsSorted());
-  if (userSocket) userSocket.emit('chat message', retiroMsg);
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === data.userId) {
-      io.to(adminSocketId).emit('admin message', retiroMsg);
+      const retiroMsg = {
+        userId: data.userId,
+        sender: 'Bot',
+        message: `
+          <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
+            <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
+            👉👉👉<br>
+            <strong>USUARIO:</strong><br>
+            <strong>MONTO A RETIRAR:</strong><br>
+            <strong>NOMBRE DE CTA BANCARIA:</strong><br>
+            <strong>CBU:</strong><br>
+            <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong>
+          </div>
+        `,
+        timestamp: getTimestamp(),
+        username: username
+      };
+      await new ChatMessage(retiroMsg).save();
+      io.emit('user list', await getAllChatsSorted());
+      if (userSocket) userSocket.emit('chat message', retiroMsg);
+      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+        if (subscribedUserId === data.userId) {
+          io.to(adminSocketId).emit('admin message', retiroMsg);
+        }
+      }
     }
-  }
-}
   });
 
   socket.on('image', async (data) => {
@@ -499,54 +508,53 @@ io.on('connection', (socket) => {
   });
 
   socket.on('close chat', async ({ userId, adminUsername }) => {
-  const userSocket = userSessions.get(userId)?.socket;
-  if (userSocket) {
-    userSocket.emit('chat closed', { userId });
-  }
-
-  // Incrementar el contador cuando hay un adminUsername
-  if (adminUsername) {
-    await incrementPerformance(adminUsername); // Esto ya registra en PerformanceLog
-  }
-
-  if (userSessions.has(userId)) {
-    const session = userSessions.get(userId);
-    userSessions.set(userId, { ...session, socket: null });
-  }
-
-  let username = userSessions.get(userId)?.username || 'Usuario';
-  try {
-    const savedName = await UserName.findOne({ userId });
-    if (savedName) {
-      username = savedName.name;
+    const userSocket = userSessions.get(userId)?.socket;
+    if (userSocket) {
+      userSocket.emit('chat closed', { userId });
     }
-  } catch (e) {
-    console.error("❌ Error obteniendo nombre del usuario:", e.message);
-  }
 
-  const closeMsg = {
-    userId,
-    sender: 'System',
-    message: '💬 Chat cerrado',
-    timestamp: getTimestamp(),
-    status: 'closed',
-    adminUsername: adminUsername,
-    username: username
-  };
-  await new ChatMessage(closeMsg).save();
-
-  if (userSocket) {
-    userSocket.emit('chat message', closeMsg);
-  }
-
-  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-    if (subscribedUserId === userId) {
-      io.to(adminSocketId).emit('admin message', closeMsg);
+    if (adminUsername) {
+      await incrementPerformance(adminUsername);
     }
-  }
 
-  io.emit('user list', await getAllChatsSorted());
-});
+    if (userSessions.has(userId)) {
+      const session = userSessions.get(userId);
+      userSessions.set(userId, { ...session, socket: null });
+    }
+
+    let username = userSessions.get(userId)?.username || 'Usuario';
+    try {
+      const savedName = await UserName.findOne({ userId });
+      if (savedName) {
+        username = savedName.name;
+      }
+    } catch (e) {
+      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+    }
+
+    const closeMsg = {
+      userId,
+      sender: 'System',
+      message: '💬 Chat cerrado',
+      timestamp: getTimestamp(),
+      status: 'closed',
+      adminUsername: adminUsername,
+      username: username
+    };
+    await new ChatMessage(closeMsg).save();
+
+    if (userSocket) {
+      userSocket.emit('chat message', closeMsg);
+    }
+
+    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+      if (subscribedUserId === userId) {
+        io.to(adminSocketId).emit('admin message', closeMsg);
+      }
+    }
+
+    io.emit('user list', await getAllChatsSorted());
+  });
 
   socket.on('disconnect', async () => {
     adminSubscriptions.delete(socket.id);
@@ -585,7 +593,8 @@ app.post('/superadmin-login', async (req, res) => {
     res.status(200).json({
       success: true,
       name: agent.name,
-      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin')
+      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin'),
+      username: agent.username // Agregamos el username para usarlo después
     });
   } catch (err) {
     console.error('❌ Error en login:', err);
@@ -967,7 +976,6 @@ app.get('/stats', async (req, res) => {
         chatsClosed++;
       }
 
-      // Contar solo "Cargar Fichas" y "Retirar" como interacciones
       for (const msg of userMessages) {
         if (!['Agent', 'System', 'Bot'].includes(msg.sender)) {
           if (msg.message === 'Cargar Fichas' || msg.message === 'Retirar') {
@@ -1021,7 +1029,6 @@ app.get('/stats-agents', async (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    // Contar interacciones por agente desde PerformanceLog
     const agentInteractions = await PerformanceLog.aggregate([
       {
         $match: {
@@ -1031,7 +1038,7 @@ app.get('/stats-agents', async (req, res) => {
       {
         $group: {
           _id: "$agent",
-          finalizados: { $sum: 1 } // Contar cada cierre como una interacción
+          finalizados: { $sum: 1 }
         }
       }
     ]);
