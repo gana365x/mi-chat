@@ -263,40 +263,56 @@ app.get('/performance-log', async (req, res) => {
 
 io.on('connection', (socket) => {
   socket.on('user joined', async (data) => {
-    let userId = data.userId;
-    let username = data.username;
-    if (!username) return;
+  let userId = data.userId;
+  let username = data.username;
+  if (!username) return;
 
-    if (!userId) {
-      userId = uuidv4();
+  if (!userId) {
+    userId = uuidv4();
+  }
+
+  try {
+    const savedName = await UserName.findOne({ userId });
+    if (savedName) {
+      username = savedName.name;
+    } else {
+      await new UserName({ userId, name: username }).save();
     }
+  } catch (e) {
+    console.error("❌ Error manejando nombre del usuario:", e.message);
+  }
 
-    try {
-      const savedName = await UserName.findOne({ userId });
-      if (savedName) {
-        username = savedName.name;
-      } else {
-        await new UserName({ userId, name: username }).save();
-      }
-    } catch (e) {
-      console.error("❌ Error manejando nombre del usuario:", e.message);
-    }
+  userSessions.set(userId, { username, socket });
+  socket.emit('session', { userId, username });
 
-    userSessions.set(userId, { username, socket });
-    socket.emit('session', { userId, username });
-
-    const existingChat = await ChatMessage.findOne({ userId });
-    if (!existingChat) {
-      const dateMessage = {
+  const existingChat = await ChatMessage.findOne({ userId });
+  if (!existingChat) {
+    const dateMessage = {
+      userId,
+      sender: 'System',
+      message: '💬 Chat iniciado',
+      timestamp: getTimestamp(),
+      username: username
+    };
+    await new ChatMessage(dateMessage).save();
+    // No incrementamos interacción aquí, solo mensaje
+  } else {
+    // Si el chat existe pero estaba cerrado, lo reabrimos
+    const wasClosed = await ChatMessage.findOne({ userId, status: 'closed' });
+    if (wasClosed) {
+      await ChatMessage.deleteMany({ userId, status: 'closed' });
+      const reopenMsg = {
         userId,
         sender: 'System',
-        message: '💬 Chat iniciado',
+        message: '🔄 El chat fue reabierto por el cliente',
         timestamp: getTimestamp(),
         username: username
       };
-      await new ChatMessage(dateMessage).save();
+      await new ChatMessage(reopenMsg).save();
+      io.emit('user list', await getAllChatsSorted());
     }
-  });
+  }
+});
 
   socket.on('update username', async ({ userId, newUsername }) => {
     try {
@@ -483,38 +499,51 @@ io.on('connection', (socket) => {
   });
 
   socket.on('agent message', async (data) => {
-    if (!data.userId || !data.message) return;
+  if (!data.userId || !data.message) return;
 
-    let username = userSessions.get(data.userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId: data.userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
+  let username = userSessions.get(data.userId)?.username || 'Usuario';
+  try {
+    const savedName = await UserName.findOne({ userId: data.userId });
+    if (savedName) {
+      username = savedName.name;
     }
+  } catch (e) {
+    console.error("❌ Error obteniendo nombre del usuario:", e.message);
+  }
 
-    const messageData = {
-      userId: data.userId,
-      sender: 'Agent',
-      message: data.message,
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(messageData).save();
+  const messageData = {
+    userId: data.userId,
+    sender: 'Agent',
+    message: data.message,
+    timestamp: getTimestamp(),
+    username: username
+  };
+  await new ChatMessage(messageData).save();
 
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('chat message', messageData);
+  // Check if this is the first agent interaction for this userId
+  const agentUsername = socket.handshake.query.agentUsername || 'Unknown'; // Asumimos que el agente pasa su username al conectar
+  const existingInteraction = await AgentInteraction.findOne({ userId: data.userId, agentUsername });
+  if (!existingInteraction) {
+    await new AgentInteraction({ userId: data.userId, agentUsername }).save();
+  } else {
+    // Incrementar chatCount si el chat se reabrió, pero no cuenta como nueva interacción
+    await AgentInteraction.updateOne(
+      { userId: data.userId, agentUsername },
+      { $inc: { chatCount: 1 } }
+    );
+  }
 
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin message', messageData);
-      }
+  const userSocket = userSessions.get(data.userId)?.socket;
+  if (userSocket) userSocket.emit('chat message', messageData);
+
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === data.userId) {
+      io.to(adminSocketId).emit('admin message', messageData);
     }
+  }
 
-    io.emit('user list', await getAllChatsSorted());
-  });
+  io.emit('user list', await getAllChatsSorted());
+});
 
   socket.on('request chat history', async (data) => {
     if (!data.userId) return;
@@ -950,7 +979,7 @@ app.post('/update-timezone', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/stats', async (req, res) => {
+aapp.get('/stats', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -987,7 +1016,7 @@ app.get('/stats', async (req, res) => {
       }
 
       messagesCount += userMessages.filter(
-        msg => msg.sender === userSessions.get(userId)?.username || (!['Agent', 'System', 'Bot'].includes(msg.sender) && !msg.image)
+        msg => msg.sender !== 'Agent' && msg.sender !== 'System' && msg.sender !== 'Bot' && !msg.image
       ).length;
 
       imagenesCount += userMessages.filter(
@@ -1003,12 +1032,18 @@ app.get('/stats', async (req, res) => {
       ).length;
     }
 
+    // Contar interacciones únicas de agentes
+    const interactions = await AgentInteraction.countDocuments({
+      firstInteraction: { $gte: fromDate, $lte: toDate }
+    });
+
     res.json({
       chats: chatsClosed,
       messages: messagesCount,
       cargarFichas: cargarFichasCount,
       retiros: retirosCount,
-      imagenes: imagenesCount
+      imagenes: imagenesCount,
+      interactions: interactions // Nueva métrica para interacciones únicas
     });
   } catch (error) {
     console.error('Error al procesar estadísticas:', error);
