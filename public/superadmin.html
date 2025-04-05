@@ -284,60 +284,6 @@
       align-items: center;
       justify-content: center;
     }
-
-    /* Estilos adicionales para Rendimiento Agentes */
-    .kpi-container {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    .kpi-box {
-      flex: 1;
-      background: var(--bg-darker);
-      padding: 20px;
-      border-radius: var(--border-radius-lg);
-      text-align: center;
-      box-shadow: var(--shadow);
-    }
-    .kpi-box h3 {
-      color: var(--primary-color);
-      margin-bottom: 10px;
-    }
-    .kpi-box p {
-      font-size: 24px;
-      color: var(--text-light);
-    }
-    .chart-container, .table-container {
-      background: var(--bg-darker);
-      padding: 20px;
-      border-radius: var(--border-radius-lg);
-      margin-bottom: 20px;
-      box-shadow: var(--shadow);
-    }
-    .table-container table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .table-container th, .table-container td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid var(--bg-hover);
-    }
-    .table-container th {
-      background: var(--bg-hover);
-      color: var(--primary-color);
-    }
-    .table-container td {
-      color: var(--text-light);
-    }
-    .filter-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 15px;
-    }
   </style>
 </head>
 <body>
@@ -364,7 +310,7 @@
       <button onclick="showSection('home')">🏠 Home</button>
       <button onclick="showSection('agents')">👥 Agentes</button>
       <button onclick="showSection('customize')">🎨 Editar</button>
-      <button onclick="showSection('agent-performance')">📈 Rendimiento Agentes</button>
+      <button onclick="window.location.href='/agent-performance.html'">📈 Rendimiento Agentes</button>
     </div>
 
     <!-- Sección Home -->
@@ -405,63 +351,6 @@
       <p>Próximamente podrás cambiar el logo, los colores y los textos del sistema aquí.</p>
       <button disabled style="opacity: 0.5;">Editar Estilo del Sistema</button>
     </div>
-
-    <!-- Sección Rendimiento Agentes -->
-    <div id="section-agent-performance" style="display:none;">
-      <h2>📈 Rendimiento Agentes</h2>
-      <p>Visualiza el rendimiento de los agentes de forma profesional.</p>
-      <!-- Filtros de rendimiento -->
-      <div class="filter-container">
-        <select id="performanceFilter" onchange="applyPerformanceFilter()" style="width: 150px; height: 30px;">
-          <option value="today">Hoy</option>
-          <option value="yesterday">Ayer</option>
-          <option value="week">Esta semana</option>
-          <option value="month">Este mes</option>
-          <option value="lastMonth">Mes anterior</option>
-        </select>
-        <div id="customDateRange" style="display: flex; gap: 5px; align-items: center;">
-          <label style="font-size: 14px;">De:</label>
-          <input type="date" id="customFromDate" style="width: 120px; height: 30px; font-size: 12px;" value="2025-04-03">
-          <label style="font-size: 14px;">A:</label>
-          <input type="date" id="customToDate" style="width: 120px; height: 30px; font-size: 12px;" value="2025-04-03">
-          <button onclick="applyCustomDateRange()" style="width: 60px; height: 30px; font-size: 12px; padding: 0;">Aplicar</button>
-        </div>
-      </div>
-      <!-- KPIs destacados -->
-      <div class="kpi-container">
-        <div class="kpi-box">
-          <h3>👑 Mejor Agente</h3>
-          <p id="bestAgent">-</p>
-        </div>
-        <div class="kpi-box">
-          <h3>📈 Total Cierres</h3>
-          <p id="totalClosures">0</p>
-        </div>
-        <div class="kpi-box">
-          <h3>💬 Total Interacciones</h3>
-          <p id="totalInteractions">0</p>
-        </div>
-      </div>
-      <!-- Gráfico de rendimiento -->
-      <div class="chart-container">
-        <h3>📊 Rendimiento por Agente</h3>
-        <canvas id="performanceChart" height="300"></canvas>
-      </div>
-      <!-- Tabla dinámica -->
-      <div class="table-container">
-        <h3>📋 Detalles de Rendimiento</h3>
-        <table id="performanceTable">
-          <thead>
-            <tr>
-              <th>Agente</th>
-              <th>Cierres</th>
-              <th>Interacciones</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
   </div>
 
   <!-- POPUP CONFIRMAR ELIMINACIÓN -->
@@ -494,21 +383,13 @@
     </div>
   </div>
 
-  <!-- Chart.js para el gráfico -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Socket.IO -->
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
   <script>
     const socket = io('https://mi-chat-9uti.onrender.com');
-    let performanceChart = null;
 
     function getAuthToken() {
       const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
-      return match ? match[1] : null;
-    }
-
-    function getSuperUsername() {
-      const match = document.cookie.match(/(?:^|;\s*)superUsername=([^;]+)/);
       return match ? match[1] : null;
     }
 
@@ -528,11 +409,11 @@
       })
       .then(data => {
         if (data.success) {
-          document.cookie = `token=${data.token || process.env.SECRET_KEY}; path=/; max-age=604800; secure`;
-          document.cookie = `superUsername=${data.username}; path=/; max-age=604800; secure`;
+          if (data.token) document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
           document.getElementById('loginBox').style.display = 'none';
           document.getElementById('mainBox').style.display = 'block';
-          window.location.href = `/superadmin.html?username=${data.username}`;
+          showSection('home');
+          loadAgents();
         } else throw new Error();
       })
       .catch(() => document.getElementById('loginError').style.display = 'block');
@@ -542,11 +423,6 @@
       document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
       document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
       document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
-      document.getElementById("section-agent-performance").style.display = (section === "agent-performance") ? "block" : "none";
-
-      if (section === "agent-performance") {
-        loadPerformanceData(); // Cargar datos al mostrar la sección
-      }
     }
 
     function loadAgents() {
@@ -667,95 +543,6 @@
       .catch(() => alert("Error al editar agente"));
     }
 
-    // Funciones para Rendimiento Agentes
-    function loadPerformanceData(from, to) {
-      const url = from && to 
-        ? `https://mi-chat-9uti.onrender.com/get-performance-data?from=${from}&to=${to}` 
-        : 'https://mi-chat-9uti.onrender.com/get-performance-data';
-      fetch(url, { credentials: "include" })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("bestAgent").textContent = data.agents.reduce((max, agent) => agent.closures > max.closures ? agent : max, { name: "-", closures: 0 }).name;
-        document.getElementById("totalClosures").textContent = data.totalClosures;
-        document.getElementById("totalInteractions").textContent = data.totalInteractions;
-
-        const ctx = document.getElementById("performanceChart").getContext("2d");
-        if (performanceChart) performanceChart.destroy();
-        performanceChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: data.agents.map(agent => agent.name),
-            datasets: [{
-              label: "Cierres",
-              data: data.agents.map(agent => agent.closures),
-              backgroundColor: "rgba(255, 99, 132, 0.7)"
-            }]
-          },
-          options: { 
-            responsive: true, 
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
-          }
-        });
-
-        const tableBody = document.querySelector("#performanceTable tbody");
-        tableBody.innerHTML = data.agents.map(agent => `
-          <tr>
-            <td>${agent.name}</td>
-            <td>${agent.closures}</td>
-            <td>${agent.interactions}</td>
-          </tr>
-        `).join("");
-      })
-      .catch(err => console.error("Error al cargar datos de rendimiento:", err));
-    }
-
-    function applyPerformanceFilter() {
-      const filter = document.getElementById("performanceFilter").value;
-      const today = new Date();
-      let from, to;
-
-      switch (filter) {
-        case "today":
-          from = new Date(today.setHours(0, 0, 0, 0));
-          to = new Date(today.setHours(23, 59, 59, 999));
-          break;
-        case "yesterday":
-          from = new Date(today.setDate(today.getDate() - 1));
-          from.setHours(0, 0, 0, 0);
-          to = new Date(today.setHours(23, 59, 59, 999));
-          break;
-        case "week":
-          from = new Date(today.setDate(today.getDate() - today.getDay()));
-          from.setHours(0, 0, 0, 0);
-          to = new Date();
-          break;
-        case "month":
-          from = new Date(today.getFullYear(), today.getMonth(), 1);
-          to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-          break;
-        case "lastMonth":
-          from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-          to = new Date(today.getFullYear(), today.getMonth(), 0);
-          break;
-      }
-
-      document.getElementById("customFromDate").value = from.toISOString().split("T")[0];
-      document.getElementById("customToDate").value = to.toISOString().split("T")[0];
-      loadPerformanceData(from.toISOString(), to.toISOString());
-    }
-
-    function applyCustomDateRange() {
-      const from = document.getElementById("customFromDate").value;
-      const to = document.getElementById("customToDate").value;
-
-      if (!from || !to) return alert("Por favor selecciona un rango de fechas válido.");
-
-      const fromDate = new Date(from + "T00:00:00Z");
-      const toDate = new Date(to + "T23:59:59Z");
-      loadPerformanceData(fromDate.toISOString(), toDate.toISOString());
-    }
-
     socket.on('update username', (data) => {
       console.log('Evento update username recibido en superadmin:', data);
       const { userId, newUsername } = data;
@@ -772,21 +559,7 @@
           if (e.key === 'Enter') loginSuperAdmin();
         });
       });
-
-      const token = getAuthToken();
-      const username = getSuperUsername();
-      if (token && username) {
-        fetch('/superadmin.html?username=' + encodeURIComponent(username), { credentials: 'include' })
-        .then(res => {
-          if (res.ok) {
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('mainBox').style.display = 'block';
-            showSection('home');
-            loadAgents();
-          }
-        });
-      }
     });
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92b641ef5fe2c006',t:'MTc0MzgyNjg3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
