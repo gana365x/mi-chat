@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rendimiento de Agentes - GANA365</title>
+  <style>
+    :root {
+      --primary-color: #FF3B00;
+      --secondary-color: #ffa500;
+      --bg-dark: #121212;
+      --bg-darker: #1a1a1a;
+      --bg-input: #1f1f1f;
+      --bg-hover: #2a2a2a;
+      --text-light: #ffffff;
+      --text-muted: #888;
+      --border-radius-lg: 12px;
+      --border-radius-md: 8px;
+      --shadow: 0 4px 16px rgba(0,0,0,0.6);
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
+      color: var(--text-light);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background: var(--bg-darker);
+      border-radius: var(--border-radius-lg);
+      border: 2px solid var(--primary-color);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      margin: 0 0 20px 0;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    input[type="date"], select, button {
+      background: var(--bg-input);
+      color: var(--text-light);
+      border: 2px solid var(--primary-color);
+      border-radius: var(--border-radius-md);
+      padding: 8px;
+      outline: none;
+    }
+
+    button {
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(255, 59, 0, 0.4);
+    }
+
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: var(--bg-input);
+      padding: 15px;
+      border-radius: var(--border-radius-md);
+      text-align: center;
+    }
+
+    .stat-box h3 {
+      color: var(--secondary-color);
+      margin: 0 0 10px 0;
+    }
+
+    .stat-box p {
+      font-size: 24px;
+      margin: 0;
+    }
+
+    .table-container {
+      background: var(--bg-input);
+      padding: 15px;
+      border-radius: var(--border-radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--bg-hover);
+    }
+
+    th {
+      background: var(--bg-hover);
+      color: var(--primary-color);
+    }
+
+    @media (max-width: 767px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+
+      .filters {
+        flex-direction: column;
+      }
+
+      .filter-group {
+        width: 100%;
+      }
+
+      input[type="date"], select, button {
+        width: 100%;
+      }
+
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Rendimiento de Agentes</h1>
+    
+    <div class="filters">
+      <div class="filter-group">
+        <label>Desde:</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="filter-group">
+        <label>Hasta:</label>
+        <input type="date" id="toDate">
+      </div>
+      <div class="filter-group">
+        <label>Rango rápido:</label>
+        <select id="quickRange" onchange="setQuickRange()">
+          <option value="">Seleccionar...</option>
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button onclick="loadStats()">Actualizar</button>
+      </div>
+    </div>
+
+    <div class="stats-container">
+      <div class="stat-box">
+        <h3>Mensajes Totales</h3>
+        <p id="totalMessages">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Cargar Fichas</h3>
+        <p id="cargarFichas">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Retiros</h3>
+        <p id="retiros">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Imágenes</h3>
+        <p id="imagenes">0</p>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <h2>Chats Finalizados por Agente</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Agente</th>
+            <th>Chats Finalizados</th>
+          </tr>
+        </thead>
+        <tbody id="agentTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function setDefaultDates() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('fromDate').value = today;
+      document.getElementById('toDate').value = today;
+    }
+
+    function setQuickRange() {
+      const range = document.getElementById('quickRange').value;
+      const now = new Date();
+      let from, to;
+
+      switch (range) {
+        case 'today':
+          from = to = new Date(now.setHours(0, 0, 0, 0));
+          break;
+        case 'yesterday':
+          from = to = new Date(now.setDate(now.getDate() - 1));
+          from.setHours(0, 0, 0, 0);
+          to.setHours(23, 59, 59, 999);
+          break;
+        case 'week':
+          from = new Date(now.setDate(now.getDate() - now.getDay()));
+          to = new Date();
+          break;
+        case 'month':
+          from = new Date(now.getFullYear(), now.getMonth(), 1);
+          to = new Date();
+          break;
+        default:
+          setDefaultDates();
+          return;
+      }
+
+      document.getElementById('fromDate').value = from.toISOString().split('T')[0];
+      document.getElementById('toDate').value = to.toISOString().split('T')[0];
+      loadStats();
+    }
+
+    function loadStats() {
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+      if (!fromDate || !toDate) return;
+
+      const from = new Date(fromDate).toISOString();
+      const to = new Date(toDate + 'T23:59:59.999Z').toISOString();
+
+      // Fetch general stats
+      fetch(`https://mi-chat-9uti.onrender.com/stats?from=${from}&to=${to}`, {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('totalMessages').textContent = data.messages || 0;
+        document.getElementById('cargarFichas').textContent = data.cargarFichas || 0;
+        document.getElementById('retiros').textContent = data.retiros || 0;
+        document.getElementById('imagenes').textContent = data.imagenes || 0;
+      });
+
+      // Fetch agent stats
+      fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${from}&to=${to}`, {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        const tableBody = document.getElementById('agentTable');
+        tableBody.innerHTML = '';
+        data.forEach(agent => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${agent.name || agent.username}</td>
+            <td>${agent.finalizados || 0}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setDefaultDates();
+      loadStats();
+    });
+  </script>
+</body>
+</html>
