@@ -1,1 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Personalizar Estilo - GANA365</title>
+  <style>
+    :root {
+      --primary-color: #FF3B00;
+      --secondary-color: #ffa500;
+      --bg-dark: #121212;
+      --bg-darker: #1a1a1a;
+      --bg-input: #1f1f1f;
+      --bg-hover: #2a2a2a;
+      --text-light: #ffffff;
+      --text-muted: #888;
+      --border-radius-lg: 12px;
+      --border-radius-md: 8px;
+      --shadow: 0 4px 16px rgba(0,0,0,0.6);
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
+      color: var(--text-light);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      background: var(--bg-darker);
+      border-radius: var(--border-radius-lg);
+      border: 2px solid var(--primary-color);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+    }
+    h1 {
+      color: var(--primary-color);
+      margin: 0 0 20px 0;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="color"], input[type="text"], input[type="file"] {
+      background: var(--bg-input);
+      color: var(--text-light);
+      border: 2px solid var(--primary-color);
+      border-radius: var(--border-radius-md);
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      color: var(--text-light);
+      border: none;
+      border-radius: var(--border-radius-md);
+      padding: 10px 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(255, 59, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Personalizar Estilo</h1>
+    <div class="form-group">
+      <label>Color Principal (Botones, Bordes):</label>
+      <input type="color" id="primaryColor" value="#FF3B00">
+    </div>
+    <div class="form-group">
+      <label>Color Secundario (Gradientes):</label>
+      <input type="color" id="secondaryColor" value="#FFA500">
+    </div>
+    <div class="form-group">
+      <label>Fondo Principal:</label>
+      <input type="color" id="bgDark" value="#121212">
+    </div>
+    <div class="form-group">
+      <label>Fondo Secundario (Contenedores):</label>
+      <input type="color" id="bgDarker" value="#1A1A1A">
+    </div>
+    <div class="form-group">
+      <label>Color de Fondo de Entradas:</label>
+      <input type="color" id="bgInput" value="#1F1F1F">
+    </div>
+    <div class="form-group">
+      <label>Color Hover:</label>
+      <input type="color" id="bgHover" value="#2A2A2A">
+    </div>
+    <div class="form-group">
+      <label>Logo (URL o archivo):</label>
+      <input type="text" id="logoUrl" placeholder="URL del logo">
+      <input type="file" id="logoFile" accept="image/*">
+    </div>
+    <div class="form-group">
+      <label>Número de Soporte:</label>
+      <input type="text" id="supportNumber" placeholder="+123456789">
+    </div>
+    <button onclick="saveStyles()">Guardar Cambios</button>
+  </div>
 
+  <script>
+    function saveStyles() {
+      const styles = {
+        primaryColor: document.getElementById('primaryColor').value,
+        secondaryColor: document.getElementById('secondaryColor').value,
+        bgDark: document.getElementById('bgDark').value,
+        bgDarker: document.getElementById('bgDarker').value,
+        bgInput: document.getElementById('bgInput').value,
+        bgHover: document.getElementById('bgHover').value,
+        logoUrl: document.getElementById('logoUrl').value,
+        supportNumber: document.getElementById('supportNumber').value
+      };
+
+      const logoFile = document.getElementById('logoFile').files[0];
+      if (logoFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          styles.logoUrl = e.target.result; // Base64 del archivo
+          sendStyles(styles);
+        };
+        reader.readAsDataURL(logoFile);
+      } else {
+        sendStyles(styles);
+      }
+    }
+
+    function sendStyles(styles) {
+      fetch('https://mi-chat-9uti.onrender.com/save-styles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(styles)
+      })
+      .then(res => {
+        if (res.ok) alert('Estilos guardados correctamente');
+        else throw new Error('Error al guardar estilos');
+      })
+      .catch(err => console.error(err));
+    }
+
+    // Cargar estilos actuales al iniciar
+    fetch('https://mi-chat-9uti.onrender.com/get-styles', { credentials: 'include' })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('primaryColor').value = data.primaryColor || '#FF3B00';
+      document.getElementById('secondaryColor').value = data.secondaryColor || '#FFA500';
+      document.getElementById('bgDark').value = data.bgDark || '#121212';
+      document.getElementById('bgDarker').value = data.bgDarker || '#1A1A1A';
+      document.getElementById('bgInput').value = data.bgInput || '#1F1F1F';
+      document.getElementById('bgHover').value = data.bgHover || '#2A2A2A';
+      document.getElementById('logoUrl').value = data.logoUrl || '';
+      document.getElementById('supportNumber').value = data.supportNumber || '';
+    });
+  </script>
+</body>
+</html>
