@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acceso Denegado</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #000;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .warning {
+      font-size: 100px;
+      color: #FF3B00;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 36px;
+      margin: 0;
+    }
+    button {
+      background: linear-gradient(90deg, #FF3B00, #ffa500);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 20px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(255, 59, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="warning">⚠</div>
+  <h1>ACCESO DENEGADO</h1>
+  <button onclick="window.location.href='/superadmin.html'">Volver</button>
+</body>
+</html>
