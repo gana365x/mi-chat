@@ -1,3 +1,4 @@
+
 const moment = require("moment-timezone");
 require('dotenv').config();
 
@@ -1178,15 +1179,4 @@ app.get('/get-performance-data', async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
-});
-// Estilos dinámicos para superadmin
-app.get('/get-styles', (req, res) => {
-  res.json({
-    primaryColor: "#FF3B00",
-    secondaryColor: "#ffa500",
-    bgDark: "#121212",
-    bgDarker: "#1a1a1a",
-    bgInput: "#1f1f1f",
-    bgHover: "#2a2a2a"
-  });
 });
