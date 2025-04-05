@@ -952,7 +952,7 @@ app.get('/stats', async (req, res) => {
 
     const messages = await ChatMessage.find({
       timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
-    }).sort({ timestamp: 1 }); // Ordenar por timestamp para procesar en orden cronológico
+    }).sort({ timestamp: 1 });
 
     let chatsClosed = 0;
     let messagesCount = 0;
@@ -967,22 +967,12 @@ app.get('/stats', async (req, res) => {
         chatsClosed++;
       }
 
-      // Contar interacciones iniciadas por "Cargar Fichas" o "Retirar", imágenes solo si no están precedidas
-      let lastWasRequest = false;
+      // Contar solo "Cargar Fichas" y "Retirar" como interacciones
       for (const msg of userMessages) {
         if (!['Agent', 'System', 'Bot'].includes(msg.sender)) {
           if (msg.message === 'Cargar Fichas' || msg.message === 'Retirar') {
             messagesCount += 1;
-            lastWasRequest = true;
-          } else if (msg.image && !lastWasRequest) {
-            messagesCount += 1; // Cuenta la imagen solo si no sigue a un "Cargar Fichas" o "Retirar"
-          } else if (msg.image && lastWasRequest) {
-            lastWasRequest = false; // Resetea después de una imagen que sigue a una solicitud
-          } else {
-            lastWasRequest = false; // Otros mensajes del usuario no cuentan
           }
-        } else {
-          lastWasRequest = false; // Mensajes del bot, agente o sistema resetean la bandera
         }
       }
 
