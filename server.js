@@ -161,8 +161,14 @@ const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
 function getTimestamp() {
-  const timezone = "America/Argentina/Buenos_Aires"; // Forzar Argentina para probar
-  return moment().tz(timezone).toISOString(true); // true incluye el offset local
+  const timezone = "America/Argentina/Buenos_Aires"; // Forzar Argentina para depurar
+  const time = moment().tz(timezone);
+  
+  // Logs para depurar
+  console.log("Hora del servidor:", new Date());
+  console.log("Hora ajustada a Argentina:", time.format());
+  
+  return time.toISOString(true); // true incluye el offset local
 }
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
