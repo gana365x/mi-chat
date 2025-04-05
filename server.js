@@ -81,6 +81,14 @@ app.get('/superadmin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
 });
 
+app.get('/agent-performance.html', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'agent-performance.html'));
+});
+
 app.get('/config.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
