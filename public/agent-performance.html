@@ -184,120 +184,113 @@
     </div>
 
     <div class="stats-container">
-      <div class="stat-box">
-        <h3>Mensajes Totales</h3>
-        <p id="totalMessages">0</p>
-      </div>
-      <div class="stat-box">
-        <h3>Cargar Fichas</h3>
-        <p id="cargarFichas">0</p>
-      </div>
-      <div class="stat-box">
-        <h3>Retiros</h3>
-        <p id="retiros">0</p>
-      </div>
-      <div class="stat-box">
-        <h3>Imágenes</h3>
-        <p id="imagenes">0</p>
-      </div>
-    </div>
-
-    <div class="table-container">
-      <h2>Chats Finalizados por Agente</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Agente</th>
-            <th>Chats Finalizados</th>
-          </tr>
-        </thead>
-        <tbody id="agentTable"></tbody>
-      </table>
-    </div>
+  <div class="stat-box">
+    <h3>Mensajes Totales</h3>
+    <p id="totalMessages">0</p>
   </div>
+  <div class="stat-box">
+    <h3>Interacciones Agentes</h3>
+    <p id="interactions">0</p>
+  </div>
+  <div class="stat-box">
+    <h3>Cargar Fichas</h3>
+    <p id="cargarFichas">0</p>
+  </div>
+  <div class="stat-box">
+    <h3>Retiros</h3>
+    <p id="retiros">0</p>
+  </div>
+  <div class="stat-box">
+    <h3>Imágenes</h3>
+    <p id="imagenes">0</p>
+  </div>
+</div>
 
-  <script>
-    function setDefaultDates() {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('fromDate').value = today;
-      document.getElementById('toDate').value = today;
+<script>
+  function setDefaultDates() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('fromDate').value = today;
+    document.getElementById('toDate').value = today;
+  }
+
+  function setQuickRange() {
+    const range = document.getElementById('quickRange').value;
+    const now = new Date();
+    let from, to;
+
+    switch (range) {
+      case 'today':
+        from = to = new Date(now.setHours(0, 0, 0, 0));
+        break;
+      case 'yesterday':
+        from = to = new Date(now.setDate(now.getDate() - 1));
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case 'week':
+        from = new Date(now.setDate(now.getDate() - now.getDay()));
+        to = new Date();
+        break;
+      case 'month':
+        from = new Date(now.getFullYear(), now.getMonth(), 1);
+        to = new Date();
+        break;
+      default:
+        setDefaultDates();
+        return;
     }
 
-    function setQuickRange() {
-      const range = document.getElementById('quickRange').value;
-      const now = new Date();
-      let from, to;
+    document.getElementById('fromDate').value = from.toISOString().split('T')[0];
+    document.getElementById('toDate').value = to.toISOString().split('T')[0];
+    loadStats();
+  }
 
-      switch (range) {
-        case 'today':
-          from = to = new Date(now.setHours(0, 0, 0, 0));
-          break;
-        case 'yesterday':
-          from = to = new Date(now.setDate(now.getDate() - 1));
-          from.setHours(0, 0, 0, 0);
-          to.setHours(23, 59, 59, 999);
-          break;
-        case 'week':
-          from = new Date(now.setDate(now.getDate() - now.getDay()));
-          to = new Date();
-          break;
-        case 'month':
-          from = new Date(now.getFullYear(), now.getMonth(), 1);
-          to = new Date();
-          break;
-        default:
-          setDefaultDates();
-          return;
-      }
+  function loadStats() {
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+    if (!fromDate || !toDate) return;
 
-      document.getElementById('fromDate').value = from.toISOString().split('T')[0];
-      document.getElementById('toDate').value = to.toISOString().split('T')[0];
-      loadStats();
-    }
+    const from = new Date(fromDate).toISOString();
+    const to = new Date(toDate + 'T23:59:59.999Z').toISOString();
 
-    function loadStats() {
-      const fromDate = document.getElementById('fromDate').value;
-      const toDate = document.getElementById('toDate').value;
-      if (!fromDate || !toDate) return;
-
-      const from = new Date(fromDate).toISOString();
-      const to = new Date(toDate + 'T23:59:59.999Z').toISOString();
-
-      // Fetch general stats
-      fetch(`https://mi-chat-9uti.onrender.com/stats?from=${from}&to=${to}`, {
-        credentials: 'include'
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('totalMessages').textContent = data.messages || 0;
-        document.getElementById('cargarFichas').textContent = data.cargarFichas || 0;
-        document.getElementById('retiros').textContent = data.retiros || 0;
-        document.getElementById('imagenes').textContent = data.imagenes || 0;
-      });
-
-      // Fetch agent stats
-      fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${from}&to=${to}`, {
-        credentials: 'include'
-      })
-      .then(res => res.json())
-      .then(data => {
-        const tableBody = document.getElementById('agentTable');
-        tableBody.innerHTML = '';
-        data.forEach(agent => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${agent.name || agent.username}</td>
-            <td>${agent.finalizados || 0}</td>
-          `;
-          tableBody.appendChild(row);
-        });
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      setDefaultDates();
-      loadStats();
+    // Fetch general stats
+    fetch(`https://mi-chat-9uti.onrender.com/stats?from=${from}&to=${to}`, {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('totalMessages').textContent = data.messages || 0;
+      document.getElementById('interactions').textContent = data.interactions || 0;
+      document.getElementById('cargarFichas').textContent = data.cargarFichas || 0;
+      document.getElementById('retiros').textContent = data.retiros || 0;
+      document.getElementById('imagenes').textContent = data.imagenes || 0;
     });
-  </script>
+
+    // Fetch agent stats
+    fetch(`https://mi-chat-9uti.onrender.com/stats-agents?from=${from}&to=${to}`, {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      const tableBody = document.getElementById('agentTable');
+      tableBody.innerHTML = '';
+      data.forEach(agent => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${agent.name || agent
+
+.username}</td>
+          <td>${agent.finalizados || 0}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setDefaultDates();
+    loadStats();
+  });
+</script>
 </body>
 </html>
