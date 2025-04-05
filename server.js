@@ -154,6 +154,17 @@ const chatMessageSchema = new mongoose.Schema({
 
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
+const agentInteractionSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  agentUsername: { type: String, required: true },
+  firstInteraction: { type: Date, default: Date.now },
+  chatCount: { type: Number, default: 1 }
+}, { 
+  indexes: [{ key: { userId: 1, agentUsername: 1 }, unique: true }] 
+});
+
+const AgentInteraction = mongoose.model('AgentInteraction', agentInteractionSchema);
+
 const userSessions = new Map();
 const adminSubscriptions = new Map();
 
