@@ -979,7 +979,7 @@ app.post('/update-timezone', (req, res) => {
   res.json({ success: true });
 });
 
-aapp.get('/stats', async (req, res) => {
+app.get('/stats', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
