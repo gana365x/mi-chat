@@ -161,21 +161,8 @@ const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
 const timezoneFile = path.join(__dirname, 'timezone.json');
 
 function getTimestamp() {
-  const defaultTimezone = "America/Argentina/Buenos_Aires";
-  let timezone = defaultTimezone;
-
-  try {
-    const data = fs.readFileSync(timezoneFile, 'utf-8');
-    const config = JSON.parse(data);
-    if (config.timezone) {
-      timezone = config.timezone;
-    }
-  } catch (e) {
-    console.error("❌ Error leyendo timezone.json:", e.message);
-  }
-
-  // Usar moment-timezone para obtener la fecha correcta
-  return moment().tz(timezone).toISOString();
+  const timezone = "America/Argentina/Buenos_Aires"; // Forzar Argentina para probar
+  return moment().tz(timezone).toISOString(true); // true incluye el offset local
 }
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
@@ -974,8 +961,10 @@ app.get('/stats', async (req, res) => {
         chatsClosed++;
       }
 
+      // Contar solo mensajes clave del usuario como nuevas interacciones
       messagesCount += userMessages.filter(
-        msg => msg.sender === userSessions.get(userId)?.username || (!['Agent', 'System', 'Bot'].includes(msg.sender) && !msg.image)
+        msg => !['Agent', 'System', 'Bot'].includes(msg.sender) && 
+               (msg.message === 'Cargar Fichas' || msg.message === 'Retirar' || msg.image)
       ).length;
 
       imagenesCount += userMessages.filter(
