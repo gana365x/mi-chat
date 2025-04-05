@@ -967,16 +967,22 @@ app.get('/stats', async (req, res) => {
         chatsClosed++;
       }
 
-      // Contar solo el inicio de cada interacción por chat abierto
-      let isChatOpen = false;
+      // Contar interacciones iniciadas por "Cargar Fichas" o "Retirar", imágenes solo si no están precedidas
+      let lastWasRequest = false;
       for (const msg of userMessages) {
-        if (msg.status === 'closed') {
-          isChatOpen = false; // Reinicia después de cerrar el chat
-        } else if (!['Agent', 'System', 'Bot'].includes(msg.sender) && 
-                   (msg.message === 'Cargar Fichas' || msg.message === 'Retirar') && 
-                   !isChatOpen) {
-          messagesCount += 1; // Cuenta solo el primer "Cargar Fichas" o "Retirar" del chat abierto
-          isChatOpen = true; // Marca el chat como abierto
+        if (!['Agent', 'System', 'Bot'].includes(msg.sender)) {
+          if (msg.message === 'Cargar Fichas' || msg.message === 'Retirar') {
+            messagesCount += 1;
+            lastWasRequest = true;
+          } else if (msg.image && !lastWasRequest) {
+            messagesCount += 1; // Cuenta la imagen solo si no sigue a un "Cargar Fichas" o "Retirar"
+          } else if (msg.image && lastWasRequest) {
+            lastWasRequest = false; // Resetea después de una imagen que sigue a una solicitud
+          } else {
+            lastWasRequest = false; // Otros mensajes del usuario no cuentan
+          }
+        } else {
+          lastWasRequest = false; // Mensajes del bot, agente o sistema resetean la bandera
         }
       }
 
