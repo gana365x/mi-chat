@@ -174,14 +174,8 @@ function getTimestamp() {
     console.error("❌ Error leyendo timezone.json:", e.message);
   }
 
-  try {
-    const now = new Date();
-    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-    return localTime.toISOString();
-  } catch (e) {
-    console.error("❌ Error convirtiendo a zona horaria:", e.message);
-    return new Date().toISOString();
-  }
+  // Usar moment-timezone para obtener la fecha correcta
+  return moment().tz(timezone).toISOString();
 }
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
@@ -517,10 +511,9 @@ io.on('connection', (socket) => {
     userSocket.emit('chat closed', { userId });
   }
 
-  // Siempre incrementar el contador y crear log cuando hay un adminUsername
+  // Incrementar el contador cuando hay un adminUsername
   if (adminUsername) {
-    await incrementPerformance(adminUsername);
-    await PerformanceLog.create({ agent: adminUsername });
+    await incrementPerformance(adminUsername); // Esto ya registra en PerformanceLog
   }
 
   if (userSessions.has(userId)) {
