@@ -514,54 +514,55 @@ io.on('connection', (socket) => {
   });
 
   socket.on('close chat', async ({ userId, adminUsername }) => {
-    const userSocket = userSessions.get(userId)?.socket;
-    if (userSocket) {
-      userSocket.emit('chat closed', { userId });
+  const userSocket = userSessions.get(userId)?.socket;
+  if (userSocket) {
+    userSocket.emit('chat closed', { userId });
+  }
+
+  // Siempre incrementar el contador y crear log cuando hay un adminUsername
+  if (adminUsername) {
+    await incrementPerformance(adminUsername);
+    await PerformanceLog.create({ agent: adminUsername });
+  }
+
+  if (userSessions.has(userId)) {
+    const session = userSessions.get(userId);
+    userSessions.set(userId, { ...session, socket: null });
+  }
+
+  let username = userSessions.get(userId)?.username || 'Usuario';
+  try {
+    const savedName = await UserName.findOne({ userId });
+    if (savedName) {
+      username = savedName.name;
     }
+  } catch (e) {
+    console.error("❌ Error obteniendo nombre del usuario:", e.message);
+  }
 
-    if (adminUsername) {
-      await incrementPerformance(adminUsername);
-      await PerformanceLog.create({ agent: adminUsername });
+  const closeMsg = {
+    userId,
+    sender: 'System',
+    message: '💬 Chat cerrado',
+    timestamp: getTimestamp(),
+    status: 'closed',
+    adminUsername: adminUsername,
+    username: username
+  };
+  await new ChatMessage(closeMsg).save();
+
+  if (userSocket) {
+    userSocket.emit('chat message', closeMsg);
+  }
+
+  for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
+    if (subscribedUserId === userId) {
+      io.to(adminSocketId).emit('admin message', closeMsg);
     }
+  }
 
-    if (userSessions.has(userId)) {
-      const session = userSessions.get(userId);
-      userSessions.set(userId, { ...session, socket: null });
-    }
-
-    let username = userSessions.get(userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
-
-    const closeMsg = {
-      userId,
-      sender: 'System',
-      message: '💬 Chat cerrado',
-      timestamp: getTimestamp(),
-      status: 'closed',
-      adminUsername: adminUsername,
-      username: username
-    };
-    await new ChatMessage(closeMsg).save();
-
-    if (userSocket) {
-      userSocket.emit('chat message', closeMsg);
-    }
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === userId) {
-        io.to(adminSocketId).emit('admin message', closeMsg);
-      }
-    }
-
-    io.emit('user list', await getAllChatsSorted());
-  });
+  io.emit('user list', await getAllChatsSorted());
+});
 
   socket.on('disconnect', async () => {
     adminSubscriptions.delete(socket.id);
