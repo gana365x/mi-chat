@@ -189,13 +189,11 @@ if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify(
 
 async function incrementPerformance(agentUsername) {
   try {
-    await Performance.findOneAndUpdate(
-      { username: agentUsername },
-      { $inc: { count: 1 } },
-      { upsert: true, new: true }
-    );
+    // Registrar el cierre en PerformanceLog
+    await PerformanceLog.create({ agent: agentUsername });
+    console.log(`✅ Interacción registrada para ${agentUsername}`);
   } catch (err) {
-    console.error('❌ Error al actualizar performance en MongoDB:', err);
+    console.error('❌ Error al registrar interacción en PerformanceLog:', err);
   }
 }
 
@@ -777,11 +775,18 @@ app.get('/performance', async (req, res) => {
     return res.status(401).json({ success: false, message: 'No autorizado' });
   }
   try {
-    const allData = await Performance.find({});
-    const result = {};
+    const performanceData = await PerformanceLog.aggregate([
+      {
+        $group: {
+          _id: "$agent",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
-    allData.forEach(item => {
-      result[item.username] = item.count;
+    const result = {};
+    performanceData.forEach(item => {
+      result[item._id] = item.count;
     });
 
     res.json(result);
@@ -1025,25 +1030,28 @@ app.get('/stats-agents', async (req, res) => {
       return res.status(400).json({ error: 'Fechas inválidas' });
     }
 
-    const closedMessages = await ChatMessage.find({
-      status: 'closed',
-      sender: 'System',
-      timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
-    });
-
-    const agentStatsMap = {};
-    closedMessages.forEach(msg => {
-      if (msg.adminUsername) {
-        agentStatsMap[msg.adminUsername] = (agentStatsMap[msg.adminUsername] || 0) + 1;
+    // Contar interacciones por agente desde PerformanceLog
+    const agentInteractions = await PerformanceLog.aggregate([
+      {
+        $match: {
+          timestamp: { $gte: fromDate, $lte: toDate }
+        }
+      },
+      {
+        $group: {
+          _id: "$agent",
+          finalizados: { $sum: 1 } // Contar cada cierre como una interacción
+        }
       }
-    });
+    ]);
 
     const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name');
     const agentStats = agents.map(agent => ({
       username: agent.username,
       name: agent.name || agent.username,
-      finalizados: agentStatsMap[agent.username] || 0
+      finalizados: agentInteractions.find(a => a._id === agent.username)?.finalizados || 0
     }));
+
     res.json(agentStats);
   } catch (error) {
     console.error('Error al procesar estadísticas por agente:', error);
@@ -1140,9 +1148,9 @@ app.get('/get-performance-data', async (req, res) => {
       { $match: closuresQuery },
       { $group: { _id: "$agent", count: { $sum: 1 } } }
     ]);
-    const interactions = await ChatMessage.aggregate([
+    const interactions = await PerformanceLog.aggregate([
       { $match: closuresQuery },
-      { $group: { _id: "$username", count: { $sum: 1 } } }
+      { $group: { _id: "$agent", count: { $sum: 1 } } }
     ]);
 
     const agentData = agents.map(agent => {
