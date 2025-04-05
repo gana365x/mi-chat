@@ -67,22 +67,21 @@ function isValidToken(token) {
 }
 
 async function isSuperAdmin(username) {
-  try {
-    const agent = await Agent.findOne({ username });
-    return agent && (agent.role === 'SuperAdmin' || agent.type === 'superadmin');
-  } catch (err) {
-    console.error('Error verificando SuperAdmin:', err);
-    return false;
-  }
+  const agent = await Agent.findOne({ username });
+  return agent && (agent.role === 'SuperAdmin' || agent.type === 'superadmin');
 }
 
 // Protección para superadmin.html
 app.get('/superadmin.html', async (req, res) => {
   const token = req.cookies.token;
-  const username = req.cookies.superUsername; // Usamos la cookie en lugar de query
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
+  }
 
-  if (!token || !isValidToken(token) || !username || !(await isSuperAdmin(username))) {
-    return res.redirect('/access-denied.html');
+  // Verificar si el usuario es SuperAdmin
+  const username = req.query.username; // Podrías pasar el username en la cookie o en otra forma segura
+  if (!username || !(await isSuperAdmin(username))) {
+    return res.redirect('/index.html');
   }
 
   res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
@@ -91,18 +90,15 @@ app.get('/superadmin.html', async (req, res) => {
 app.get('/admin.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
-    return res.redirect('/access-denied.html');
+    return res.redirect('/index.html');
   }
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Protección para agent-performance.html
-app.get('/agent-performance.html', async (req, res) => {
+app.get('/agent-performance.html', (req, res) => {
   const token = req.cookies.token;
-  const username = req.cookies.superUsername;
-
-  if (!token || !isValidToken(token) || !username || !(await isSuperAdmin(username))) {
-    return res.redirect('/access-denied.html');
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
   }
   res.sendFile(path.join(__dirname, 'public', 'agent-performance.html'));
 });
@@ -110,7 +106,7 @@ app.get('/agent-performance.html', async (req, res) => {
 app.get('/config.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
-    return res.redirect('/access-denied.html');
+    return res.redirect('/index.html');
   }
   res.sendFile(path.join(__dirname, 'public', 'config.html'));
 });
@@ -594,13 +590,12 @@ app.post('/superadmin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/', secure: true });
-    res.cookie('superUsername', username, { httpOnly: true, path: '/', secure: true }); // Guardamos el username
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({
       success: true,
       name: agent.name,
       role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin'),
-      username: agent.username
+      username: agent.username // Agregamos el username para usarlo después
     });
   } catch (err) {
     console.error('❌ Error en login:', err);
@@ -626,7 +621,7 @@ app.post('/admin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/', secure: true });
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de admin:', err);
