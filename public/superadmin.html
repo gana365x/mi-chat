@@ -385,181 +385,182 @@
 
   <!-- Socket.IO -->
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io('https://mi-chat-9uti.onrender.com');
+<script>
+  const socket = io('https://mi-chat-9uti.onrender.com');
 
-    function getAuthToken() {
-      const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
-      return match ? match[1] : null;
-    }
+  function getAuthToken() {
+    const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    return match ? match[1] : null;
+  }
 
-    function loginSuperAdmin() {
-      const username = document.getElementById('superUsername').value.trim();
-      const password = document.getElementById('superPassword').value.trim();
+  function loginSuperAdmin() {
+    const username = document.getElementById('superUsername').value.trim();
+    const password = document.getElementById('superPassword').value.trim();
 
-      fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => {
-        if (data.success) {
-          if (data.token) document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-          document.getElementById('loginBox').style.display = 'none';
-          document.getElementById('mainBox').style.display = 'block';
-          showSection('home');
-          loadAgents();
-        } else throw new Error();
-      })
-      .catch(() => document.getElementById('loginError').style.display = 'block');
-    }
-
-    function showSection(section) {
-      document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
-      document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
-      document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
-    }
-
-    function loadAgents() {
-      fetch('https://mi-chat-9uti.onrender.com/agents', { credentials: 'include' })
-      .then(res => res.json())
-      .then(agents => {
-        const table = document.getElementById('agentsTable');
-        table.innerHTML = '';
-        agents.forEach(agent => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td><strong>${agent.username}</strong></td>
-            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
-            <td>${agent.role || 'Admin'}</td>
-            <td style="display: flex; gap: 5px;">
-              <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
-              <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
-            </td>
-          `;
-          table.appendChild(row);
-        });
-      });
-    }
-
-    function createAgent() {
-      const login = document.getElementById('newLogin').value.trim();
-      const name = document.getElementById('newName').value.trim();
-      const password = document.getElementById('newPassword').value.trim();
-      const role = document.getElementById('newRole').value;
-
-      if (!login || !name || !password || !role) {
-        document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
-        document.getElementById('createError').style.display = 'block';
-      }
-
-      fetch('https://mi-chat-9uti.onrender.com/agents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username: login, name, password, role })
-      })
-      .then(res => {
-        if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
-        return res.json();
-      })
-      .then(() => {
-        document.getElementById('newLogin').value = '';
-        document.getElementById('newName').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('newRole').value = 'Admin';
-        document.getElementById('createError').style.display = 'none';
+    fetch('https://mi-chat-9uti.onrender.com/superadmin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        document.cookie = `token=${process.env.SECRET_KEY}; path=/; max-age=604800; secure`;
+        document.cookie = `superUsername=${username}; path=/; max-age=604800; secure`; // Guardamos el username
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('mainBox').style.display = 'block';
+        showSection('home');
         loadAgents();
-      })
-      .catch(err => {
-        console.error("Error al crear agente:", err);
-        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
-        document.getElementById('createError').style.display = 'block';
-      });
-    }
+      } else throw new Error();
+    })
+    .catch(() => document.getElementById('loginError').style.display = 'block');
+  }
 
-    let selectedUsernameToDelete = null;
-    let selectedUsernameToEdit = null;
+  function showSection(section) {
+    document.getElementById("section-home").style.display = (section === "home") ? "block" : "none";
+    document.getElementById("section-agents").style.display = (section === "agents") ? "block" : "none";
+    document.getElementById("section-customize").style.display = (section === "customize") ? "block" : "none";
+  }
 
-    function openDeletePopup(username) {
-      selectedUsernameToDelete = username;
-      document.getElementById("deletePopup").classList.add("active");
-    }
-
-    function closeDeletePopup() {
-      selectedUsernameToDelete = null;
-      document.getElementById("deletePopup").classList.remove("active");
-    }
-
-    function confirmDelete() {
-      if (!selectedUsernameToDelete) return;
-      fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToDelete}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      })
-      .then(() => {
-        loadAgents();
-        closeDeletePopup();
-      });
-    }
-
-    function openEditPopup(username, name) {
-      selectedUsernameToEdit = username;
-      document.getElementById("editAgentName").value = name || '';
-      document.getElementById("editAgentPassword").value = '';
-      document.getElementById("editPopup").classList.add("active");
-    }
-
-    function closeEditPopup() {
-      selectedUsernameToEdit = null;
-      document.getElementById("editPopup").classList.remove("active");
-    }
-
-    function confirmEdit() {
-      const newName = document.getElementById("editAgentName").value.trim();
-      const newPass = document.getElementById("editAgentPassword").value.trim();
-
-      if (!newName) return alert("El nombre no puede estar vacío.");
-
-      const body = { name: newName };
-      if (newPass) body.password = newPass;
-
-      fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToEdit}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(body)
-      })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        loadAgents();
-        closeEditPopup();
-      })
-      .catch(() => alert("Error al editar agente"));
-    }
-
-    socket.on('update username', (data) => {
-      console.log('Evento update username recibido en superadmin:', data);
-      const { userId, newUsername } = data;
-      const agentRow = document.getElementById(`agent-name-${userId}`);
-      if (agentRow) agentRow.textContent = newUsername;
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const userInput = document.getElementById('superUsername');
-      const passInput = document.getElementById('superPassword');
-
-      [userInput, passInput].forEach(input => {
-        input.addEventListener('keypress', function (e) {
-          if (e.key === 'Enter') loginSuperAdmin();
-        });
+  function loadAgents() {
+    fetch('https://mi-chat-9uti.onrender.com/agents', { credentials: 'include' })
+    .then(res => res.json())
+    .then(agents => {
+      const table = document.getElementById('agentsTable');
+      table.innerHTML = '';
+      agents.forEach(agent => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${agent.username}</strong></td>
+          <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
+          <td>${agent.role || 'Admin'}</td>
+          <td style="display: flex; gap: 5px;">
+            <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
+            <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+          </td>
+        `;
+        table.appendChild(row);
       });
     });
-  </script>
+  }
+
+  function createAgent() {
+    const login = document.getElementById('newLogin').value.trim();
+    const name = document.getElementById('newName').value.trim();
+    const password = document.getElementById('newPassword').value.trim();
+    const role = document.getElementById('newRole').value;
+
+    if (!login || !name || !password || !role) {
+      document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+      document.getElementById('createError').style.display = 'block';
+    }
+
+    fetch('https://mi-chat-9uti.onrender.com/agents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username: login, name, password, role })
+    })
+    .then(res => {
+      if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
+      return res.json();
+    })
+    .then(() => {
+      document.getElementById('newLogin').value = '';
+      document.getElementById('newName').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('newRole').value = 'Admin';
+      document.getElementById('createError').style.display = 'none';
+      loadAgents();
+    })
+    .catch(err => {
+      console.error("Error al crear agente:", err);
+      document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+      document.getElementById('createError').style.display = 'block';
+    });
+  }
+
+  let selectedUsernameToDelete = null;
+  let selectedUsernameToEdit = null;
+
+  function openDeletePopup(username) {
+    selectedUsernameToDelete = username;
+    document.getElementById("deletePopup").classList.add("active");
+  }
+
+  function closeDeletePopup() {
+    selectedUsernameToDelete = null;
+    document.getElementById("deletePopup").classList.remove("active");
+  }
+
+  function confirmDelete() {
+    if (!selectedUsernameToDelete) return;
+    fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToDelete}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+    .then(() => {
+      loadAgents();
+      closeDeletePopup();
+    });
+  }
+
+  function openEditPopup(username, name) {
+    selectedUsernameToEdit = username;
+    document.getElementById("editAgentName").value = name || '';
+    document.getElementById("editAgentPassword").value = '';
+    document.getElementById("editPopup").classList.add("active");
+  }
+
+  function closeEditPopup() {
+    selectedUsernameToEdit = null;
+    document.getElementById("editPopup").classList.remove("active");
+  }
+
+  function confirmEdit() {
+    const newName = document.getElementById("editAgentName").value.trim();
+    const newPass = document.getElementById("editAgentPassword").value.trim();
+
+    if (!newName) return alert("El nombre no puede estar vacío.");
+
+    const body = { name: newName };
+    if (newPass) body.password = newPass;
+
+    fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToEdit}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      loadAgents();
+      closeEditPopup();
+    })
+    .catch(() => alert("Error al editar agente"));
+  }
+
+  socket.on('update username', (data) => {
+    console.log('Evento update username recibido en superadmin:', data);
+    const { userId, newUsername } = data;
+    const agentRow = document.getElementById(`agent-name-${userId}`);
+    if (agentRow) agentRow.textContent = newUsername;
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const userInput = document.getElementById('superUsername');
+    const passInput = document.getElementById('superPassword');
+
+    [userInput, passInput].forEach(input => {
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') loginSuperAdmin();
+      });
+    });
+  });
+</script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92b641ef5fe2c006',t:'MTc0MzgyNjg3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
