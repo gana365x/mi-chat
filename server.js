@@ -967,11 +967,14 @@ app.get('/stats', async (req, res) => {
         chatsClosed++;
       }
 
-      // Contar solo mensajes clave del usuario como nuevas interacciones
-      messagesCount += userMessages.filter(
+      // Contar solo la primera interacción clave por chat abierto
+      const firstKeyMessage = userMessages.find(
         msg => !['Agent', 'System', 'Bot'].includes(msg.sender) && 
                (msg.message === 'Cargar Fichas' || msg.message === 'Retirar' || msg.image)
-      ).length;
+      );
+      if (firstKeyMessage) {
+        messagesCount += 1; // Solo cuenta 1 por chat, no por cada mensaje
+      }
 
       imagenesCount += userMessages.filter(
         msg => msg.image && !['Agent', 'System', 'Bot'].includes(msg.sender)
