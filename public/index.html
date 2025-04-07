@@ -106,19 +106,19 @@
     }
 
     .login-container h3 {
-      font-size: 30px; /* Increased 50% from 20px */
+      font-size: 30px;
       margin-bottom: 15px;
     }
 
     .login-container input {
-      width: 80%; /* Reduced from 90% for better balance */
-      padding: 10px; /* Slightly smaller padding */
-      margin: 8px 0; /* Reduced from 10px */
+      width: 80%;
+      padding: 10px;
+      margin: 8px 0;
       border: none;
       border-radius: 25px;
       background: #222;
       color: white;
-      font-size: 14px; /* Reduced from 16px */
+      font-size: 14px;
       text-align: center;
       outline: none;
       -webkit-appearance: none;
@@ -145,8 +145,8 @@
     }
 
     .login-logo {
-      width: 180px; /* Increased 50% from 120px */
-      max-height: 120px; /* Adjusted proportionally */
+      width: 180px;
+      max-height: 120px;
       margin-top: 10px;
       margin-bottom: 15px;
     }
@@ -315,8 +315,7 @@
       cursor: pointer;
     }
 
-    .message .timestamp,
-    .row .timestamp {
+    .message .timestamp {
       font-size: 10px;
       color: #666;
       position: absolute;
@@ -811,6 +810,13 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           socket.emit('image', { userId: userId, sender: currentUser, image: e.target.result });
+          // Auto-response for image upload
+          const messagesDiv = document.getElementById("messages");
+          const botMessage = document.createElement('div');
+          botMessage.classList.add('message', 'bot');
+          botMessage.innerHTML = `✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos<br>sus fichas serán acreditadas!<span class="timestamp">${getCurrentTime()}</span>`;
+          messagesDiv.appendChild(botMessage);
+          setTimeout(scrollToBottom, 0);
         };
         reader.readAsDataURL(file);
         event.target.value = '';
@@ -911,7 +917,6 @@
           ¡ASISTENCIA 24HS POR ESTA CHAT!<br>
           Por favor elegí una opción 👇👇👇
         </div>
-        <span class="timestamp">${getCurrentTime()}</span>
       `;
       messagesDiv.appendChild(welcomeDiv);
 
@@ -944,7 +949,6 @@
           BUSCANOS EN GOOGLE COMO<br>
           463 SIEMPRE GANA
         </div>
-        <span class="timestamp">${getCurrentTime()}</span>
       `;
       recommendMessage.appendChild(recommendDiv);
 
@@ -1148,7 +1152,6 @@
             ¡Mucha suerte!
           `}
         </div>
-        <span class="timestamp">${getCurrentTime()}</span>
       `;
       recommendMessage.appendChild(finalDiv);
 
