@@ -28,23 +28,24 @@
     }
 
     .chat-container {
-      position: fixed;
-      bottom: 30px;
-      right: 90px;
-      width: 320px;
-      height: 420px;
-      background: #1a1a1a;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-      border: 2px solid #FF3B00;
-      border-radius: 20px;
-      overflow: hidden;
-      display: none;
-      z-index: 10001;
-      text-align: center;
-      transform: translateX(-20px);
-      opacity: 0;
-      transition: all 0.3s ease-in-out;
-    }
+  position: fixed;
+  bottom: 30px;
+  right: 90px;
+  width: 320px;
+  height: 420px;
+  background: #1a1a1a;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  border: 2px solid #FF3B00;
+  border-radius: 10px; /* Reducimos el borde para un look más compacto */
+  overflow: hidden;
+  display: none;
+  z-index: 10001;
+  padding: 0; /* Sin padding interno */
+  margin: 0; /* Sin márgenes */
+  transform: translateX(-20px);
+  opacity: 0;
+  transition: all 0.3s ease-in-out;
+}
 
     .chat-container.open {
       transform: translateX(0);
@@ -160,16 +161,15 @@
     }
 
     #messages {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 60px;
-      overflow-y: auto;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 60px;
+  overflow-y: auto;
+  padding: 2px; /* Padding mínimo para no tocar el borde */
+  box-sizing: border-box;
+}
     .chat-body.active {
       display: block;
     }
@@ -250,21 +250,22 @@
     }
 
     .message {
-      display: block;
-      margin: 5px 0;
-      padding: 8px 12px;
-      border-radius: 8px;
-      max-width: 70%;
-      position: relative;
-      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-      clear: both;
-    }
-
+  display: block;
+  margin: 2px 0; /* Reducimos margen vertical */
+  padding: 4px 6px; /* Reducimos padding */
+  border-radius: 4px; /* Borde más pequeño */
+  max-width: 90%; /* Más ancho para compactness */
+  position: relative;
+  font-size: 10px; /* Letras más pequeñas */
+  box-shadow: none; /* Sin sombra para look compacto */
+  clear: both;
+}
     .message.bot {
-      background: #FFFFFF;
-      float: left;
-      border-top-left-radius: 0;
-    }
+  background: #FFFFFF;
+  float: left;
+  border-top-left-radius: 0;
+  margin-left: 2px; /* Mínimo margen para no tocar el borde */
+}
 
     .message.bot::before {
       content: '';
@@ -503,13 +504,16 @@
 
     @media (max-width: 768px) {
   .chat-container {
-    width: 81%; /* 90% - 10% = 81% */
-    height: 63vh; /* 70vh - 10% = 63vh */
-    bottom: 80px; /* Aumentamos para que quede por encima del ícono */
+    width: 81%; /* Mantengo el 10% reducido */
+    height: 63vh; /* Mantengo el 10% reducido */
+    bottom: 80px; /* Mantengo el ajuste anterior */
     right: 5%;
     transform: none;
+    padding: 0; /* Sin padding */
+    margin: 0; /* Sin márgenes */
   }
-
+  }
+    
   .chat-button {
     bottom: 10px;
     right: 10px;
@@ -549,10 +553,10 @@
 
     .fichas-bancarias {
   text-align: left;
-  line-height: 0.3;
-  font-size: 2.25px; /* Mantengo el tamaño ajustado */
-  padding-left: 1px; /* Sangría izquierda */
+  line-height: 1.1; /* Más compacto */
+  font-size: 5.5px; /* Letras pequeñas como ajustamos antes */
   margin: 0;
+  padding-left: 2px; /* Mínima sangría para no tocar el borde */
   padding-top: 0;
   padding-right: 0;
   padding-bottom: 0;
