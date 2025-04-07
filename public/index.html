@@ -84,25 +84,20 @@
     }
 
     .chat-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #FF3B00;
-      color: white;
-      border: none;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      font-size: 24px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      z-index: 10000;
-      transition: all 0.3s ease-in-out;
-    }
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  transition: all 0.3s ease-in-out;
+}
 
     .chat-button:hover {
-      background-color: #d63100;
-    }
+  opacity: 0.8;
+}
 
     .login-container {
       padding: 20px;
@@ -592,9 +587,7 @@
 </head>
 <body>
   <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
-  <button class="chat-button" id="chatButton" onclick="toggleChat()">
-  <img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" style="width: 60px; height: 60px;" alt="Chat">
-</button>
+<img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat">
 
   <div class="chat-container" id="chatBox">
     <div id="chatHeader" class="chat-header" style="display: none;">
