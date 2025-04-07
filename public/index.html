@@ -717,19 +717,18 @@
     }
 
     function sendFile(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          console.log('Enviando imagen al servidor desde cliente:', { userId, sender: currentUser });
-          socket.emit('image', { userId, sender: currentUser, image: e.target.result });
-        };
-        reader.readAsDataURL(file);
-        event.target.value = '';
-      } else {
-        console.error('No se seleccionó ningún archivo');
-      }
-    }
+  const file = event.target.files[0];
+  if (file && currentUser && userId) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      socket.emit('image', { userId: userId, sender: currentUser, image: e.target.result });
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  } else {
+    console.error('Falta archivo, usuario o userId');
+  }
+}
 
     function setCookie(name, value, days) {
       const date = new Date();
@@ -996,21 +995,19 @@
     });
 
     function closePopup() {
-      console.log('Cerrando popup');
-      const popup = document.getElementById("successPopup");
-      const overlay = document.getElementById("popupOverlay");
+  const popup = document.getElementById("successPopup");
+  const overlay = document.getElementById("popupOverlay");
 
-      popup.classList.remove('active');
-      overlay.classList.remove('active');
+  popup.classList.remove('active');
+  overlay.classList.remove('active');
 
-      socket.emit('popup closed', { userId, username: currentUser });
-    }
+  socket.emit('popup closed', { userId, username: currentUser });
+  showFinalThanksMessage();
+}
 
     socket.on('chat closed', (data) => {
-  console.log('Evento chat closed recibido:', data);
   if (data.userId === userId) {
-    console.log('Chat cerrado por el agente para:', currentUser);
-
+    isChatClosed = true;
     const popup = document.getElementById("successPopup");
     const overlay = document.getElementById("popupOverlay");
     const popupTitle = document.getElementById("popupTitle");
@@ -1029,11 +1026,7 @@
       overlay.classList.add("active");
     }
 
-    setTimeout(() => {
-      showFinalThanksMessage();
-    }, 500);
-
-    isChatClosed = true;
+    showFinalThanksMessage();
     socket.emit('user joined', { userId, username: currentUser });
   }
 });
