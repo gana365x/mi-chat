@@ -154,7 +154,7 @@
     .chat-body {
       display: none;
       position: relative;
-      height: calc(100% - 60px);
+      height: calc(100% - 50px); /* Adjusted to match chat-input height */
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
@@ -166,7 +166,7 @@
       top: 0;
       left: 0;
       right: 0;
-      bottom: 60px;
+      bottom: 0; /* Adjusted to fill up to chat-input */
       overflow-y: auto;
       overflow-x: hidden;
       padding: 2px;
@@ -330,10 +330,10 @@
       right: 0;
       display: flex;
       align-items: center;
-      padding: 10px;
+      padding: 5px; /* Reduced from 10px for thinner gray margins */
       background: #F0F0F0;
       box-sizing: border-box;
-      height: 60px;
+      height: 50px; /* Reduced from 60px to minimize black gap */
       width: 100%;
     }
 
@@ -342,7 +342,7 @@
       padding: 8px 12px;
       border: none;
       border-radius: 20px;
-      margin-right: 10px;
+      margin-right: 5px; /* Reduced from 10px for tighter fit */
       outline: none;
       background: #FFFFFF;
       font-size: 16px;
@@ -356,7 +356,7 @@
     .chat-input label {
       cursor: pointer;
       font-size: 20px;
-      margin-right: 10px;
+      margin-right: 5px; /* Reduced from 10px for tighter fit */
       color: #666;
     }
 
@@ -371,7 +371,7 @@
     .recommend-message {
       display: none;
       position: relative;
-      height: calc(100% - 60px);
+      height: calc(100% - 50px); /* Adjusted to match chat-input height */
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
@@ -567,7 +567,7 @@
       text-align: left;
       line-height: 1.1;
       font-size: 10.8675px;
-      margin: 3px; /* Added 3px margin around auto-responses */
+      margin: 3px;
       padding: 0;
       font-family: 'Segoe UI', sans-serif;
       word-wrap: break-word;
