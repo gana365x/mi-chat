@@ -158,7 +158,7 @@
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
-      overflow: hidden; /* Prevent overflow outside the container */
+      overflow: hidden;
     }
 
     #messages {
@@ -169,7 +169,7 @@
       bottom: 0;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 2px 2px 0 2px; /* Removed bottom padding */
+      padding: 2px 2px 20px 2px; /* Added padding-bottom to ensure last message is fully visible */
       box-sizing: border-box;
       width: 100%;
     }
@@ -335,7 +335,7 @@
       box-sizing: border-box;
       height: 60px;
       width: 100%;
-      z-index: 1; /* Ensure it stays on top */
+      z-index: 1;
     }
 
     .chat-input input[type="text"] {
@@ -680,9 +680,9 @@
     .install-popup {
       display: none;
       position: fixed;
-      top: 10px; /* Align top with page top */
+      top: 10px;
       left: 50%;
-      transform: translateX(-50%); /* Center horizontally */
+      transform: translateX(-50%);
       background: #FFFFFF;
       border-radius: 20px;
       padding: 20px;
@@ -691,13 +691,31 @@
       z-index: 999999;
       width: 300px;
       max-width: 90%;
-      max-height: calc(100vh - 40px); /* Ensure it fits within viewport */
-      overflow-y: auto; /* Add scroll if content overflows */
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
       position: relative;
     }
 
     .install-popup.active {
       display: block;
+    }
+
+    .install-popup .info-icon {
+      width: 50px;
+      height: 50px;
+      background: #E6F0FA;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+    }
+
+    .install-popup .info-icon::before {
+      content: 'i';
+      font-size: 30px;
+      color: #007AFF;
+      font-weight: bold;
     }
 
     .install-popup img.instructions {
@@ -799,6 +817,7 @@
   </div>
 
   <div id="installPopup" class="install-popup">
+    <div class="info-icon"></div>
     <img src="https://i.postimg.cc/WpdFX9Nm/Dise-o-sin-t-tulo-7.png" alt="Instructions" class="instructions">
     <button onclick="closeInstallPopup()">Entendido</button>
   </div>
@@ -960,7 +979,7 @@
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
       const chatHeader = document.getElementById("chatHeader");
-      chatHeader.style.display = "flex";
+      chatHeader Wstyle.display = "flex";
       chatBody.classList.add("active");
       recommendMessage.classList.remove("active");
       const messagesDiv = document.getElementById("messages");
