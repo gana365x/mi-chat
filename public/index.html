@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -28,24 +27,24 @@
     }
 
     .chat-container {
-  position: fixed;
-  bottom: 30px;
-  right: 90px;
-  width: 320px;
-  height: 420px;
-  background: #1a1a1a;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-  border: 2px solid #FF3B00;
-  border-radius: 10px; /* Reducimos el borde para un look más compacto */
-  overflow: hidden;
-  display: none;
-  z-index: 10001;
-  padding: 0; /* Sin padding interno */
-  margin: 0; /* Sin márgenes */
-  transform: translateX(-20px);
-  opacity: 0;
-  transition: all 0.3s ease-in-out;
-}
+      position: fixed;
+      bottom: 30px;
+      right: 90px;
+      width: 320px;
+      height: 420px;
+      background: #1a1a1a;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      border: 2px solid #FF3B00;
+      border-radius: 10px; /* Reducimos el borde para un look más compacto */
+      overflow: hidden;
+      display: none;
+      z-index: 10001;
+      padding: 0; /* Sin padding interno */
+      margin: 0; /* Sin márgenes */
+      transform: translateX(-20px);
+      opacity: 0;
+      transition: all 0.3s ease-in-out;
+    }
 
     .chat-container.open {
       transform: translateX(0);
@@ -85,20 +84,16 @@
     }
 
     .chat-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  z-index: 10000;
-  transition: all 0.3s ease-in-out;
-}
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease-in-out;
+    }
 
     .chat-button:hover {
-  opacity: 0.8;
-}
+      opacity: 0.8;
+    }
 
     .login-container {
       padding: 20px;
@@ -161,15 +156,16 @@
     }
 
     #messages {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 60px;
-  overflow-y: auto;
-  padding: 2px; /* Padding mínimo para no tocar el borde */
-  box-sizing: border-box;
-}
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 60px;
+      overflow-y: auto;
+      padding: 2px; /* Padding mínimo para no tocar el borde */
+      box-sizing: border-box;
+    }
+
     .chat-body.active {
       display: block;
     }
@@ -250,23 +246,24 @@
     }
 
     .message {
-  display: block;
-  margin: 2px 0;
-  padding: 4px 6px;
-  border-radius: 4px;
-  max-width: 90%;
-  position: relative;
-  font-size: 11.5px; /* Aumentado 15% */
-  box-shadow: none;
-  clear: both;
-}
+      display: block;
+      margin: 2px 0;
+      padding: 4px 6px;
+      border-radius: 4px;
+      max-width: 90%;
+      position: relative;
+      font-size: 11.5px; /* Aumentado 15% */
+      box-shadow: none;
+      clear: both;
+    }
+
     .message.bot {
-  background: #FFFFFF;
-  float: left;
-  border-top-left-radius: 0;
-  margin-left: 0; /* Quitamos margen para pegarlo más a la izquierda */
-  padding-left: 2px; /* Mínimo padding para no tocar el borde */
-}
+      background: #FFFFFF;
+      float: left;
+      border-top-left-radius: 0;
+      margin-left: 0; /* Quitamos margen para pegarlo más a la izquierda */
+      padding-left: 2px; /* Mínimo padding para no tocar el borde */
+    }
 
     .message.bot::before {
       content: '';
@@ -279,14 +276,14 @@
       clip-path: polygon(100% 0, 0 0, 100% 100%);
     }
 
-   .message.user {
-  background: #DCF8C6;
-  float: none; /* Quitamos float para centrar */
-  margin-left: auto; /* Centramos con márgenes automáticos */
-  margin-right: auto;
-  max-width: 70%; /* Reducimos ancho para que no ocupe todo */
-  border-top-right-radius: 0;
-}
+    .message.user {
+      background: #DCF8C6;
+      float: none; /* Quitamos float para centrar */
+      margin-left: auto; /* Centramos con márgenes automáticos */
+      margin-right: auto;
+      max-width: 70%; /* Reducimos ancho para que no ocupe todo */
+      border-top-right-radius: 0;
+    }
 
     .message.user::before {
       content: '';
@@ -307,12 +304,12 @@
     }
 
     .message .timestamp {
-  font-size: 10px;
-  color: #666;
-  position: absolute;
-  bottom: -14px; /* Bajamos el timestamp para separarlo del texto */
-  right: 5px;
-}
+      font-size: 10px;
+      color: #666;
+      position: absolute;
+      bottom: -14px; /* Bajamos el timestamp para separarlo del texto */
+      right: 5px;
+    }
 
     .chat-input {
       position: absolute;
@@ -507,36 +504,33 @@
     }
 
     @media (max-width: 768px) {
-  .chat-container {
-    width: 81%; /* Mantengo el 10% reducido */
-    height: 63vh; /* Mantengo el 10% reducido */
-    bottom: 80px; /* Mantengo el ajuste anterior */
-    right: 5%;
-    transform: none;
-    padding: 0; /* Sin padding */
-    margin: 0; /* Sin márgenes */
-  }
-  }
-    
-  .chat-button {
-    bottom: 10px;
-    right: 10px;
-  }
+      .chat-container {
+        width: 81%; /* Mantengo el 10% reducido */
+        height: 63vh; /* Mantengo el 10% reducido */
+        bottom: 80px; /* Mantengo el ajuste anterior */
+        right: 5%;
+        transform: none;
+        padding: 0; /* Sin padding */
+        margin: 0; /* Sin márgenes */
+      }
+      
+      .chat-button {
+        bottom: 10px;
+        right: 10px;
+      }
 
-  .chat-phone {
-    font-size: 11px;
-  }
+      .chat-phone {
+        font-size: 11px;
+      }
 
-  .chat-logo {
-    width: 50px;
-  }
+      .chat-logo {
+        width: 50px;
+      }
 
-  .close-chat {
-    font-size: 16px;
-  }
+      .close-chat {
+        font-size: 16px;
+      }
 
-  /* ... resto del media query sin cambios ... */
-}
       .login-container input {
         font-size: 14px;
       }
@@ -556,16 +550,16 @@
     }
 
     .fichas-bancarias {
-  text-align: left;
-  line-height: 1.1;
-  font-size: 6.3px; /* Aumentado 15% */
-  margin: 0;
-  padding-left: 2px;
-  padding-top: 0;
-  padding-right: 0;
-  padding-bottom: 0;
-  font-family: 'Segoe UI', sans-serif;
-}
+      text-align: left;
+      line-height: 1.1;
+      font-size: 6.3px; /* Aumentado 15% */
+      margin: 0;
+      padding-left: 2px;
+      padding-top: 0;
+      padding-right: 0;
+      padding-bottom: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
 
     .fichas-bancarias strong {
       font-weight: bold;
@@ -595,11 +589,62 @@
     .copy-text:hover {
       color: #0056b3;
     }
+
+    .chat-button-wrapper {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10000;
+    }
+
+    .chat-bubble {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      background: #075E54;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      animation: showAndBounce 5s forwards;
+    }
+
+    /* Animación para mostrar, saltar y desaparecer */
+    @keyframes showAndBounce {
+      0% {
+        opacity: 0;
+        transform: translateY(0);
+      }
+      10% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-10px);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+      90% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 <body>
   <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
-<img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat">
+  <div class="chat-button-wrapper">
+    <img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat">
+    <span class="chat-bubble">¡Carga fichas acá!</span>
+  </div>
 
   <div class="chat-container" id="chatBox">
     <div id="chatHeader" class="chat-header" style="display: none;">
@@ -724,18 +769,18 @@
     }
 
     function sendFile(event) {
-  const file = event.target.files[0];
-  if (file && currentUser && userId) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      socket.emit('image', { userId: userId, sender: currentUser, image: e.target.result });
-    };
-    reader.readAsDataURL(file);
-    event.target.value = '';
-  } else {
-    console.error('Falta archivo, usuario o userId');
-  }
-}
+      const file = event.target.files[0];
+      if (file && currentUser && userId) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          socket.emit('image', { userId: userId, sender: currentUser, image: e.target.result });
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+      } else {
+        console.error('Falta archivo, usuario o userId');
+      }
+    }
 
     function setCookie(name, value, days) {
       const date = new Date();
@@ -1002,109 +1047,105 @@
     });
 
     function closePopup() {
-  const popup = document.getElementById("successPopup");
-  const overlay = document.getElementById("popupOverlay");
+      const popup = document.getElementById("successPopup");
+      const overlay = document.getElementById("popupOverlay");
 
-  popup.classList.remove('active');
-  overlay.classList.remove('active');
+      popup.classList.remove('active');
+      overlay.classList.remove('active');
 
-  socket.emit('popup closed', { userId, username: currentUser });
-  showFinalThanksMessage();
-}
-
-    socket.on('chat closed', (data) => {
-  if (data.userId === userId) {
-    isChatClosed = true;
-    const popup = document.getElementById("successPopup");
-    const overlay = document.getElementById("popupOverlay");
-    const popupTitle = document.getElementById("popupTitle");
-    const popupSubtext = document.getElementById("popupSubtext");
-    const lastAction = sessionStorage.getItem("ultimaAccion");
-
-    if (popup && overlay) {
-      if (lastAction === "Retirar") {
-        popupTitle.textContent = "Premio Pagado";
-        popupSubtext.textContent = "Chequeá tu cuenta bancaria";
-      } else if (lastAction === "Cargar Fichas") {
-        popupTitle.textContent = "Fichas Cargadas";
-        popupSubtext.textContent = "Ya podes jugar. ¡Mucha suerte!";
-      }
-      popup.classList.add("active");
-      overlay.classList.add("active");
+      socket.emit('popup closed', { userId, username: currentUser });
+      showFinalThanksMessage();
     }
 
-    showFinalThanksMessage();
-    socket.emit('user joined', { userId, username: currentUser });
-  }
-});
+    socket.on('chat closed', (data) => {
+      if (data.userId === userId) {
+        isChatClosed = true;
+        const popup = document.getElementById("successPopup");
+        const overlay = document.getElementById("popupOverlay");
+        const popupTitle = document.getElementById("popupTitle");
+        const popupSubtext = document.getElementById("popupSubtext");
+        const lastAction = sessionStorage.getItem("ultimaAccion");
 
+        if (popup && overlay) {
+          if (lastAction === "Retirar") {
+            popupTitle.textContent = "Premio Pagado";
+            popupSubtext.textContent = "Chequeá tu cuenta bancaria";
+          } else if (lastAction === "Cargar Fichas") {
+            popupTitle.textContent = "Fichas Cargadas";
+            popupSubtext.textContent = "Ya podes jugar. ¡Mucha suerte!";
+          }
+          popup.classList.add("active");
+          overlay.classList.add("active");
+        }
+
+        showFinalThanksMessage();
+        socket.emit('user joined', { userId, username: currentUser });
+      }
+    });
 
     function showFinalThanksMessage() {
-  console.log('Mostrando mensaje de agradecimiento final');
-  const chatBody = document.getElementById("chatBody");
-  const recommendMessage = document.getElementById("recommendMessage");
-  chatBody.classList.remove("active");
-  recommendMessage.classList.add("active");
+      console.log('Mostrando mensaje de agradecimiento final');
+      const chatBody = document.getElementById("chatBody");
+      const recommendMessage = document.getElementById("recommendMessage");
+      chatBody.classList.remove("active");
+      recommendMessage.classList.add("active");
 
-  const ultimaAccion = sessionStorage.getItem("ultimaAccion");
-  recommendMessage.innerHTML = '';
+      const ultimaAccion = sessionStorage.getItem("ultimaAccion");
+      recommendMessage.innerHTML = '';
 
-  const finalDiv = document.createElement('div');
-  finalDiv.classList.add('row');
-  finalDiv.innerHTML = `
-    <img src="https://gana365.online/images/logo.png" class="logo">
-    <div class="msg">
-      ${ultimaAccion === 'Retirar' ? `
-        <strong>❤ Premio Pagado ❤</strong><br>
-        (MIRA TU CUENTA BANCARIA)<br><br>
-        Gana 365 te desea éxitos<br><br>
-        Entra en nuestro canal<br>
-        👇🏻👇🏻👇🏻<br>
-        ¡UNITE A LA COMUNIDAD HACIENDO CLICK AQUÍ!
-      ` : `
-        <strong>✅ Fichas Cargadas ✅</strong><br>
-        Ya podes jugar<br>
-        ¡Mucha suerte!
-      `}
-      <span class="timestamp">${getCurrentTime()}</span>
-    </div>
-  `;
-  recommendMessage.appendChild(finalDiv);
+      const finalDiv = document.createElement('div');
+      finalDiv.classList.add('row');
+      finalDiv.innerHTML = `
+        <img src="https://gana365.online/images/logo.png" class="logo">
+        <div class="msg">
+          ${ultimaAccion === 'Retirar' ? `
+            <strong>❤ Premio Pagado ❤</strong><br>
+            (MIRA TU CUENTA BANCARIA)<br><br>
+            Gana 365 te desea éxitos<br><br>
+            Entra en nuestro canal<br>
+            👇🏻👇🏻👇🏻<br>
+            ¡UNITE A LA COMUNIDAD HACIENDO CLICK AQUÍ!
+          ` : `
+            <strong>✅ Fichas Cargadas ✅</strong><br>
+            Ya podes jugar<br>
+            ¡Mucha suerte!
+          `}
+          <span class="timestamp">${getCurrentTime()}</span>
+        </div>
+      `;
+      recommendMessage.appendChild(finalDiv);
 
-  const buttonsDiv = document.createElement('div');
-  buttonsDiv.classList.add('buttons-wrapper');
-  buttonsDiv.innerHTML = `
-    <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
-  `;
-  recommendMessage.appendChild(buttonsDiv);
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.classList.add('buttons-wrapper');
+      buttonsDiv.innerHTML = `
+        <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
+      `;
+      recommendMessage.appendChild(buttonsDiv);
 
-  setTimeout(() => {
-    recommendMessage.scrollTo({
-      top: recommendMessage.scrollHeight,
-      behavior: 'smooth'
-    });
-  }, 0);
-}
-
+      setTimeout(() => {
+        recommendMessage.scrollTo({
+          top: recommendMessage.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 0);
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = getCookie("chatUser");
       console.log('Verificando cookie de usuario:', username);
       if (username) {
-        console.log('Autologin ejecutado para usuario:', username);
+        console.log('Usuario encontrado, pero chatbox permanece minimizado');
         currentUser = username;
         const storedUserId = getCookie("chatUserId");
         socket.emit('user joined', { userId: storedUserId, username });
-        isChatOpen = true;
-        const chat = document.getElementById("chatBox");
-        const button = document.getElementById("chatButton");
-        button.textContent = "✖";
-        chat.style.display = "block";
-        setTimeout(() => chat.classList.add("open"), 10);
       } else {
         console.log('No hay cookie de usuario, mostrando formulario de login');
         document.getElementById("loginForm").style.display = "block";
       }
+      // Aseguramos que el chatbox esté minimizado
+      const chat = document.getElementById("chatBox");
+      chat.style.display = "none";
+      isChatOpen = false;
     });
 
     function copyToClipboard(text) {
