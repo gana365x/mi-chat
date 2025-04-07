@@ -154,7 +154,7 @@
     .chat-body {
       display: none;
       position: relative;
-      height: calc(100% - 50px);
+      height: calc(100% - 60px); /* Adjusted to give more space */
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
@@ -169,7 +169,7 @@
       bottom: 0;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 2px;
+      padding: 2px 2px 20px 2px; /* Added bottom padding to ensure last message is visible */
       box-sizing: border-box;
       width: 100%;
     }
@@ -333,7 +333,7 @@
       padding: 5px;
       background: #F0F0F0;
       box-sizing: border-box;
-      height: 50px;
+      height: 60px; /* Restored to original height */
       width: 100%;
     }
 
@@ -371,7 +371,7 @@
     .recommend-message {
       display: none;
       position: relative;
-      height: calc(100% - 50px);
+      height: calc(100% - 60px);
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
@@ -659,7 +659,7 @@
     }
 
     .install-button img {
-      width: 100px;
+      width: 150px; /* Increased by 50% from 100px */
       height: auto;
       transition: transform 0.2s ease-in-out;
     }
@@ -667,12 +667,87 @@
     .install-button img:hover {
       transform: scale(1.1);
     }
+
+    .install-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      z-index: 999999;
+      width: 300px;
+      max-width: 90%;
+    }
+
+    .install-popup.active {
+      display: block;
+    }
+
+    .install-popup .info-icon {
+      width: 50px;
+      height: 50px;
+      background: #E6F0FA;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+    }
+
+    .install-popup .info-icon::before {
+      content: 'i';
+      font-size: 30px;
+      color: #007AFF;
+      font-weight: bold;
+    }
+
+    .install-popup h3 {
+      font-size: 18px;
+      color: #1a1a1a;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .install-popup p {
+      font-size: 14px;
+      color: #4a4a4a;
+      margin: 5px 0;
+    }
+
+    .install-popup img {
+      width: 20px;
+      height: auto;
+      vertical-align: middle;
+      margin: 5px 5px;
+    }
+
+    .install-popup button {
+      background: #007AFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: background 0.3s ease;
+    }
+
+    .install-popup button:hover {
+      background: #005BB5;
+    }
   </style>
 </head>
 <body>
   <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
   <div class="install-button" id="installButton">
-    <img src="https://i.postimg.cc/CxzrPsf3/Instalar-Aplicaci-m.png" alt="Instalar Aplicación">
+    <img src="https://i.postimg.cc/CxzrPsf3/Instalar-Aplicaci-m.png" alt="Instalar Aplicación" onclick="showInstallPopup()">
   </div>
   <div class="chat-button-wrapper">
     <img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat">
@@ -733,6 +808,15 @@
     <div class="error-icon"></div>
     <p>Por favor, complete todos los campos</p>
     <button onclick="closeErrorPopup()">OK</button>
+  </div>
+
+  <div id="installPopup" class="install-popup">
+    <div class="info-icon"></div>
+    <h3>Agregar a Pantalla de Inicio</h3>
+    <p>Para agregar esta página a tu pantalla de inicio, sigue estos pasos:</p>
+    <p>Paso 1: Toca el botón de <img src="https://i.postimg.cc/3x3L0q2N/share-icon.png" alt="Compartir"> Compartir.</p>
+    <p>Paso 2: Selecciona Añadir a pantalla de inicio.</p>
+    <button onclick="closeInstallPopup()">Entendido</button>
   </div>
 
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -844,7 +928,7 @@
         button.textContent = "✖";
         chat.style.display = "block";
         setTimeout(() => chat.classList.add("open"), 10);
-        setTimeout(scrollToBottom, 310); // Scroll after chat opens
+        setTimeout(scrollToBottom, 310);
       }
     }
 
@@ -918,7 +1002,7 @@
       `;
       messagesDiv.appendChild(buttonsDiv);
 
-      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
+      setTimeout(scrollToBottom, 100);
     }
 
     function showRecommendMessage() {
@@ -954,7 +1038,7 @@
           top: recommendMessage.scrollHeight,
           behavior: 'smooth'
         });
-      }, 100); // Ensure scroll after DOM update
+      }, 100);
     }
 
     function handleAction(action) {
@@ -979,7 +1063,7 @@
 
       socket.emit('chat message', { userId, sender: currentUser, message: action });
 
-      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
+      setTimeout(scrollToBottom, 100);
     }
 
     function sendMessage() {
@@ -995,7 +1079,7 @@
         messagesDiv.appendChild(userMessage);
         socket.emit('chat message', { userId, sender: currentUser, message });
         messageInput.value = '';
-        setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
+        setTimeout(scrollToBottom, 100);
       }
     }
 
@@ -1044,7 +1128,7 @@
       }
 
       messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
+      setTimeout(scrollToBottom, 100);
     });
 
     socket.on('image', (data) => {
@@ -1060,7 +1144,7 @@
         <span class="timestamp">${getCurrentTime()}</span>
       `;
       messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
+      setTimeout(scrollToBottom, 100);
     });
 
     socket.on('show success popup', () => {
@@ -1163,7 +1247,23 @@
           top: recommendMessage.scrollHeight,
           behavior: 'smooth'
         });
-      }, 100); // Ensure scroll after DOM update
+      }, 100);
+    }
+
+    function showInstallPopup() {
+      const popup = document.getElementById("installPopup");
+      const overlay = document.getElementById("popupOverlay");
+      popup.classList.add('active');
+      overlay.classList.add('active');
+    }
+
+    function closeInstallPopup() {
+      const popup = document.getElementById("installPopup");
+      const overlay = document.getElementById("popupOverlay");
+      const installButton = document.getElementById("installButton");
+      popup.classList.remove('active');
+      overlay.classList.remove('active');
+      installButton.style.display = 'none'; // Hide the install button
     }
 
     document.addEventListener("DOMContentLoaded", () => {
