@@ -154,7 +154,7 @@
     .chat-body {
       display: none;
       position: relative;
-      height: calc(100% - 50px); /* Adjusted to match chat-input height */
+      height: calc(100% - 50px);
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
@@ -166,7 +166,7 @@
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0; /* Adjusted to fill up to chat-input */
+      bottom: 0;
       overflow-y: auto;
       overflow-x: hidden;
       padding: 2px;
@@ -330,10 +330,10 @@
       right: 0;
       display: flex;
       align-items: center;
-      padding: 5px; /* Reduced from 10px for thinner gray margins */
+      padding: 5px;
       background: #F0F0F0;
       box-sizing: border-box;
-      height: 50px; /* Reduced from 60px to minimize black gap */
+      height: 50px;
       width: 100%;
     }
 
@@ -342,7 +342,7 @@
       padding: 8px 12px;
       border: none;
       border-radius: 20px;
-      margin-right: 5px; /* Reduced from 10px for tighter fit */
+      margin-right: 5px;
       outline: none;
       background: #FFFFFF;
       font-size: 16px;
@@ -356,7 +356,7 @@
     .chat-input label {
       cursor: pointer;
       font-size: 20px;
-      margin-right: 5px; /* Reduced from 10px for tighter fit */
+      margin-right: 5px;
       color: #666;
     }
 
@@ -371,7 +371,7 @@
     .recommend-message {
       display: none;
       position: relative;
-      height: calc(100% - 50px); /* Adjusted to match chat-input height */
+      height: calc(100% - 50px);
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
@@ -844,6 +844,7 @@
         button.textContent = "✖";
         chat.style.display = "block";
         setTimeout(() => chat.classList.add("open"), 10);
+        setTimeout(scrollToBottom, 310); // Scroll after chat opens
       }
     }
 
@@ -917,7 +918,7 @@
       `;
       messagesDiv.appendChild(buttonsDiv);
 
-      setTimeout(scrollToBottom, 0);
+      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
     }
 
     function showRecommendMessage() {
@@ -953,7 +954,7 @@
           top: recommendMessage.scrollHeight,
           behavior: 'smooth'
         });
-      }, 0);
+      }, 100); // Ensure scroll after DOM update
     }
 
     function handleAction(action) {
@@ -978,7 +979,7 @@
 
       socket.emit('chat message', { userId, sender: currentUser, message: action });
 
-      setTimeout(scrollToBottom, 0);
+      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
     }
 
     function sendMessage() {
@@ -987,8 +988,14 @@
 
       if (message) {
         console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'UserId:', userId);
+        const messagesDiv = document.getElementById("messages");
+        const userMessage = document.createElement('div');
+        userMessage.classList.add('message', 'user');
+        userMessage.innerHTML = `${message}<span class="timestamp">${getCurrentTime()}</span>`;
+        messagesDiv.appendChild(userMessage);
         socket.emit('chat message', { userId, sender: currentUser, message });
         messageInput.value = '';
+        setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
       }
     }
 
@@ -1037,7 +1044,7 @@
       }
 
       messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 0);
+      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
     });
 
     socket.on('image', (data) => {
@@ -1053,7 +1060,7 @@
         <span class="timestamp">${getCurrentTime()}</span>
       `;
       messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 0);
+      setTimeout(scrollToBottom, 100); // Ensure scroll after DOM update
     });
 
     socket.on('show success popup', () => {
@@ -1156,7 +1163,7 @@
           top: recommendMessage.scrollHeight,
           behavior: 'smooth'
         });
-      }, 0);
+      }, 100); // Ensure scroll after DOM update
     }
 
     document.addEventListener("DOMContentLoaded", () => {
