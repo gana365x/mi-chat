@@ -35,12 +35,12 @@
       background: #1a1a1a;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
       border: 2px solid #FF3B00;
-      border-radius: 10px; /* Reducimos el borde para un look más compacto */
+      border-radius: 10px;
       overflow: hidden;
       display: none;
       z-index: 10001;
-      padding: 0; /* Sin padding interno */
-      margin: 0; /* Sin márgenes */
+      padding: 0;
+      margin: 0;
       transform: translateX(-20px);
       opacity: 0;
       transition: all 0.3s ease-in-out;
@@ -162,7 +162,7 @@
       right: 0;
       bottom: 60px;
       overflow-y: auto;
-      padding: 2px; /* Padding mínimo para no tocar el borde */
+      padding: 2px;
       box-sizing: border-box;
     }
 
@@ -197,7 +197,7 @@
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
       position: relative;
       border-top-left-radius: 0;
-      font-size: 21px; /* 14px * 1.5 = 21px */
+      font-size: 14.7px; /* Reduced by 30% from 21px */
     }
 
     .msg::before {
@@ -214,7 +214,7 @@
     .msg strong {
       display: block;
       margin-bottom: 6px;
-      font-size: 21px; /* 14px * 1.5 = 21px */
+      font-size: 14.7px; /* Reduced by 30% from 21px */
     }
 
     .buttons-wrapper {
@@ -262,8 +262,8 @@
       background: #FFFFFF;
       float: left;
       border-top-left-radius: 0;
-      margin-left: 0; /* Quitamos margen para pegarlo más a la izquierda */
-      padding-left: 2px; /* Mínimo padding para no tocar el borde */
+      margin-left: 0;
+      padding-left: 2px;
     }
 
     .message.bot::before {
@@ -279,10 +279,10 @@
 
     .message.user {
       background: #DCF8C6;
-      float: right; /* Alineamos a la derecha */
-      margin-left: 0; /* Quitamos margen izquierdo */
-      margin-right: 2px; /* Mínimo margen derecho */
-      max-width: 90%; /* Ajustamos para que se adapte al contenido */
+      float: right;
+      margin-left: 0;
+      margin-right: 2px;
+      max-width: 90%;
       border-top-right-radius: 0;
     }
 
@@ -308,7 +308,7 @@
       font-size: 10px;
       color: #666;
       position: absolute;
-      bottom: -14px; /* Bajamos el timestamp para separarlo del texto */
+      bottom: -14px;
       right: 5px;
     }
 
@@ -506,13 +506,13 @@
 
     @media (max-width: 768px) {
       .chat-container {
-        width: 81%; /* Mantengo el 10% reducido */
-        height: 63vh; /* Mantengo el 10% reducido */
-        bottom: 80px; /* Mantengo el ajuste anterior */
+        width: 81%;
+        height: 63vh;
+        bottom: 80px;
         right: 5%;
         transform: none;
-        padding: 0; /* Sin padding */
-        margin: 0; /* Sin márgenes */
+        padding: 0;
+        margin: 0;
       }
       
       .chat-button {
@@ -553,7 +553,7 @@
     .fichas-bancarias {
       text-align: left;
       line-height: 1.1;
-      font-size: 6.3px;
+      font-size: 9.45px; /* Increased by 50% from 6.3px */
       margin: 0;
       padding-left: 2px;
       padding-top: 0;
@@ -611,10 +611,9 @@
       white-space: nowrap;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
       animation: showAndBounce 5s forwards;
-      display: none; /* Inicialmente oculto */
+      display: none;
     }
 
-    /* Animación para mostrar, saltar y desaparecer */
     @keyframes showAndBounce {
       0% {
         opacity: 0;
@@ -640,23 +639,22 @@
       }
     }
 
-    /* Estilo para el botón flotante de instalar aplicación */
     .install-button {
       position: fixed;
       top: 10px;
       right: 10px;
-      z-index: 10002; /* Mayor que el chatbox para que esté por encima */
+      z-index: 10002;
       cursor: pointer;
     }
 
     .install-button img {
-      width: 100px; /* Tamaño pequeño pero legible */
+      width: 100px;
       height: auto;
       transition: transform 0.2s ease-in-out;
     }
 
     .install-button img:hover {
-      transform: scale(1.1); /* Efecto de aumento al pasar el mouse */
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -1166,16 +1164,13 @@
         console.log('No hay cookie de usuario, mostrando formulario de login');
         document.getElementById("loginForm").style.display = "block";
       }
-      // Aseguramos que el chatbox esté minimizado
       const chat = document.getElementById("chatBox");
       chat.style.display = "none";
       isChatOpen = false;
 
-      // Mostrar el globito inicialmente
       const chatBubble = document.getElementById("chatBubble");
       chatBubble.style.display = "block";
 
-      // Mostrar el globito cada 3 minutos (180000 ms)
       setInterval(() => {
         chatBubble.style.display = "block";
       }, 180000);
