@@ -251,20 +251,21 @@
 
     .message {
   display: block;
-  margin: 2px 0; /* Reducimos margen vertical */
-  padding: 4px 6px; /* Reducimos padding */
-  border-radius: 4px; /* Borde más pequeño */
-  max-width: 90%; /* Más ancho para compactness */
+  margin: 2px 0;
+  padding: 4px 6px;
+  border-radius: 4px;
+  max-width: 90%;
   position: relative;
-  font-size: 10px; /* Letras más pequeñas */
-  box-shadow: none; /* Sin sombra para look compacto */
+  font-size: 11.5px; /* Aumentado 15% */
+  box-shadow: none;
   clear: both;
 }
     .message.bot {
   background: #FFFFFF;
   float: left;
   border-top-left-radius: 0;
-  margin-left: 2px; /* Mínimo margen para no tocar el borde */
+  margin-left: 0; /* Quitamos margen para pegarlo más a la izquierda */
+  padding-left: 2px; /* Mínimo padding para no tocar el borde */
 }
 
     .message.bot::before {
@@ -278,11 +279,14 @@
       clip-path: polygon(100% 0, 0 0, 100% 100%);
     }
 
-    .message.user {
-      background: #DCF8C6;
-      float: right;
-      border-top-right-radius: 0;
-    }
+   .message.user {
+  background: #DCF8C6;
+  float: none; /* Quitamos float para centrar */
+  margin-left: auto; /* Centramos con márgenes automáticos */
+  margin-right: auto;
+  max-width: 70%; /* Reducimos ancho para que no ocupe todo */
+  border-top-right-radius: 0;
+}
 
     .message.user::before {
       content: '';
@@ -553,10 +557,10 @@
 
     .fichas-bancarias {
   text-align: left;
-  line-height: 1.1; /* Más compacto */
-  font-size: 5.5px; /* Letras pequeñas como ajustamos antes */
+  line-height: 1.1;
+  font-size: 6.3px; /* Aumentado 15% */
   margin: 0;
-  padding-left: 2px; /* Mínima sangría para no tocar el borde */
+  padding-left: 2px;
   padding-top: 0;
   padding-right: 0;
   padding-bottom: 0;
