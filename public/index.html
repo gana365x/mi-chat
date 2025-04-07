@@ -95,7 +95,7 @@
       opacity: 0.8;
     }
 
-    .login-container {
+    .loginexp-container {
       padding: 20px;
       text-align: center;
     }
@@ -153,6 +153,7 @@
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
+      overflow-x: hidden; /* Prevent horizontal scroll */
     }
 
     #messages {
@@ -161,9 +162,11 @@
       left: 0;
       right: 0;
       bottom: 60px;
-      overflow-y: auto;
+      overflow-y: auto; /* Vertical scroll only */
+      overflow-x: hidden; /* No horizontal scroll */
       padding: 2px;
       box-sizing: border-box;
+      width: 100%; /* Ensure it fits container */
     }
 
     .chat-body.active {
@@ -175,6 +178,7 @@
       align-items: flex-end;
       margin-bottom: 10px;
       clear: both;
+      position: relative; /* For timestamp positioning */
     }
 
     .logo {
@@ -197,7 +201,8 @@
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
       position: relative;
       border-top-left-radius: 0;
-      font-size: 14.7px; /* Reduced by 30% from 21px */
+      font-size: 14.7px;
+      word-wrap: break-word; /* Ensure text wraps within bounds */
     }
 
     .msg::before {
@@ -214,7 +219,7 @@
     .msg strong {
       display: block;
       margin-bottom: 6px;
-      font-size: 14.7px; /* Reduced by 30% from 21px */
+      font-size: 14.7px;
     }
 
     .buttons-wrapper {
@@ -256,6 +261,7 @@
       font-size: 11.5px;
       box-shadow: none;
       clear: both;
+      word-wrap: break-word; /* Ensure text wraps */
     }
 
     .message.bot {
@@ -304,7 +310,8 @@
       cursor: pointer;
     }
 
-    .message .timestamp {
+    .message .timestamp,
+    .row .timestamp {
       font-size: 10px;
       color: #666;
       position: absolute;
@@ -323,6 +330,7 @@
       background: #F0F0F0;
       box-sizing: border-box;
       height: 60px;
+      width: 100%; /* Ensure it fits container */
     }
 
     .chat-input input[type="text"] {
@@ -366,6 +374,7 @@
       padding: 10px;
       box-sizing: border-box;
       overflow-y: auto;
+      overflow-x: hidden; /* Prevent horizontal scroll */
     }
 
     .recommend-message.active {
@@ -553,13 +562,14 @@
     .fichas-bancarias {
       text-align: left;
       line-height: 1.1;
-      font-size: 9.45px; /* Increased by 50% from 6.3px */
+      font-size: 10.8675px; /* Increased by 15% from 9.45px */
       margin: 0;
       padding-left: 2px;
       padding-top: 0;
       padding-right: 0;
       padding-bottom: 0;
       font-family: 'Segoe UI', sans-serif;
+      word-wrap: break-word; /* Ensure text wraps */
     }
 
     .fichas-bancarias strong {
@@ -701,8 +711,8 @@
         <div class="msg">
           <strong>Gracias por elegirnos</strong><br>
           No te olvides de recomendarnos 💎<br>
-          <span class="timestamp" id="finalMessageTimestamp"></span>
         </div>
+        <span class="timestamp" id="finalMessageTimestamp"></span>
       </div>
       <div class="buttons-wrapper">
         <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
@@ -895,8 +905,8 @@
           <strong>Bienvenido a GANA365</strong>
           ¡ASISTENCIA 24HS POR ESTA CHAT!<br>
           Por favor elegí una opción 👇👇👇
-          <span class="timestamp">${getCurrentTime()}</span>
         </div>
+        <span class="timestamp">${getCurrentTime()}</span>
       `;
       messagesDiv.appendChild(welcomeDiv);
 
@@ -928,8 +938,8 @@
           RECOMENDAMOS Y GANA<br>
           BUSCANOS EN GOOGLE COMO<br>
           463 SIEMPRE GANA
-          <span class="timestamp">${getCurrentTime()}</span>
         </div>
+        <span class="timestamp">${getCurrentTime()}</span>
       `;
       recommendMessage.appendChild(recommendDiv);
 
@@ -1132,8 +1142,8 @@
             Ya podes jugar<br>
             ¡Mucha suerte!
           `}
-          <span class="timestamp">${getCurrentTime()}</span>
         </div>
+        <span class="timestamp">${getCurrentTime()}</span>
       `;
       recommendMessage.appendChild(finalDiv);
 
