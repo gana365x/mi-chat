@@ -169,7 +169,7 @@
       bottom: 0;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 2px 2px 20px 2px; /* Added padding-bottom to ensure last message is fully visible */
+      padding: 2px 2px 20px 2px; /* Added padding-bottom to ensure last message visibility */
       box-sizing: border-box;
       width: 100%;
     }
@@ -670,7 +670,6 @@
       transform: scale(1.1);
     }
 
-    /* Hide install button on desktop */
     @media (min-width: 769px) {
       .install-button {
         display: none;
@@ -979,7 +978,7 @@
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
       const chatHeader = document.getElementById("chatHeader");
-      chatHeader Wstyle.display = "flex";
+      chatHeader.style.display = "flex";
       chatBody.classList.add("active");
       recommendMessage.classList.remove("active");
       const messagesDiv = document.getElementById("messages");
