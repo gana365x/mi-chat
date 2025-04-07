@@ -656,6 +656,7 @@
       right: 10px;
       z-index: 10002;
       cursor: pointer;
+      display: block; /* Default to visible on mobile */
     }
 
     .install-button img {
@@ -666,6 +667,13 @@
 
     .install-button img:hover {
       transform: scale(1.1);
+    }
+
+    /* Hide install button on desktop */
+    @media (min-width: 769px) {
+      .install-button {
+        display: none;
+      }
     }
 
     .install-popup {
@@ -682,7 +690,7 @@
       z-index: 999999;
       width: 300px;
       max-width: 90%;
-      position: relative; /* For positioning the button */
+      position: relative;
     }
 
     .install-popup.active {
@@ -697,19 +705,23 @@
 
     .install-popup button {
       position: absolute;
-      bottom: 20px; /* Adjust based on image positioning */
+      bottom: 30px; /* Moved up slightly */
       left: 50%;
       transform: translateX(-50%);
       background: #007AFF;
       color: white;
       border: none;
       padding: 10px 20px;
-      border-radius: 10px;
+      border-radius: 8px; /* More square */
       cursor: pointer;
       font-size: 16px;
       font-weight: bold;
       transition: background 0.3s ease;
-      width: 100px; /* Match the button size in the image */
+      width: 100px;
+      height: 40px; /* More square dimensions */
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .install-popup button:hover {
