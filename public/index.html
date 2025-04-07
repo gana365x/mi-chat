@@ -169,7 +169,7 @@
       bottom: 0;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 2px 2px 40px 2px; /* Increased bottom padding to 40px */
+      padding: 2px 2px 40px 2px;
       box-sizing: border-box;
       width: 100%;
     }
@@ -682,41 +682,38 @@
       z-index: 999999;
       width: 300px;
       max-width: 90%;
+      position: relative; /* For positioning the button */
     }
 
     .install-popup.active {
       display: block;
     }
 
-    .install-popup .info-icon {
-      width: 50px;
-      height: 50px;
-      background: #E6F0FA;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 15px;
-    }
-
-    .install-popup .info-icon::before {
-      content: 'i';
-      font-size: 30px;
-      color: #007AFF;
-      font-weight: bold;
-    }
-
     .install-popup img.instructions {
       width: 100%;
       height: auto;
-      margin-bottom: 15px;
+      display: block;
     }
 
-    .install-popup img.close-button {
-      width: 100px;
-      height: auto;
+    .install-popup button {
+      position: absolute;
+      bottom: 20px; /* Adjust based on image positioning */
+      left: 50%;
+      transform: translateX(-50%);
+      background: #007AFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
       cursor: pointer;
-      margin-top: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+      width: 100px; /* Match the button size in the image */
+    }
+
+    .install-popup button:hover {
+      background: #005BB5;
     }
   </style>
 </head>
@@ -787,9 +784,8 @@
   </div>
 
   <div id="installPopup" class="install-popup">
-    <div class="info-icon"></div>
-    <img src="https://i.postimg.cc/3x3L0q2N/install-instructions.png" alt="Instructions" class="instructions">
-    <img src="https://i.postimg.cc/3x3L0q2N/entendido-button.png" alt="Entendido" class="close-button" onclick="closeInstallPopup()">
+    <img src="https://i.postimg.cc/WpdFX9Nm/Dise-o-sin-t-tulo-7.png" alt="Instructions" class="instructions">
+    <button onclick="closeInstallPopup()">Entendido</button>
   </div>
 
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
