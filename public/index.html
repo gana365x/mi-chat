@@ -35,12 +35,11 @@
       background: #1a1a1a;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
       border: 2px solid #FF3B00;
-      border-radius: 10px;
+      border-radius: 20px; /* Matches older version */
       overflow: hidden;
       display: none;
       z-index: 10001;
-      padding: 0;
-      margin: 0;
+      text-align: center; /* Matches older version */
       transform: translateX(-20px);
       opacity: 0;
       transition: all 0.3s ease-in-out;
@@ -169,7 +168,7 @@
       bottom: 60px; /* Adjusted to account for chat-input height */
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 2px 2px 20px 2px;
+      padding: 10px; /* Matches older version */
       box-sizing: border-box;
       width: 100%;
     }
@@ -330,7 +329,7 @@
       right: 0;
       display: flex;
       align-items: center;
-      padding: 5px;
+      padding: 10px; /* Matches older version */
       background: #F0F0F0;
       box-sizing: border-box;
       height: 60px;
@@ -344,7 +343,7 @@
       padding: 8px 12px;
       border: none;
       border-radius: 20px;
-      margin-right: 5px;
+      margin-right: 10px; /* Matches older version */
       outline: none;
       background: #FFFFFF;
       font-size: 16px;
@@ -358,7 +357,7 @@
     .chat-input label {
       cursor: pointer;
       font-size: 20px;
-      margin-right: 5px;
+      margin-right: 10px; /* Matches older version */
       color: #666;
     }
 
@@ -756,7 +755,7 @@
     <img src="https://i.postimg.cc/CxzrPsf3/Instalar-Aplicaci-m.png" alt="Instalar Aplicación" onclick="showInstallPopup()">
   </div>
   <div class="chat-button-wrapper">
-    <img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat">
+    <img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat"> <!-- Restored WhatsApp logo -->
     <span class="chat-bubble" id="chatBubble">¡Carga fichas acá!</span>
   </div>
 
