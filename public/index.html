@@ -68,14 +68,14 @@
     .chat-phone {
       color: white;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 26px; /* 13px * 2 = 26px */
     }
 
     .close-chat {
       background: none;
       border: none;
       color: white;
-      font-size: 18px;
+      font-size: 36px; /* 18px * 2 = 36px */
       cursor: pointer;
     }
 
@@ -101,7 +101,7 @@
     }
 
     .login-container h3 {
-      font-size: 20px;
+      font-size: 40px; /* 20px * 2 = 40px */
       margin-bottom: 15px;
     }
 
@@ -113,7 +113,7 @@
       border-radius: 25px;
       background: #222;
       color: white;
-      font-size: 16px;
+      font-size: 32px; /* 16px * 2 = 32px */
       text-align: center;
       outline: none;
       -webkit-appearance: none;
@@ -127,7 +127,7 @@
       border: none;
       cursor: pointer;
       border-radius: 25px;
-      font-size: 16px;
+      font-size: 32px; /* 16px * 2 = 32px */
       margin-top: 10px;
       font-weight: bold;
       text-transform: uppercase;
@@ -152,7 +152,7 @@
       height: calc(100% - 60px);
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
-      font-size: 14px;
+      font-size: 28px; /* 14px * 2 = 28px */
     }
 
     #messages {
@@ -197,6 +197,7 @@
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
       position: relative;
       border-top-left-radius: 0;
+      font-size: 28px; /* 14px * 2 = 28px */
     }
 
     .msg::before {
@@ -213,7 +214,7 @@
     .msg strong {
       display: block;
       margin-bottom: 6px;
-      font-size: 14px;
+      font-size: 28px; /* 14px * 2 = 28px */
     }
 
     .buttons-wrapper {
@@ -229,7 +230,7 @@
       border: none;
       padding: 10px 20px;
       border-radius: 15px;
-      font-size: 13px;
+      font-size: 26px; /* 13px * 2 = 26px */
       font-weight: 400;
       letter-spacing: 0.3px;
       color: #111;
@@ -252,7 +253,7 @@
       border-radius: 4px;
       max-width: 90%;
       position: relative;
-      font-size: 11.5px; /* Aumentado 15% */
+      font-size: 23px; /* 11.5px * 2 = 23px */
       box-shadow: none;
       clear: both;
     }
@@ -278,10 +279,10 @@
 
     .message.user {
       background: #DCF8C6;
-      float: none; /* Quitamos float para centrar */
-      margin-left: auto; /* Centramos con márgenes automáticos */
-      margin-right: auto;
-      max-width: 70%; /* Reducimos ancho para que no ocupe todo */
+      float: right; /* Alineamos a la derecha */
+      margin-left: 0; /* Quitamos margen izquierdo */
+      margin-right: 2px; /* Mínimo margen derecho */
+      max-width: 90%; /* Ajustamos para que se adapte al contenido */
       border-top-right-radius: 0;
     }
 
@@ -304,7 +305,7 @@
     }
 
     .message .timestamp {
-      font-size: 10px;
+      font-size: 20px; /* 10px * 2 = 20px */
       color: #666;
       position: absolute;
       bottom: -14px; /* Bajamos el timestamp para separarlo del texto */
@@ -332,7 +333,7 @@
       margin-right: 10px;
       outline: none;
       background: #FFFFFF;
-      font-size: 16px;
+      font-size: 32px; /* 16px * 2 = 32px */
       -webkit-appearance: none;
     }
 
@@ -342,7 +343,7 @@
 
     .chat-input label {
       cursor: pointer;
-      font-size: 20px;
+      font-size: 40px; /* 20px * 2 = 40px */
       margin-right: 10px;
       color: #666;
     }
@@ -351,7 +352,7 @@
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 40px; /* 20px * 2 = 40px */
       color: #075E54;
     }
 
@@ -361,7 +362,7 @@
       height: calc(100% - 60px);
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
-      font-size: 14px;
+      font-size: 28px; /* 14px * 2 = 28px */
       padding: 10px;
       box-sizing: border-box;
       overflow-y: auto;
@@ -409,14 +410,14 @@
     }
 
     .success-popup .success-title {
-      font-size: 18px;
+      font-size: 36px; /* 18px * 2 = 36px */
       color: #1a1a1a;
       margin-bottom: 10px;
       font-weight: 600;
     }
 
     .success-popup .success-subtext {
-      font-size: 16px;
+      font-size: 32px; /* 16px * 2 = 32px */
       color: #4a4a4a;
       margin-bottom: 30px;
     }
@@ -428,7 +429,7 @@
       padding: 12px 30px;
       border-radius: 10px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 32px; /* 16px * 2 = 32px */
       font-weight: bold;
       transition: background 0.3s ease;
     }
@@ -475,7 +476,7 @@
     }
 
     .error-popup p {
-      font-size: 18px;
+      font-size: 36px; /* 18px * 2 = 36px */
       color: #1a1a1a;
       margin-bottom: 30px;
       font-weight: 500;
@@ -488,7 +489,7 @@
       padding: 12px 30px;
       border-radius: 10px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 32px; /* 16px * 2 = 32px */
       font-weight: bold;
       transition: background 0.3s ease;
     }
@@ -500,7 +501,7 @@
     .bot-message-line {
       display: block;
       line-height: 0.1;
-      font-size: 10px;
+      font-size: 20px; /* 10px * 2 = 20px */
     }
 
     @media (max-width: 768px) {
@@ -520,7 +521,7 @@
       }
 
       .chat-phone {
-        font-size: 11px;
+        font-size: 22px; /* 11px * 2 = 22px */
       }
 
       .chat-logo {
@@ -528,31 +529,31 @@
       }
 
       .close-chat {
-        font-size: 16px;
+        font-size: 32px; /* 16px * 2 = 32px */
       }
 
       .login-container input {
-        font-size: 14px;
+        font-size: 28px; /* 14px * 2 = 28px */
       }
 
       .login-button {
-        font-size: 14px;
+        font-size: 28px; /* 14px * 2 = 28px */
       }
 
       .action-button {
         width: 180px;
-        font-size: 12px;
+        font-size: 24px; /* 12px * 2 = 24px */
       }
 
       .chat-input input[type="text"] {
-        font-size: 14px;
+        font-size: 28px; /* 14px * 2 = 28px */
       }
     }
 
     .fichas-bancarias {
       text-align: left;
       line-height: 1.1;
-      font-size: 6.3px; /* Aumentado 15% */
+      font-size: 12.6px; /* 6.3px * 2 = 12.6px */
       margin: 0;
       padding-left: 2px;
       padding-top: 0;
@@ -605,11 +606,12 @@
       color: white;
       padding: 6px 10px;
       border-radius: 15px;
-      font-size: 12px;
+      font-size: 24px; /* 12px * 2 = 24px */
       font-weight: bold;
       white-space: nowrap;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
       animation: showAndBounce 5s forwards;
+      display: none; /* Inicialmente oculto */
     }
 
     /* Animación para mostrar, saltar y desaparecer */
@@ -643,7 +645,7 @@
   <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
   <div class="chat-button-wrapper">
     <img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat">
-    <span class="chat-bubble">¡Carga fichas acá!</span>
+    <span class="chat-bubble" id="chatBubble">¡Carga fichas acá!</span>
   </div>
 
   <div class="chat-container" id="chatBox">
@@ -1146,6 +1148,15 @@
       const chat = document.getElementById("chatBox");
       chat.style.display = "none";
       isChatOpen = false;
+
+      // Mostrar el globito inicialmente
+      const chatBubble = document.getElementById("chatBubble");
+      chatBubble.style.display = "block";
+
+      // Mostrar el globito cada 3 minutos (180000 ms)
+      setInterval(() => {
+        chatBubble.style.display = "block";
+      }, 180000);
     });
 
     function copyToClipboard(text) {
