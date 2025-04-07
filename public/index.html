@@ -154,7 +154,7 @@
     .chat-body {
       display: none;
       position: relative;
-      height: calc(100% - 60px); /* Adjusted to give more space */
+      height: calc(100% - 60px);
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
@@ -169,7 +169,7 @@
       bottom: 0;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 2px 2px 20px 2px; /* Added bottom padding to ensure last message is visible */
+      padding: 2px 2px 40px 2px; /* Increased bottom padding to 40px */
       box-sizing: border-box;
       width: 100%;
     }
@@ -333,7 +333,7 @@
       padding: 5px;
       background: #F0F0F0;
       box-sizing: border-box;
-      height: 60px; /* Restored to original height */
+      height: 60px;
       width: 100%;
     }
 
@@ -659,7 +659,7 @@
     }
 
     .install-button img {
-      width: 150px; /* Increased by 50% from 100px */
+      width: 150px;
       height: auto;
       transition: transform 0.2s ease-in-out;
     }
@@ -706,41 +706,17 @@
       font-weight: bold;
     }
 
-    .install-popup h3 {
-      font-size: 18px;
-      color: #1a1a1a;
-      margin-bottom: 15px;
-      font-weight: 600;
-    }
-
-    .install-popup p {
-      font-size: 14px;
-      color: #4a4a4a;
-      margin: 5px 0;
-    }
-
-    .install-popup img {
-      width: 20px;
+    .install-popup img.instructions {
+      width: 100%;
       height: auto;
-      vertical-align: middle;
-      margin: 5px 5px;
+      margin-bottom: 15px;
     }
 
-    .install-popup button {
-      background: #007AFF;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
+    .install-popup img.close-button {
+      width: 100px;
+      height: auto;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      margin-top: 15px;
-      transition: background 0.3s ease;
-    }
-
-    .install-popup button:hover {
-      background: #005BB5;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -812,11 +788,8 @@
 
   <div id="installPopup" class="install-popup">
     <div class="info-icon"></div>
-    <h3>Agregar a Pantalla de Inicio</h3>
-    <p>Para agregar esta página a tu pantalla de inicio, sigue estos pasos:</p>
-    <p>Paso 1: Toca el botón de <img src="https://i.postimg.cc/3x3L0q2N/share-icon.png" alt="Compartir"> Compartir.</p>
-    <p>Paso 2: Selecciona Añadir a pantalla de inicio.</p>
-    <button onclick="closeInstallPopup()">Entendido</button>
+    <img src="https://i.postimg.cc/3x3L0q2N/install-instructions.png" alt="Instructions" class="instructions">
+    <img src="https://i.postimg.cc/3x3L0q2N/entendido-button.png" alt="Entendido" class="close-button" onclick="closeInstallPopup()">
   </div>
 
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -1263,7 +1236,7 @@
       const installButton = document.getElementById("installButton");
       popup.classList.remove('active');
       overlay.classList.remove('active');
-      installButton.style.display = 'none'; // Hide the install button
+      installButton.style.display = 'none';
     }
 
     document.addEventListener("DOMContentLoaded", () => {
