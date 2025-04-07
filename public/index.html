@@ -567,11 +567,8 @@
       text-align: left;
       line-height: 1.1;
       font-size: 10.8675px;
-      margin: 0;
-      padding-left: 2px;
-      padding-top: 0;
-      padding-right: 0;
-      padding-bottom: 0;
+      margin: 3px; /* Added 3px margin around auto-responses */
+      padding: 0;
       font-family: 'Segoe UI', sans-serif;
       word-wrap: break-word;
     }
@@ -716,7 +713,6 @@
           <strong>Gracias por elegirnos</strong><br>
           No te olvides de recomendarnos 💎<br>
         </div>
-        <span class="timestamp" id="finalMessageTimestamp"></span>
       </div>
       <div class="buttons-wrapper">
         <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
@@ -810,13 +806,6 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           socket.emit('image', { userId: userId, sender: currentUser, image: e.target.result });
-          // Auto-response for image upload
-          const messagesDiv = document.getElementById("messages");
-          const botMessage = document.createElement('div');
-          botMessage.classList.add('message', 'bot');
-          botMessage.innerHTML = `✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos<br>sus fichas serán acreditadas!<span class="timestamp">${getCurrentTime()}</span>`;
-          messagesDiv.appendChild(botMessage);
-          setTimeout(scrollToBottom, 0);
         };
         reader.readAsDataURL(file);
         event.target.value = '';
