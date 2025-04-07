@@ -451,7 +451,7 @@ io.on('connection', (socket) => {
     const botResponse = {
       userId: data.userId,
       sender: 'Bot',
-      message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos sus fichas serán acreditadas!',
+      message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos<br>sus fichas serán acreditadas!',
       timestamp: getTimestamp(),
       username: username
     };
