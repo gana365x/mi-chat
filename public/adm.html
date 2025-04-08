@@ -56,8 +56,8 @@
                     return {
                         id: user.id,
                         login: user.login,
-                        balance: balanceData.balance || "0", // Revertido a 'balance'
-                        wager: balanceData.wager || "0"      // 'wager' funciona
+                        balance: balanceData.balance || balanceData.amount || "0", // Intento con 'balance' o 'amount'
+                        wager: balanceData.wager || "0" // 'wager' parece correcto
                     };
                 }));
                 
@@ -67,7 +67,7 @@
                         `<div class="user-item">
                             ID: ${user.id} - 
                             Login: ${user.login || "N/A"} - 
-                            Balance: ${user.balance} - 
+                            Balance: ${user.balance} ARS - 
                             Wager: ${user.wager} 
                             <button onclick="selectUser('${user.id}')">Seleccionar</button>
                         </div>`
