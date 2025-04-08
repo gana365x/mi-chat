@@ -25,7 +25,7 @@
     <script>
         const config = {
             authToken: "2ec45181b469309b3ffd7871677ff198", // Token de autorización para búsqueda
-            apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b", // Reemplazá con tu API token para operaciones
+            apiToken: "TU_API_TOKEN_AQUÍ", // Reemplazá con tu API token para operaciones
             domain: "https://admin.gana365.online"
         };
         let selectedUser = null;
@@ -33,16 +33,30 @@
         // Buscar cliente por login
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase().trim();
-            const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}`; // Sin limit
-            
+            let allUsers = [];
+            let offset = 0;
+            const limit = 100; // Límite por solicitud
+            let hasMore = true;
+
             try {
-                const usersResponse = await fetch(usersUrl, { method: "POST" });
-                const usersData = await usersResponse.json();
+                // Cargar todas las páginas de usuarios
+                while (hasMore) {
+                    const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&limit=${limit}&offset=${offset}`;
+                    
+                    const usersResponse = await fetch(usersUrl, { method: "POST" });
+                    const usersData = await usersResponse.json();
+                    
+                    const users = usersData.users || [];
+                    console.log(`Usuarios cargados (offset ${offset}):`, users); // Depuración
+                    
+                    allUsers = allUsers.concat(users);
+                    offset += limit;
+                    hasMore = users.length === limit; // Si recibimos menos que el límite, no hay más páginas
+                }
+
+                console.log("Total de usuarios cargados:", allUsers); // Depuración
                 
-                const users = usersData.users || [];
-                console.log("Todos los usuarios cargados:", users); // Depuración
-                
-                const filteredUsers = users.filter(user => 
+                const filteredUsers = allUsers.filter(user => 
                     (user.login || "").toLowerCase().includes(searchValue)
                 );
                 console.log("Usuarios filtrados:", filteredUsers); // Depuración
