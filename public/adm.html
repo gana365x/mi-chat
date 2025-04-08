@@ -24,24 +24,28 @@
 
     <script>
         const config = {
-            token: "2ec45181b469309b3ffd7871677ff198", // Token de autorización
+            authToken: "2ec45181b469309b3ffd7871677ff198", // Token de autorización para búsqueda
+            apiToken: "TU_API_TOKEN_AQUÍ", // Reemplazá con tu API token para operaciones
             domain: "https://admin.gana365.online"
         };
-        let selectedUser = null; // Ahora guarda id y login
+        let selectedUser = null;
 
-        // Buscar cliente por login y mostrar login, total, saldo y wager
+        // Buscar cliente por login
         async function searchUser() {
-            const searchValue = document.getElementById("userSearch").value.toLowerCase();
-            const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
+            const searchValue = document.getElementById("userSearch").value.toLowerCase().trim();
+            const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}`; // Sin limit
             
             try {
                 const usersResponse = await fetch(usersUrl, { method: "POST" });
                 const usersData = await usersResponse.json();
                 
                 const users = usersData.users || [];
+                console.log("Todos los usuarios cargados:", users); // Depuración
+                
                 const filteredUsers = users.filter(user => 
                     (user.login || "").toLowerCase().includes(searchValue)
                 );
+                console.log("Usuarios filtrados:", filteredUsers); // Depuración
 
                 const resultDiv = document.getElementById("userResult");
                 resultDiv.innerHTML = filteredUsers.length ? 
@@ -79,8 +83,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
-            const body = `amount=${amount}`;
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
+            const body = `operation=in&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
             
             try {
                 const response = await fetch(url, {
@@ -110,8 +114,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
-            const body = `amount=-${amount}`; // Negativo para sacar
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
+            const body = `operation=out&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
             
             try {
                 const response = await fetch(url, {
