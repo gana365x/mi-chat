@@ -24,7 +24,7 @@
 
     <script>
         const config = {
-            apiToken: "5445565e9c0ab5fb4f9c94ad297e39a45632c70186a3919a5c62817dc306dcc5", // Reemplaza con tu API token generado
+            token: "2ec45181b469309b3ffd7871677ff198", // Token de autorización
             domain: "https://admin.gana365.online"
         };
         let selectedUserId = null;
@@ -32,15 +32,10 @@
         // Buscar usuario por nombre
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
-            const url = `${config.domain}/index.php?act=admin&area=users&response=js&limit=100`;
-            const body = `api_token=${config.apiToken}`;
+            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
             
             try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: body
-                });
+                const response = await fetch(url, { method: "POST" });
                 const data = await response.json();
                 
                 const users = data.users || [];
@@ -77,8 +72,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js`;
-            const body = `api_token=${config.apiToken}&amount=${amount}`;
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js&token=${config.token}`;
+            const body = `amount=${amount}`;
             
             try {
                 const response = await fetch(url, {
@@ -108,8 +103,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js`;
-            const body = `api_token=${config.apiToken}&amount=-${amount}`; // Valor negativo para sacar
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js&token=${config.token}`;
+            const body = `amount=-${amount}`; // Negativo para sacar
             
             try {
                 const response = await fetch(url, {
