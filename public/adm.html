@@ -12,7 +12,7 @@
 </head>
 <body>
     <h2>Buscar Cliente por Login</h2>
-    <input type="text" id="userSearch" placeholder="Búsqueda del usuario">
+    <input type="text" id="userSearch" placeholder="Login del cliente (ej. Joseluna369)">
     <button onclick="searchUser()">Buscar</button>
     <div id="userResult"></div>
 
@@ -27,7 +27,7 @@
             token: "2ec45181b469309b3ffd7871677ff198", // Token de autorización
             domain: "https://admin.gana365.online"
         };
-        let selectedUserId = null;
+        let selectedUser = null; // Ahora guarda id y login
 
         // Buscar cliente por login y mostrar login, total, saldo y wager
         async function searchUser() {
@@ -51,7 +51,7 @@
                             Total: ${user.balances?.ARS || "0"} ARS - 
                             Saldo: ${user.out_balance?.ARS || "0"} ARS - 
                             Wager: ${user.wager?.ARS || "0"} ARS 
-                            <button onclick="selectUser('${user.id}')">Seleccionar</button>
+                            <button onclick="selectUser('${user.id}', '${user.login}')">Seleccionar</button>
                         </div>`
                     ).join("") : 
                     "No se encontraron clientes.";
@@ -62,14 +62,14 @@
         }
 
         // Seleccionar usuario
-        function selectUser(userId) {
-            selectedUserId = userId;
-            document.getElementById("addResult").innerHTML = `Cliente ${userId} seleccionado.`;
+        function selectUser(userId, userLogin) {
+            selectedUser = { id: userId, login: userLogin };
+            document.getElementById("addResult").innerHTML = `Cliente ${userLogin} seleccionado.`;
         }
 
         // Agregar fichas
         async function addChips() {
-            if (!selectedUserId) {
+            if (!selectedUser) {
                 document.getElementById("addResult").innerHTML = "Selecciona un cliente primero.";
                 return;
             }
@@ -79,7 +79,7 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js&token=${config.token}`;
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
             const body = `amount=${amount}`;
             
             try {
@@ -91,7 +91,7 @@
                 const data = await response.json();
                 
                 document.getElementById("addResult").innerHTML = data.success ? 
-                    `${amount} fichas agregadas al cliente ${userId}.` : 
+                    `${amount} fichas agregadas al cliente ${selectedUser.login}.` : 
                     `Error: ${data.error || "No se pudo agregar fichas."}`;
             } catch (error) {
                 document.getElementById("addResult").innerHTML = "Error al agregar fichas.";
@@ -100,7 +100,7 @@
 
         // Sacar fichas
         async function removeChips() {
-            if (!selectedUserId) {
+            if (!selectedUser) {
                 document.getElementById("addResult").innerHTML = "Selecciona un cliente primero.";
                 return;
             }
@@ -110,7 +110,7 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js&token=${config.token}`;
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
             const body = `amount=-${amount}`; // Negativo para sacar
             
             try {
@@ -122,7 +122,7 @@
                 const data = await response.json();
                 
                 document.getElementById("addResult").innerHTML = data.success ? 
-                    `${amount} fichas retiradas del cliente ${userId}.` : 
+                    `${amount} fichas retiradas del cliente ${selectedUser.login}.` : 
                     `Error: ${data.error || "No se pudo sacar fichas."}`;
             } catch (error) {
                 document.getElementById("addResult").innerHTML = "Error al sacar fichas.";
