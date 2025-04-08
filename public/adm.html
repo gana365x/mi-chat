@@ -53,8 +53,8 @@
                     return {
                         id: user.id,
                         login: user.login,
-                        balance: balanceData.balance || "0", // Ajusta si el campo no es 'balance'
-                        wager: balanceData.wager || "0"     // Ajusta si el campo no es 'wager'
+                        balance: balanceData.saldo || "0", // Cambié 'balance' por 'saldo'
+                        wager: balanceData.wager || "0"   // 'wager' parece correcto
                     };
                 }));
                 
