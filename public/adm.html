@@ -24,63 +24,24 @@
 
     <script>
         const config = {
-            authToken: "2ec45181b469309b3ffd7871677ff198", // Token de autorización para búsqueda
-            apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b", // API token para operaciones
-            domain: "https://admin.gana365.online",
-            cashierId: "1601152" // ID del cajero (Cajatiorico)
+            token: "2ec45181b469309b3ffd7871677ff198", // Token de autorización
+            domain: "https://admin.gana365.online"
         };
-        let selectedUser = null;
+        let selectedUser = null; // Ahora guarda id y login
 
-        // Buscar cliente por login
+        // Buscar cliente por login y mostrar login, total, saldo y wager
         async function searchUser() {
-            const searchValue = document.getElementById("userSearch").value.toLowerCase().trim();
-            console.log("Valor de búsqueda:", searchValue); // Depuración
-            let allUsers = [];
-            let offset = 0;
-            const limit = 1000; // Límite por solicitud (ajustado a 1000)
-            let hasMore = true;
-
+            const searchValue = document.getElementById("userSearch").value.toLowerCase();
+            const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
+            
             try {
-                // Cargar todas las páginas de usuarios
-                while (hasMore) {
-                    const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${offset}`;
-                    
-                    console.log(`Solicitando URL (offset ${offset}):`, usersUrl); // Depuración
-                    
-                    const usersResponse = await fetch(usersUrl, { method: "POST" });
-                    if (!usersResponse.ok) {
-                        console.error(`Error en la solicitud (offset ${offset}):`, usersResponse.status, usersResponse.statusText);
-                        break;
-                    }
-                    
-                    const usersData = await usersResponse.json();
-                    console.log(`Respuesta completa (offset ${offset}):`, usersData); // Depuración completa
-                    
-                    const users = usersData.users || [];
-                    console.log(`Usuarios cargados (offset ${offset}):`, users); // Depuración
-                    
-                    allUsers = allUsers.concat(users);
-                    offset += limit;
-                    hasMore = users.length > 0; // Continuar mientras haya usuarios
-
-                    // Si pageCount está disponible, usarlo para limitar el bucle
-                    if (usersData.pageCount) {
-                        const totalUsersExpected = usersData.pageCount * limit;
-                        console.log(`Total esperado según pageCount: ${totalUsersExpected}`);
-                        if (allUsers.length >= totalUsersExpected) {
-                            hasMore = false;
-                        }
-                    }
-                }
-
-                console.log("Total de usuarios cargados:", allUsers); // Depuración
+                const usersResponse = await fetch(usersUrl, { method: "POST" });
+                const usersData = await usersResponse.json();
                 
-                const filteredUsers = allUsers.filter(user => {
-                    const login = (user.login || "").toLowerCase();
-                    console.log(`Comparando login: ${login} con búsqueda: ${searchValue}`); // Depuración
-                    return login.includes(searchValue);
-                });
-                console.log("Usuarios filtrados:", filteredUsers); // Depuración
+                const users = usersData.users || [];
+                const filteredUsers = users.filter(user => 
+                    (user.login || "").toLowerCase().includes(searchValue)
+                );
 
                 const resultDiv = document.getElementById("userResult");
                 resultDiv.innerHTML = filteredUsers.length ? 
@@ -118,8 +79,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
-            const body = `operation=in&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
+            const body = `amount=${amount}`;
             
             try {
                 const response = await fetch(url, {
@@ -149,8 +110,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
-            const body = `operation=out&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
+            const body = `amount=-${amount}`; // Negativo para sacar
             
             try {
                 const response = await fetch(url, {
