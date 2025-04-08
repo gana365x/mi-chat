@@ -12,7 +12,7 @@
 </head>
 <body>
     <h2>Buscar Cliente por Login</h2>
-    <input type="text" id="userSearch" placeholder="Búsqueda del cliente">
+    <input type="text" id="userSearch" placeholder="Login del cliente (ej. Joseluna369)">
     <button onclick="searchUser()">Buscar</button>
     <div id="userResult"></div>
 
@@ -24,21 +24,26 @@
 
     <script>
         const config = {
-            token: "2ec45181b469309b3ffd7871677ff198", // Token de autorización
+            apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b", // Reemplazá con tu API token generado
             domain: "https://admin.gana365.online"
         };
-        let selectedUser = null; // Ahora guarda id y login
+        let selectedUser = null;
 
-        // Buscar cliente por login y mostrar login, total, saldo y wager
+        // Buscar cliente por login
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
-            const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
+            const url = `${config.domain}/index.php?act=admin&area=users&response=js&limit=100`;
+            const body = `api_token=${config.apiToken}`;
             
             try {
-                const usersResponse = await fetch(usersUrl, { method: "POST" });
-                const usersData = await usersResponse.json();
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: body
+                });
+                const data = await response.json();
                 
-                const users = usersData.users || [];
+                const users = data.users || [];
                 const filteredUsers = users.filter(user => 
                     (user.login || "").toLowerCase().includes(searchValue)
                 );
@@ -57,7 +62,6 @@
                     "No se encontraron clientes.";
             } catch (error) {
                 document.getElementById("userResult").innerHTML = "Error al buscar clientes.";
-                console.error("Error en búsqueda:", error);
             }
         }
 
@@ -79,8 +83,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
-            const body = `amount=${amount}`;
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
+            const body = `api_token=${config.apiToken}&amount=${amount}`;
             
             try {
                 const response = await fetch(url, {
@@ -110,8 +114,8 @@
                 return;
             }
             
-            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js&token=${config.token}`;
-            const body = `amount=-${amount}`; // Negativo para sacar
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
+            const body = `api_token=${config.apiToken}&amount=-${amount}`;
             
             try {
                 const response = await fetch(url, {
