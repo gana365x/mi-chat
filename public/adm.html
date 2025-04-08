@@ -29,7 +29,7 @@
         };
         let selectedUserId = null;
 
-        // Buscar cliente por login
+        // Buscar cliente por login y mostrar saldo y wager
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
             const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
@@ -46,7 +46,13 @@
                 const resultDiv = document.getElementById("userResult");
                 resultDiv.innerHTML = filteredUsers.length ? 
                     filteredUsers.map(user => 
-                        `<div class="user-item">ID: ${user.id} - Login: ${user.login || "N/A"} <button onclick="selectUser('${user.id}')">Seleccionar</button></div>`
+                        `<div class="user-item">
+                            ID: ${user.id} - 
+                            Login: ${user.login || "N/A"} - 
+                            Saldo: ${user.balance || "0"} - 
+                            Wager: ${user.wager || "0"} 
+                            <button onclick="selectUser('${user.id}')">Seleccionar</button>
+                        </div>`
                     ).join("") : 
                     "No se encontraron clientes.";
             } catch (error) {
