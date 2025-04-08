@@ -29,13 +29,12 @@
         };
         let selectedUserId = null;
 
-        // Buscar cliente por login y mostrar balance/wager desde users
+        // Buscar cliente por login y mostrar total, saldo, profit y wager
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
             const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
             
             try {
-                // Obtener lista de usuarios
                 const usersResponse = await fetch(usersUrl, { method: "POST" });
                 const usersData = await usersResponse.json();
                 
@@ -50,7 +49,9 @@
                         `<div class="user-item">
                             ID: ${user.id} - 
                             Login: ${user.login || "N/A"} - 
-                            Balance: ${user.balances?.ARS || "0"} ARS - 
+                            Total: ${user.balances?.ARS || "0"} ARS - 
+                            Saldo: ${user.out_balance?.ARS || "0"} ARS - 
+                            Profit: ${user.profit?.ARS || "0"} ARS - 
                             Wager: ${user.wager?.ARS || "0"} ARS 
                             <button onclick="selectUser('${user.id}')">Seleccionar</button>
                         </div>`
