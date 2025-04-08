@@ -40,15 +40,15 @@
       display: none;
       z-index: 10001;
       text-align: center;
-      transform: translateY(20px); /* Start slightly below for animation */
+      transform: translateY(20px);
       opacity: 0;
-      transition: all 0.5s ease-in-out; /* Smooth transition for animation */
+      transition: all 0.5s ease-in-out;
     }
 
     .chat-container.open {
-      transform: translateY(0); /* Slide up to final position */
+      transform: translateY(0);
       opacity: 1;
-      animation: chatBoxPop 0.5s ease-in-out; /* Add pop animation on open */
+      animation: chatBoxPop 0.5s ease-in-out;
     }
 
     @keyframes chatBoxPop {
@@ -108,7 +108,7 @@
 
     .chat-button:hover {
       opacity: 0.8;
-      transform: scale(1.1); /* Slight scale on hover for interactivity */
+      transform: scale(1.1);
     }
 
     .login-container {
@@ -200,7 +200,7 @@
       margin-bottom: 10px;
       clear: both;
       position: relative;
-      animation: messagePop 0.3s ease-in-out; /* Add pop animation for messages */
+      animation: messagePop 0.3s ease-in-out;
     }
 
     @keyframes messagePop {
@@ -277,7 +277,7 @@
       text-align: center;
       transition: all 0.2s ease-in-out;
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-      animation: buttonBounce 0.5s ease-in-out; /* Add bounce animation for buttons */
+      animation: buttonBounce 0.5s ease-in-out;
     }
 
     @keyframes buttonBounce {
@@ -298,7 +298,7 @@
     .action-button:hover {
       background-color: #DCF8C6;
       color: #111;
-      transform: scale(1.05); /* Slight scale on hover for interactivity */
+      transform: scale(1.05);
     }
 
     .message {
@@ -312,7 +312,7 @@
       box-shadow: none;
       clear: both;
       word-wrap: break-word;
-      animation: messagePop 0.3s ease-in-out; /* Add pop animation for messages */
+      animation: messagePop 0.3s ease-in-out;
     }
 
     .message.bot {
@@ -382,14 +382,14 @@
       height: 60px;
       width: 100%;
       z-index: 2;
-      transform: translateY(60px); /* Start below for slide-up animation */
+      transform: translateY(60px);
       opacity: 0;
-      transition: all 0.3s ease-in-out; /* Smooth transition for animation */
+      transition: all 0.3s ease-in-out;
     }
 
     .chat-input.active {
       display: flex;
-      transform: translateY(0); /* Slide up to final position */
+      transform: translateY(0);
       opacity: 1;
     }
 
@@ -1359,6 +1359,12 @@
       setInterval(() => {
         chatBubble.style.display = "block";
       }, 120000);
+
+      // Hide the install button after 10 seconds
+      const installButton = document.getElementById("installButton");
+      setTimeout(() => {
+        installButton.style.display = "none";
+      }, 10000); // 10 seconds
     });
 
     function copyToClipboard(text) {
