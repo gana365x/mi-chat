@@ -29,28 +29,43 @@
         };
         let selectedUserId = null;
 
-        // Buscar cliente por login y mostrar saldo y wager
+        // Buscar cliente por login y obtener saldo/wager
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
-            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
+            const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
             
             try {
-                const response = await fetch(url, { method: "POST" });
-                const data = await response.json();
+                // Obtener lista de usuarios
+                const usersResponse = await fetch(usersUrl, { method: "POST" });
+                const usersData = await usersResponse.json();
                 
-                const users = data.users || [];
+                const users = usersData.users || [];
                 const filteredUsers = users.filter(user => 
                     (user.login || "").toLowerCase().includes(searchValue)
                 );
+
+                // Obtener saldo y wager para cada usuario filtrado
+                const userDetails = await Promise.all(filteredUsers.map(async (user) => {
+                    const balanceUrl = `${config.domain}/index.php?act=admin&area=balance&response=js&token=${config.token}&id=${user.id}`;
+                    const balanceResponse = await fetch(balanceUrl, { method: "POST" });
+                    const balanceData = await balanceResponse.json();
+                    
+                    return {
+                        id: user.id,
+                        login: user.login,
+                        balance: balanceData.balance || "0", // Ajusta si el campo no es 'balance'
+                        wager: balanceData.wager || "0"     // Ajusta si el campo no es 'wager'
+                    };
+                }));
                 
                 const resultDiv = document.getElementById("userResult");
-                resultDiv.innerHTML = filteredUsers.length ? 
-                    filteredUsers.map(user => 
+                resultDiv.innerHTML = userDetails.length ? 
+                    userDetails.map(user => 
                         `<div class="user-item">
                             ID: ${user.id} - 
                             Login: ${user.login || "N/A"} - 
-                            Saldo: ${user.balance || "0"} - 
-                            Wager: ${user.wager || "0"} 
+                            Saldo: ${user.balance} - 
+                            Wager: ${user.wager} 
                             <button onclick="selectUser('${user.id}')">Seleccionar</button>
                         </div>`
                     ).join("") : 
