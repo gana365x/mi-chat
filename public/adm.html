@@ -44,9 +44,15 @@
                 while (hasMore) {
                     const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&limit=${limit}&offset=${offset}&filter=all&balance_type=usual:players`;
                     
-                    const usersResponse = await fetch(usersUrl, { method: "POST" });
-                    const usersData = await usersResponse.json();
+                    console.log(`Solicitando URL (offset ${offset}):`, usersUrl); // Depuración
                     
+                    const usersResponse = await fetch(usersUrl, { method: "POST" });
+                    if (!usersResponse.ok) {
+                        console.error(`Error en la solicitud (offset ${offset}):`, usersResponse.status, usersResponse.statusText);
+                        break;
+                    }
+                    
+                    const usersData = await usersResponse.json();
                     console.log(`Respuesta completa (offset ${offset}):`, usersData); // Depuración completa
                     
                     const users = usersData.users || [];
@@ -54,7 +60,7 @@
                     
                     allUsers = allUsers.concat(users);
                     offset += limit;
-                    hasMore = users.length === limit; // Si recibimos menos que el límite, no hay más páginas
+                    hasMore = users.length > 0; // Continuar mientras haya usuarios
                 }
 
                 console.log("Total de usuarios cargados:", allUsers); // Depuración
