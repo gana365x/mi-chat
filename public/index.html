@@ -353,19 +353,18 @@
       display: none;
     }
 
-    .chat-input label {
+    .chat-input label img {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
       cursor: pointer;
-      font-size: 20px;
       margin-right: 10px;
-      color: #666;
     }
 
-    .chat-input button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      color: #075E54;
+    .chat-input button img {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
     }
 
     .recommend-message {
@@ -606,14 +605,13 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      z-index: 10000; /* Ensure it’s above the website’s button */
+      z-index: 10000;
     }
 
-    /* Adjust position for mobile to overlap the website’s WhatsApp button */
     @media (max-width: 768px) {
       .chat-button-wrapper {
-        bottom: 10px; /* Adjusted to align with the website’s button */
-        right: 10px; /* Adjusted to align with the website’s button */
+        bottom: 10px;
+        right: 10px;
       }
     }
 
@@ -785,9 +783,9 @@
       <div id="messages"></div>
       <div class="chat-input">
         <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
-        <label for="imageInput">📎</label>
+        <label for="imageInput"><img src="https://i.postimg.cc/TPHNgRJv/png-transparent-camera-logo-graphy-camera-text-camera-lens-rectangle-thumbnail-1.png" alt="Camera"></label>
         <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif" onchange="sendFile(event)">
-        <button onclick="sendMessage()">✈️</button>
+        <button onclick="sendMessage()"><img src="https://i.postimg.cc/7YgRdrwS/72c0f715ca85da389e1d3d59aa3d600a-icon.png" alt="Send"></button>
       </div>
     </div>
 
@@ -1296,7 +1294,7 @@
 
       setInterval(() => {
         chatBubble.style.display = "block";
-      }, 120000);
+      }, 120000); // Updated to 2 minutes
     });
 
     function copyToClipboard(text) {
