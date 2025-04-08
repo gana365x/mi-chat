@@ -40,14 +40,30 @@
       display: none;
       z-index: 10001;
       text-align: center;
-      transform: translateX(-20px);
+      transform: translateY(20px); /* Start slightly below for animation */
       opacity: 0;
-      transition: all 0.3s ease-in-out;
+      transition: all 0.5s ease-in-out; /* Smooth transition for animation */
     }
 
     .chat-container.open {
-      transform: translateX(0);
+      transform: translateY(0); /* Slide up to final position */
       opacity: 1;
+      animation: chatBoxPop 0.5s ease-in-out; /* Add pop animation on open */
+    }
+
+    @keyframes chatBoxPop {
+      0% {
+        transform: translateY(20px) scale(0.95);
+        opacity: 0;
+      }
+      70% {
+        transform: translateY(0) scale(1.05);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
     }
 
     .chat-header {
@@ -92,6 +108,7 @@
 
     .chat-button:hover {
       opacity: 0.8;
+      transform: scale(1.1); /* Slight scale on hover for interactivity */
     }
 
     .login-container {
@@ -183,6 +200,18 @@
       margin-bottom: 10px;
       clear: both;
       position: relative;
+      animation: messagePop 0.3s ease-in-out; /* Add pop animation for messages */
+    }
+
+    @keyframes messagePop {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .logo {
@@ -248,11 +277,28 @@
       text-align: center;
       transition: all 0.2s ease-in-out;
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+      animation: buttonBounce 0.5s ease-in-out; /* Add bounce animation for buttons */
+    }
+
+    @keyframes buttonBounce {
+      0% {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .action-button:hover {
       background-color: #DCF8C6;
       color: #111;
+      transform: scale(1.05); /* Slight scale on hover for interactivity */
     }
 
     .message {
@@ -266,6 +312,7 @@
       box-shadow: none;
       clear: both;
       word-wrap: break-word;
+      animation: messagePop 0.3s ease-in-out; /* Add pop animation for messages */
     }
 
     .message.bot {
@@ -327,7 +374,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      display: none; /* Initially hidden */
+      display: none;
       align-items: center;
       padding: 10px;
       background: #F0F0F0;
@@ -335,10 +382,15 @@
       height: 60px;
       width: 100%;
       z-index: 2;
+      transform: translateY(60px); /* Start below for slide-up animation */
+      opacity: 0;
+      transition: all 0.3s ease-in-out; /* Smooth transition for animation */
     }
 
     .chat-input.active {
-      display: flex; /* Shown when active */
+      display: flex;
+      transform: translateY(0); /* Slide up to final position */
+      opacity: 1;
     }
 
     .chat-input input[type="text"] {
@@ -987,11 +1039,11 @@
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
       const chatHeader = document.getElementById("chatHeader");
-      const chatInput = document.querySelector(".chat-input"); // Get chat input
+      const chatInput = document.querySelector(".chat-input");
       chatHeader.style.display = "flex";
       chatBody.classList.add("active");
       recommendMessage.classList.remove("active");
-      chatInput.classList.remove("active"); // Hide chat input
+      chatInput.classList.remove("active");
       const messagesDiv = document.getElementById("messages");
       messagesDiv.innerHTML = '';
 
@@ -1022,10 +1074,10 @@
       console.log('Mostrando mensaje de recomendación');
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
-      const chatInput = document.querySelector(".chat-input"); // Get chat input
+      const chatInput = document.querySelector(".chat-input");
       chatBody.classList.remove("active");
       recommendMessage.classList.add("active");
-      chatInput.classList.remove("active"); // Hide chat input
+      chatInput.classList.remove("active");
 
       recommendMessage.innerHTML = '';
 
@@ -1065,9 +1117,9 @@
 
       const messagesDiv = document.getElementById("messages");
       const buttonsWrapper = document.querySelector('.buttons-wrapper');
-      const chatInput = document.querySelector(".chat-input"); // Get chat input
+      const chatInput = document.querySelector(".chat-input");
       if (buttonsWrapper) buttonsWrapper.style.display = 'none';
-      chatInput.classList.add("active"); // Show chat input after button click
+      chatInput.classList.add("active");
 
       const userMessage = document.createElement('div');
       userMessage.classList.add('message', 'user');
@@ -1225,10 +1277,10 @@
       console.log('Mostrando mensaje de agradecimiento final');
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
-      const chatInput = document.querySelector(".chat-input"); // Get chat input
+      const chatInput = document.querySelector(".chat-input");
       chatBody.classList.remove("active");
       recommendMessage.classList.add("active");
-      chatInput.classList.remove("active"); // Hide chat input
+      chatInput.classList.remove("active");
 
       const ultimaAccion = sessionStorage.getItem("ultimaAccion");
       recommendMessage.innerHTML = '';
