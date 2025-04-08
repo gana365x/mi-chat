@@ -327,7 +327,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      display: flex;
+      display: none; /* Initially hidden */
       align-items: center;
       padding: 10px;
       background: #F0F0F0;
@@ -335,6 +335,10 @@
       height: 60px;
       width: 100%;
       z-index: 2;
+    }
+
+    .chat-input.active {
+      display: flex; /* Shown when active */
     }
 
     .chat-input input[type="text"] {
@@ -983,9 +987,11 @@
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
       const chatHeader = document.getElementById("chatHeader");
+      const chatInput = document.querySelector(".chat-input"); // Get chat input
       chatHeader.style.display = "flex";
       chatBody.classList.add("active");
       recommendMessage.classList.remove("active");
+      chatInput.classList.remove("active"); // Hide chat input
       const messagesDiv = document.getElementById("messages");
       messagesDiv.innerHTML = '';
 
@@ -1016,8 +1022,10 @@
       console.log('Mostrando mensaje de recomendación');
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
+      const chatInput = document.querySelector(".chat-input"); // Get chat input
       chatBody.classList.remove("active");
       recommendMessage.classList.add("active");
+      chatInput.classList.remove("active"); // Hide chat input
 
       recommendMessage.innerHTML = '';
 
@@ -1057,7 +1065,9 @@
 
       const messagesDiv = document.getElementById("messages");
       const buttonsWrapper = document.querySelector('.buttons-wrapper');
+      const chatInput = document.querySelector(".chat-input"); // Get chat input
       if (buttonsWrapper) buttonsWrapper.style.display = 'none';
+      chatInput.classList.add("active"); // Show chat input after button click
 
       const userMessage = document.createElement('div');
       userMessage.classList.add('message', 'user');
@@ -1215,8 +1225,10 @@
       console.log('Mostrando mensaje de agradecimiento final');
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
+      const chatInput = document.querySelector(".chat-input"); // Get chat input
       chatBody.classList.remove("active");
       recommendMessage.classList.add("active");
+      chatInput.classList.remove("active"); // Hide chat input
 
       const ultimaAccion = sessionStorage.getItem("ultimaAccion");
       recommendMessage.innerHTML = '';
@@ -1294,7 +1306,7 @@
 
       setInterval(() => {
         chatBubble.style.display = "block";
-      }, 120000); // Updated to 2 minutes
+      }, 120000);
     });
 
     function copyToClipboard(text) {
