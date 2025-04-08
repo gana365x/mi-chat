@@ -32,7 +32,7 @@
         // Buscar usuario por nombre
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
-            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
+            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}`;
             
             try {
                 const response = await fetch(url, { method: "POST" });
