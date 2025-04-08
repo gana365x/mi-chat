@@ -26,7 +26,8 @@
         const config = {
             authToken: "2ec45181b469309b3ffd7871677ff198", // Token de autorización para búsqueda
             apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b", // API token para operaciones
-            domain: "https://admin.gana365.online"
+            domain: "https://admin.gana365.online",
+            cashierId: "1601152" // ID del cajero (Cajatiorico)
         };
         let selectedUser = null;
 
@@ -36,13 +37,13 @@
             console.log("Valor de búsqueda:", searchValue); // Depuración
             let allUsers = [];
             let offset = 0;
-            const limit = 100; // Límite por solicitud
+            const limit = 1000; // Límite por solicitud (ajustado a 1000)
             let hasMore = true;
 
             try {
                 // Cargar todas las páginas de usuarios
                 while (hasMore) {
-                    const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&limit=${limit}&offset=${offset}&filter=all&balance_type=usual:players`;
+                    const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${offset}`;
                     
                     console.log(`Solicitando URL (offset ${offset}):`, usersUrl); // Depuración
                     
@@ -61,6 +62,15 @@
                     allUsers = allUsers.concat(users);
                     offset += limit;
                     hasMore = users.length > 0; // Continuar mientras haya usuarios
+
+                    // Si pageCount está disponible, usarlo para limitar el bucle
+                    if (usersData.pageCount) {
+                        const totalUsersExpected = usersData.pageCount * limit;
+                        console.log(`Total esperado según pageCount: ${totalUsersExpected}`);
+                        if (allUsers.length >= totalUsersExpected) {
+                            hasMore = false;
+                        }
+                    }
                 }
 
                 console.log("Total de usuarios cargados:", allUsers); // Depuración
