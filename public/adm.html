@@ -84,7 +84,7 @@
             }
             
             const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
-            const body = `api_token=${config.apiToken}&amount=${amount}`;
+            const body = `operation=in&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
             
             try {
                 const response = await fetch(url, {
@@ -115,7 +115,7 @@
             }
             
             const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
-            const body = `api_token=${config.apiToken}&amount=-${amount}`;
+            const body = `operation=out&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
             
             try {
                 const response = await fetch(url, {
