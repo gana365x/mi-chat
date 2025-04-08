@@ -29,7 +29,7 @@
         };
         let selectedUserId = null;
 
-        // Buscar cliente por login y mostrar total, saldo, profit y wager
+        // Buscar cliente por login y mostrar login, total, saldo y wager
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
             const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
@@ -47,11 +47,9 @@
                 resultDiv.innerHTML = filteredUsers.length ? 
                     filteredUsers.map(user => 
                         `<div class="user-item">
-                            ID: ${user.id} - 
                             Login: ${user.login || "N/A"} - 
                             Total: ${user.balances?.ARS || "0"} ARS - 
                             Saldo: ${user.out_balance?.ARS || "0"} ARS - 
-                            Profit: ${user.profit?.ARS || "0"} ARS - 
                             Wager: ${user.wager?.ARS || "0"} ARS 
                             <button onclick="selectUser('${user.id}')">Seleccionar</button>
                         </div>`
@@ -93,7 +91,7 @@
                 const data = await response.json();
                 
                 document.getElementById("addResult").innerHTML = data.success ? 
-                    `${amount} fichas agregadas al cliente ${selectedUserId}.` : 
+                    `${amount} fichas agregadas al cliente ${userId}.` : 
                     `Error: ${data.error || "No se pudo agregar fichas."}`;
             } catch (error) {
                 document.getElementById("addResult").innerHTML = "Error al agregar fichas.";
@@ -124,7 +122,7 @@
                 const data = await response.json();
                 
                 document.getElementById("addResult").innerHTML = data.success ? 
-                    `${amount} fichas retiradas del cliente ${selectedUserId}.` : 
+                    `${amount} fichas retiradas del cliente ${userId}.` : 
                     `Error: ${data.error || "No se pudo sacar fichas."}`;
             } catch (error) {
                 document.getElementById("addResult").innerHTML = "Error al sacar fichas.";
