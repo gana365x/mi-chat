@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración - Gana365</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button { margin: 5px; padding: 8px; }
+        #userResult, #addResult { margin-top: 10px; }
+        .user-item { padding: 5px; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h2>Buscar Usuario por Nombre</h2>
+    <input type="text" id="userSearch" placeholder="Nombre de usuario">
+    <button onclick="searchUser()">Buscar</button>
+    <div id="userResult"></div>
+
+    <h2>Gestión de Fichas</h2>
+    <input type="number" id="chipsAmount" placeholder="Cantidad de fichas" min="1">
+    <button onclick="addChips()">Agregar Fichas</button>
+    <button onclick="removeChips()">Sacar Fichas</button>
+    <div id="addResult"></div>
+
+    <script>
+        const config = {
+            apiToken: "5445565e9c0ab5fb4f9c94ad297e39a45632c70186a3919a5c62817dc306dcc5", // Reemplaza con tu API token generado
+            domain: "https://admin.gana365.online"
+        };
+        let selectedUserId = null;
+
+        // Buscar usuario por nombre
+        async function searchUser() {
+            const searchValue = document.getElementById("userSearch").value.toLowerCase();
+            const url = `${config.domain}/index.php?act=admin&area=users&response=js&limit=100`;
+            const body = `api_token=${config.apiToken}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: body
+                });
+                const data = await response.json();
+                
+                const users = data.users || [];
+                const filteredUsers = users.filter(user => 
+                    (user.name || "").toLowerCase().includes(searchValue)
+                );
+                
+                const resultDiv = document.getElementById("userResult");
+                resultDiv.innerHTML = filteredUsers.length ? 
+                    filteredUsers.map(user => 
+                        `<div class="user-item">ID: ${user.id} - Nombre: ${user.name || "N/A"} <button onclick="selectUser('${user.id}')">Seleccionar</button></div>`
+                    ).join("") : 
+                    "No se encontraron usuarios.";
+            } catch (error) {
+                document.getElementById("userResult").innerHTML = "Error al buscar usuarios.";
+            }
+        }
+
+        // Seleccionar usuario
+        function selectUser(userId) {
+            selectedUserId = userId;
+            document.getElementById("addResult").innerHTML = `Usuario ${userId} seleccionado.`;
+        }
+
+        // Agregar fichas
+        async function addChips() {
+            if (!selectedUserId) {
+                document.getElementById("addResult").innerHTML = "Selecciona un usuario primero.";
+                return;
+            }
+            const amount = document.getElementById("chipsAmount").value;
+            if (!amount || amount <= 0) {
+                document.getElementById("addResult").innerHTML = "Ingresa una cantidad válida.";
+                return;
+            }
+            
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js`;
+            const body = `api_token=${config.apiToken}&amount=${amount}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: body
+                });
+                const data = await response.json();
+                
+                document.getElementById("addResult").innerHTML = data.success ? 
+                    `${amount} fichas agregadas al usuario ${selectedUserId}.` : 
+                    `Error: ${data.error || "No se pudo agregar fichas."}`;
+            } catch (error) {
+                document.getElementById("addResult").innerHTML = "Error al agregar fichas.";
+            }
+        }
+
+        // Sacar fichas
+        async function removeChips() {
+            if (!selectedUserId) {
+                document.getElementById("addResult").innerHTML = "Selecciona un usuario primero.";
+                return;
+            }
+            const amount = document.getElementById("chipsAmount").value;
+            if (!amount || amount <= 0) {
+                document.getElementById("addResult").innerHTML = "Ingresa una cantidad válida.";
+                return;
+            }
+            
+            const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUserId}&response=js`;
+            const body = `api_token=${config.apiToken}&amount=-${amount}`; // Valor negativo para sacar
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: body
+                });
+                const data = await response.json();
+                
+                document.getElementById("addResult").innerHTML = data.success ? 
+                    `${amount} fichas retiradas del usuario ${selectedUserId}.` : 
+                    `Error: ${data.error || "No se pudo sacar fichas."}`;
+            } catch (error) {
+                document.getElementById("addResult").innerHTML = "Error al sacar fichas.";
+            }
+        }
+    </script>
+</body>
+</html>
