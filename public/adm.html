@@ -12,7 +12,7 @@
 </head>
 <body>
     <h2>Buscar Cliente por Login</h2>
-    <input type="text" id="userSearch" placeholder="Login del cliente (ej. yonathan369)">
+    <input type="text" id="userSearch" placeholder="Login del cliente (ej. Joseluna369)">
     <button onclick="searchUser()">Buscar</button>
     <div id="userResult"></div>
 
@@ -29,7 +29,7 @@
         };
         let selectedUserId = null;
 
-        // Buscar cliente por login y obtener balance/wager
+        // Buscar cliente por login y mostrar balance/wager desde users
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
             const usersUrl = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
@@ -44,31 +44,14 @@
                     (user.login || "").toLowerCase().includes(searchValue)
                 );
 
-                // Obtener balance y wager para cada usuario filtrado
-                const userDetails = await Promise.all(filteredUsers.map(async (user) => {
-                    const balanceUrl = `${config.domain}/index.php?act=admin&area=balance&response=js&token=${config.token}&id=${user.id}`;
-                    const balanceResponse = await fetch(balanceUrl, { method: "POST" });
-                    const balanceData = await balanceResponse.json();
-                    
-                    // Mostrar respuesta cruda en consola para depurar
-                    console.log(`Respuesta de balance para ID ${user.id}:`, balanceData);
-                    
-                    return {
-                        id: user.id,
-                        login: user.login,
-                        balance: balanceData.balance || balanceData.amount || "0", // Intento con 'balance' o 'amount'
-                        wager: balanceData.wager || "0" // 'wager' parece correcto
-                    };
-                }));
-                
                 const resultDiv = document.getElementById("userResult");
-                resultDiv.innerHTML = userDetails.length ? 
-                    userDetails.map(user => 
+                resultDiv.innerHTML = filteredUsers.length ? 
+                    filteredUsers.map(user => 
                         `<div class="user-item">
                             ID: ${user.id} - 
                             Login: ${user.login || "N/A"} - 
-                            Balance: ${user.balance} ARS - 
-                            Wager: ${user.wager} 
+                            Balance: ${user.balances?.ARS || "0"} ARS - 
+                            Wager: ${user.wager?.ARS || "0"} ARS 
                             <button onclick="selectUser('${user.id}')">Seleccionar</button>
                         </div>`
                     ).join("") : 
