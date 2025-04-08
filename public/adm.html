@@ -11,8 +11,8 @@
     </style>
 </head>
 <body>
-    <h2>Buscar Cliente por Nombre</h2>
-    <input type="text" id="userSearch" placeholder="Nombre del cliente">
+    <h2>Buscar Cliente por Login</h2>
+    <input type="text" id="userSearch" placeholder="Login del cliente (ej. yonathan369)">
     <button onclick="searchUser()">Buscar</button>
     <div id="userResult"></div>
 
@@ -29,7 +29,7 @@
         };
         let selectedUserId = null;
 
-        // Buscar cliente por nombre
+        // Buscar cliente por login
         async function searchUser() {
             const searchValue = document.getElementById("userSearch").value.toLowerCase();
             const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.token}&limit=100`;
@@ -39,21 +39,14 @@
                 const data = await response.json();
                 
                 const users = data.users || [];
-                // Filtrar solo "clientes" (asumiendo que tienen un campo como 'role' o 'level')
-                const clientUsers = users.filter(user => 
-                    // Ejemplo: user.role === "login" || user.level === "client" 
-                    // Si no hay campo específico, omitir esta línea y usar todos los usuarios
-                    (user.name || "").toLowerCase().includes(searchValue)
-                );
-                
-                const filteredClients = clientUsers.filter(user => 
-                    (user.name || "").toLowerCase().includes(searchValue)
+                const filteredUsers = users.filter(user => 
+                    (user.login || "").toLowerCase().includes(searchValue)
                 );
                 
                 const resultDiv = document.getElementById("userResult");
-                resultDiv.innerHTML = filteredClients.length ? 
-                    filteredClients.map(user => 
-                        `<div class="user-item">ID: ${user.id} - Nombre: ${user.name || "N/A"} <button onclick="selectUser('${user.id}')">Seleccionar</button></div>`
+                resultDiv.innerHTML = filteredUsers.length ? 
+                    filteredUsers.map(user => 
+                        `<div class="user-item">ID: ${user.id} - Login: ${user.login || "N/A"} <button onclick="selectUser('${user.id}')">Seleccionar</button></div>`
                     ).join("") : 
                     "No se encontraron clientes.";
             } catch (error) {
