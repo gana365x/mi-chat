@@ -1055,14 +1055,19 @@
   padding-top: 20px;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 18px;
+  padding-left: 20px;
+  padding-right: 20px;
+  transform: translateX(-20px);
 }
+
 
 #sideToolPanel h2 {
   margin-bottom: 5px;
 }
 
 #sideToolPanel .input-wrapper {
+  margin-bottom: 10px;
   background-color: #1f1f1f;
   border-radius: 10px;
   padding: 6px 12px;
@@ -1133,19 +1138,19 @@
 }
 
 #sideToolPanel .add-btn {
-  background-color: #FF3B00;
+  background-color: #27ae60;
 }
 
 #sideToolPanel .add-btn:hover {
-  background-color: #d63100;
+  background-color: #1e8449;
 }
 
 #sideToolPanel .remove-btn {
-  background-color: #FF3B00;
+  background-color: #c0392b;
 }
 
 #sideToolPanel .remove-btn:hover {
-  background-color: #d63100;
+  background-color: #922b21;
 }
 
 #sideToolPanel .button-action:disabled {
@@ -1169,7 +1174,7 @@
 <input id="chipsAmount" min="1" placeholder="Monto" type="number"/>
 <span style="font-weight: bold;">ARS</span>
 </div>
-<div>
+<div style="display: flex; justify-content: center;">
 <button class="button-action add-btn" onclick="addChips()">+</button>
 <button class="button-action remove-btn" onclick="removeChips()">−</button>
 </div>
@@ -1177,7 +1182,7 @@
 </div>
 <script>
     const config = {
-      authToken: "4b0ec10ee72b5d3a38f32299337928aa",
+      authToken: "1df4fa4a4266fbdd4e61e8ef5d6c3e0e",
       apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
       domain: "https://admin.gana365.online",
       cashierId: "1601152"
