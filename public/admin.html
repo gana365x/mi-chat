@@ -1042,7 +1042,119 @@
 </div>
 </div>
 
-<div id="sideToolPanel" style="display: none; width: 300px; background: #1a1a1a; border-left: 2px solid #FF3B00; padding: 10px; overflow-y: auto;">
+<div id="sideToolPanel" style="display: none; width: 300px; padding: 10px; overflow-y: auto;">
+
+<style>
+#sideToolPanel {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: #121212;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+#sideToolPanel h2 {
+  margin-bottom: 5px;
+}
+
+#sideToolPanel .input-wrapper {
+  background-color: #1f1f1f;
+  border-radius: 10px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  width: 190px;
+  border: 2px solid #FF3B00;
+}
+
+#sideToolPanel .input-wrapper input {
+  background-color: #1f1f1f;
+  color: #fff;
+  border: none;
+  outline: none;
+  font-size: 14.4px;
+  width: 100%;
+}
+
+#sideToolPanel .input-wrapper input::placeholder {
+  color: #ccc;
+  font-size: 15px;
+}
+
+#sideToolPanel #chipsAmount {
+  text-align: right;
+  padding-right: 5px;
+  -moz-appearance: textfield;
+}
+
+#sideToolPanel #chipsAmount::-webkit-outer-spin-button,
+#sideToolPanel #chipsAmount::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#sideToolPanel .icon-button {
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  color: #fff;
+  cursor: pointer;
+}
+
+#sideToolPanel .info-fixed {
+  background-color: #1a1a1a;
+  padding: 10px 15px;
+  border-radius: 12px;
+  width: 180px;
+  line-height: 1.5;
+  font-size: 16px;
+  text-align: center;
+  min-height: 90px;
+  border: 2px solid #FF3B00;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+#sideToolPanel .button-action {
+  font-size: 24px;
+  font-weight: bold;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  border: 2px solid #FF3B00;
+  color: #fff;
+  margin: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#sideToolPanel .add-btn {
+  background-color: #FF3B00;
+}
+
+#sideToolPanel .add-btn:hover {
+  background-color: #d63100;
+}
+
+#sideToolPanel .remove-btn {
+  background-color: #FF3B00;
+}
+
+#sideToolPanel .remove-btn:hover {
+  background-color: #d63100;
+}
+
+#sideToolPanel .button-action:disabled {
+  background-color: #2a2a2a !important;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+</style>
+
 <div class="container">
 <h2>Búsqueda de usuario</h2>
 <div class="input-wrapper">
