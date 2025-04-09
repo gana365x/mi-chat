@@ -1,4 +1,3 @@
-
 const moment = require("moment-timezone");
 require('dotenv').config();
 
@@ -595,17 +594,17 @@ app.post('/superadmin-login', async (req, res) => {
     }
 
     res.cookie('token', process.env.SECRET_KEY, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production', // Solo en HTTPS en producción
-  sameSite: 'Strict', // Evita CSRF
-  path: '/',
-  maxAge: 604800000 // 7 días en milisegundos
-});
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      path: '/',
+      maxAge: 604800000
+    });
     res.status(200).json({
       success: true,
       name: agent.name,
       role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin'),
-      username: agent.username // Agregamos el username para usarlo después
+      username: agent.username
     });
   } catch (err) {
     console.error('❌ Error en login:', err);
@@ -631,7 +630,13 @@ app.post('/admin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
+    res.cookie('token', process.env.SECRET_KEY, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      path: '/',
+      maxAge: 604800000
+    });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de admin:', err);
@@ -1182,8 +1187,6 @@ app.get('/get-performance-data', async (req, res) => {
   }
 });
 
-
-
 // Endpoint seguro para obtener config desde el backend (opcional, no obligatorio)
 app.get("/get-panel-config", (req, res) => {
   const token = req.cookies.token;
@@ -1198,7 +1201,6 @@ app.get("/get-panel-config", (req, res) => {
     apiToken: process.env.API_TOKEN
   });
 });
-
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
