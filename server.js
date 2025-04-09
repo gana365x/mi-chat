@@ -1172,6 +1172,24 @@ app.get('/get-performance-data', async (req, res) => {
   }
 });
 
+
+
+// Endpoint seguro para obtener config desde el backend (opcional, no obligatorio)
+app.get("/get-panel-config", (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No autorizado" });
+  }
+
+  res.json({
+    domain: process.env.DOMAIN,
+    cashierId: process.env.CASHIER_ID,
+    authToken: process.env.AUTH_TOKEN,
+    apiToken: process.env.API_TOKEN
+  });
+});
+
+
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
