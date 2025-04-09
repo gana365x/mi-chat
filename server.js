@@ -111,7 +111,11 @@ app.get('/config.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'config.html'));
 });
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:ped1q2wzerA@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error('❌ MONGO_URI no definido en .env');
+  process.exit(1);
+}
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
@@ -590,7 +594,13 @@ app.post('/superadmin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
+    res.cookie('token', process.env.SECRET_KEY, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production', // Solo en HTTPS en producción
+  sameSite: 'Strict', // Evita CSRF
+  path: '/',
+  maxAge: 604800000 // 7 días en milisegundos
+});
     res.status(200).json({
       success: true,
       name: agent.name,
