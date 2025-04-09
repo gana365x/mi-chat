@@ -1041,7 +1041,154 @@
 <button onclick="sendAdminMessage()">Enviar</button>
 </div>
 </div>
-<div class="inbox" style="width: 300px; background: #1a1a1a; border-left: 2px solid #FF3B00; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #FF3B00;">ESPACIO RESERVADO</div></div>
+
+<div id="sideToolPanel" style="display: none; width: 300px; background: #1a1a1a; border-left: 2px solid #FF3B00; padding: 10px; overflow-y: auto;">
+<div class="container">
+<h2>Búsqueda de usuario</h2>
+<div class="input-wrapper">
+<input id="userSearch" placeholder="Buscar login" type="text"/>
+<button class="icon-button" onclick="searchUser()">🔍</button>
+</div>
+<div class="info-fixed" id="userInfoBox">
+<!-- Se completa automáticamente -->
+</div>
+<h2>Gestión de Fichas</h2>
+<div class="input-wrapper">
+<input id="chipsAmount" min="1" placeholder="Monto" type="number"/>
+<span style="font-weight: bold;">ARS</span>
+</div>
+<div>
+<button class="button-action add-btn" onclick="addChips()">+</button>
+<button class="button-action remove-btn" onclick="removeChips()">−</button>
+</div>
+<div id="addResult"></div>
+</div>
+<script>
+    const config = {
+      authToken: "1df4fa4a4266fbdd4e61e8ef5d6c3e0e",
+      apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
+      domain: "https://admin.gana365.online",
+      cashierId: "1601152"
+    };
+
+    let selectedUser = null;
+
+    async function searchUser(loginToFind = null) {
+      const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
+      let foundUser = null;
+      const limit = 1000;
+      const batchSize = 20;
+      let offset = 0;
+      let hasMore = true;
+
+      try {
+        while (hasMore && !foundUser) {
+          const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
+          const userPromises = offsets.map(async (batchOffset) => {
+            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
+            try {
+              const res = await fetch(url, { method: "POST" });
+              if (!res.ok) return { users: [], offset: batchOffset };
+              const data = await res.json();
+              return { users: data.users || [], offset: batchOffset };
+            } catch {
+              return { users: [], offset: batchOffset };
+            }
+          });
+
+          const usersArrays = await Promise.all(userPromises);
+
+          for (const { users } of usersArrays) {
+            const userMatch = users.find(user => user.login?.toLowerCase() === searchValue);
+            if (userMatch) {
+              foundUser = userMatch;
+              break;
+            }
+            if (users.length === 0) {
+              hasMore = false;
+              break;
+            }
+          }
+
+          if (!foundUser) offset += batchSize;
+        }
+
+        const userBox = document.getElementById("userInfoBox");
+        if (foundUser) {
+          selectedUser = {
+            id: foundUser.id,
+            login: foundUser.login.toLowerCase().trim()
+          };
+          renderUserBox(foundUser);
+        } else {
+          selectedUser = null;
+          userBox.innerHTML = "No se encontró ningún usuario con ese login.";
+        }
+      } catch {
+        document.getElementById("userInfoBox").innerHTML = "Error al buscar clientes.";
+      }
+    }
+
+    function renderUserBox(user) {
+      document.getElementById("userInfoBox").innerHTML = `
+        <strong>Login:</strong> ${user.login}<br>
+        <strong>Total:</strong> ${user.balances?.ARS || "0"} ARS<br>
+        <strong>Retirable:</strong> ${user.out_balance?.ARS || "0"} ARS<br>
+        <strong>Wager:</strong> ${user.limit?.ARS || "0"} ARS
+      `;
+    }
+
+    async function addChips() {
+      await sendChips("in");
+    }
+
+    async function removeChips() {
+      await sendChips("out");
+    }
+
+    async function sendChips(operation) {
+      const addBtn = document.querySelector(".add-btn");
+      const removeBtn = document.querySelector(".remove-btn");
+      const amountInput = document.getElementById("chipsAmount");
+
+      if (!selectedUser) return;
+
+      const amount = amountInput.value;
+      if (!amount || amount <= 0) return;
+
+      addBtn.disabled = true;
+      removeBtn.disabled = true;
+
+      const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
+      const body = `operation=${operation}&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
+
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
+        });
+
+        await res.json();
+
+        amountInput.value = "";
+
+        setTimeout(() => {
+          searchUser(selectedUser.login);
+        }, 200);
+
+      } catch (err) {
+        console.error("Error en la solicitud:", err);
+      }
+
+      setTimeout(() => {
+        addBtn.disabled = false;
+        removeBtn.disabled = false;
+      }, 5000);
+    }
+  </script>
+</div>
+</div>
 <div class="chat-popup" id="chatPopup">
 <div class="popup-header">
 <div style="display: flex; align-items: center; gap: 8px;">
@@ -1231,6 +1378,7 @@
 
   popupContainer.scrollTop = popupContainer.scrollHeight;
   chatContainer.scrollTop = chatContainer.scrollHeight;
+  popupContainer.scrollTop = popupContainer.scrollHeight;
 }
 
     function submitLogin() {
@@ -1259,6 +1407,7 @@
       document.getElementById("loginScreen").style.display = "none";
       document.querySelector(".admin-container").style.display = "flex";
       document.getElementById("menuWrapper").style.display = "none";
+      document.getElementById("sideToolPanel").style.display = "block";
       socket.emit('admin connected');
     } else {
       throw new Error("Credenciales inválidas");
@@ -1303,6 +1452,7 @@
     document.getElementById("loginScreen").style.display = "none";
     document.querySelector(".admin-container").style.display = "flex";
     document.getElementById("menuWrapper").style.display = "none";
+      document.getElementById("sideToolPanel").style.display = "block";
     socket.emit('admin connected');
 
     const lastUserId = sessionStorage.getItem('lastUserId');
@@ -1632,156 +1782,7 @@ if (userId === currentAdminUser) {
         </head>
         <body>
           <img src="${imageSrc}" alt="Imagen">
-        
-<!-- Sección lateral independiente - Herramienta de Gestión -->
-<div id="herramienta-lateral" style="position: fixed; top: 80px; right: 0; width: 360px; background-color: #121212; border-left: 2px solid #FF3B00; padding: 20px; overflow-y: auto; height: calc(100% - 80px); z-index: 9999;">
-<div class="container">
-<h2>Búsqueda de usuario</h2>
-<div class="input-wrapper">
-<input id="userSearch" placeholder="Buscar login" type="text"/>
-<button class="icon-button" onclick="searchUser()">🔍</button>
-</div>
-<div class="info-fixed" id="userInfoBox">
-<!-- Se completa automáticamente -->
-</div>
-<h2>Gestión de Fichas</h2>
-<div class="input-wrapper">
-<input id="chipsAmount" min="1" placeholder="Monto" type="number"/>
-<span style="font-weight: bold;">ARS</span>
-</div>
-<div>
-<button class="button-action add-btn" onclick="addChips()">+</button>
-<button class="button-action remove-btn" onclick="removeChips()">−</button>
-</div>
-<div id="addResult"></div>
-</div>
-<script>
-    const config = {
-      authToken: "1df4fa4a4266fbdd4e61e8ef5d6c3e0e",
-      apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
-      domain: "https://admin.gana365.online",
-      cashierId: "1601152"
-    };
-
-    let selectedUser = null;
-
-    async function searchUser(loginToFind = null) {
-      const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
-      let foundUser = null;
-      const limit = 1000;
-      const batchSize = 20;
-      let offset = 0;
-      let hasMore = true;
-
-      try {
-        while (hasMore && !foundUser) {
-          const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
-          const userPromises = offsets.map(async (batchOffset) => {
-            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
-            try {
-              const res = await fetch(url, { method: "POST" });
-              if (!res.ok) return { users: [], offset: batchOffset };
-              const data = await res.json();
-              return { users: data.users || [], offset: batchOffset };
-            } catch {
-              return { users: [], offset: batchOffset };
-            }
-          });
-
-          const usersArrays = await Promise.all(userPromises);
-
-          for (const { users } of usersArrays) {
-            const userMatch = users.find(user => user.login?.toLowerCase() === searchValue);
-            if (userMatch) {
-              foundUser = userMatch;
-              break;
-            }
-            if (users.length === 0) {
-              hasMore = false;
-              break;
-            }
-          }
-
-          if (!foundUser) offset += batchSize;
-        }
-
-        const userBox = document.getElementById("userInfoBox");
-        if (foundUser) {
-          selectedUser = {
-            id: foundUser.id,
-            login: foundUser.login.toLowerCase().trim()
-          };
-          renderUserBox(foundUser);
-        } else {
-          selectedUser = null;
-          userBox.innerHTML = "No se encontró ningún usuario con ese login.";
-        }
-      } catch {
-        document.getElementById("userInfoBox").innerHTML = "Error al buscar clientes.";
-      }
-    }
-
-    function renderUserBox(user) {
-      document.getElementById("userInfoBox").innerHTML = `
-        <strong>Login:</strong> ${user.login}<br>
-        <strong>Total:</strong> ${user.balances?.ARS || "0"} ARS<br>
-        <strong>Retirable:</strong> ${user.out_balance?.ARS || "0"} ARS<br>
-        <strong>Wager:</strong> ${user.limit?.ARS || "0"} ARS
-      `;
-    }
-
-    async function addChips() {
-      await sendChips("in");
-    }
-
-    async function removeChips() {
-      await sendChips("out");
-    }
-
-    async function sendChips(operation) {
-      const addBtn = document.querySelector(".add-btn");
-      const removeBtn = document.querySelector(".remove-btn");
-      const amountInput = document.getElementById("chipsAmount");
-
-      if (!selectedUser) return;
-
-      const amount = amountInput.value;
-      if (!amount || amount <= 0) return;
-
-      addBtn.disabled = true;
-      removeBtn.disabled = true;
-
-      const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
-      const body = `operation=${operation}&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
-
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body
-        });
-
-        await res.json();
-
-        amountInput.value = "";
-
-        setTimeout(() => {
-          searchUser(selectedUser.login);
-        }, 200);
-
-      } catch (err) {
-        console.error("Error en la solicitud:", err);
-      }
-
-      setTimeout(() => {
-        addBtn.disabled = false;
-        removeBtn.disabled = false;
-      }, 5000);
-    }
-  </script>
-</div>
-
-</body>
+        </body>
         </html>
       `);
       newWindow.document.close();
@@ -2010,6 +2011,40 @@ if (userId === currentAdminUser) {
             ignoreNextAdminEcho = true;
             sendAdminMessage();
           });
+
+
+    const popupInput = document.getElementById('popupInput');
+    popupInput.addEventListener('input', (e) => {
+      const value = e.target.value.trim();
+      if (value === '/') {
+        quickList.innerHTML = '';
+        quickReplies.forEach((msg, index) => {
+          const li = document.createElement('li');
+          li.textContent = `${msg.command} → ${msg.text}`;
+          li.style.marginBottom = '6px';
+          li.style.cursor = 'pointer';
+          li.addEventListener('click', () => {
+            popupInput.value = msg.text;
+            quickList.style.display = 'none';
+            ignoreNextAdminEcho = true;
+            sendPopupMessage();
+          });
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          popupInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendPopupMessage();
+        }
+      } else {
+        quickList.style.display = 'none';
+      }
+    });
+    
           quickList.appendChild(li);
         });
         quickList.style.display = 'block';
@@ -2079,154 +2114,5 @@ document.addEventListener('mouseup', function() {
   document.body.style.cursor = 'default';
 });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928b333beff249f2',t:'MTc0MzM3NTM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<!-- Sección lateral independiente - Herramienta de Gestión -->
-<div id="herramienta-lateral" style="position: fixed; top: 80px; right: 0; width: 360px; background-color: #121212; border-left: 2px solid #FF3B00; padding: 20px; overflow-y: auto; height: calc(100% - 80px); z-index: 9999;">
-<div class="container">
-<h2>Búsqueda de usuario</h2>
-<div class="input-wrapper">
-<input id="userSearch" placeholder="Buscar login" type="text"/>
-<button class="icon-button" onclick="searchUser()">🔍</button>
-</div>
-<div class="info-fixed" id="userInfoBox">
-<!-- Se completa automáticamente -->
-</div>
-<h2>Gestión de Fichas</h2>
-<div class="input-wrapper">
-<input id="chipsAmount" min="1" placeholder="Monto" type="number"/>
-<span style="font-weight: bold;">ARS</span>
-</div>
-<div>
-<button class="button-action add-btn" onclick="addChips()">+</button>
-<button class="button-action remove-btn" onclick="removeChips()">−</button>
-</div>
-<div id="addResult"></div>
-</div>
-<script>
-    const config = {
-      authToken: "1df4fa4a4266fbdd4e61e8ef5d6c3e0e",
-      apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
-      domain: "https://admin.gana365.online",
-      cashierId: "1601152"
-    };
-
-    let selectedUser = null;
-
-    async function searchUser(loginToFind = null) {
-      const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
-      let foundUser = null;
-      const limit = 1000;
-      const batchSize = 20;
-      let offset = 0;
-      let hasMore = true;
-
-      try {
-        while (hasMore && !foundUser) {
-          const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
-          const userPromises = offsets.map(async (batchOffset) => {
-            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
-            try {
-              const res = await fetch(url, { method: "POST" });
-              if (!res.ok) return { users: [], offset: batchOffset };
-              const data = await res.json();
-              return { users: data.users || [], offset: batchOffset };
-            } catch {
-              return { users: [], offset: batchOffset };
-            }
-          });
-
-          const usersArrays = await Promise.all(userPromises);
-
-          for (const { users } of usersArrays) {
-            const userMatch = users.find(user => user.login?.toLowerCase() === searchValue);
-            if (userMatch) {
-              foundUser = userMatch;
-              break;
-            }
-            if (users.length === 0) {
-              hasMore = false;
-              break;
-            }
-          }
-
-          if (!foundUser) offset += batchSize;
-        }
-
-        const userBox = document.getElementById("userInfoBox");
-        if (foundUser) {
-          selectedUser = {
-            id: foundUser.id,
-            login: foundUser.login.toLowerCase().trim()
-          };
-          renderUserBox(foundUser);
-        } else {
-          selectedUser = null;
-          userBox.innerHTML = "No se encontró ningún usuario con ese login.";
-        }
-      } catch {
-        document.getElementById("userInfoBox").innerHTML = "Error al buscar clientes.";
-      }
-    }
-
-    function renderUserBox(user) {
-      document.getElementById("userInfoBox").innerHTML = `
-        <strong>Login:</strong> ${user.login}<br>
-        <strong>Total:</strong> ${user.balances?.ARS || "0"} ARS<br>
-        <strong>Retirable:</strong> ${user.out_balance?.ARS || "0"} ARS<br>
-        <strong>Wager:</strong> ${user.limit?.ARS || "0"} ARS
-      `;
-    }
-
-    async function addChips() {
-      await sendChips("in");
-    }
-
-    async function removeChips() {
-      await sendChips("out");
-    }
-
-    async function sendChips(operation) {
-      const addBtn = document.querySelector(".add-btn");
-      const removeBtn = document.querySelector(".remove-btn");
-      const amountInput = document.getElementById("chipsAmount");
-
-      if (!selectedUser) return;
-
-      const amount = amountInput.value;
-      if (!amount || amount <= 0) return;
-
-      addBtn.disabled = true;
-      removeBtn.disabled = true;
-
-      const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
-      const body = `operation=${operation}&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
-
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body
-        });
-
-        await res.json();
-
-        amountInput.value = "";
-
-        setTimeout(() => {
-          searchUser(selectedUser.login);
-        }, 200);
-
-      } catch (err) {
-        console.error("Error en la solicitud:", err);
-      }
-
-      setTimeout(() => {
-        addBtn.disabled = false;
-        removeBtn.disabled = false;
-      }, 5000);
-    }
-  </script>
-</div>
-
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928b333beff249f2',t:'MTc0MzM3NTM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </head></html>
