@@ -1217,6 +1217,10 @@ async function loadConfig() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadConfig();
+  if (!config.domain || !config.apiToken || !config.authToken) {
+    alert('❌ Error cargando configuración. Es posible que tu sesión haya expirado.');
+  }
+  await loadConfig();
   // Resto del código...
 });
 
