@@ -1199,12 +1199,26 @@
 <div id="addResult"></div>
 </div>
 <script>
-    const config = {
-      authToken: "9da92fe4e5a19f159bceb24c1cf2f5af",
-      apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
-      domain: "https://admin.gana365.online",
-      cashierId: "1601152"
-    };
+    let config = {};
+
+async function loadConfig() {
+  try {
+    const response = await fetch('/get-panel-config', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('No autorizado');
+    config = await response.json();
+  } catch (error) {
+    console.error('Error cargando config:', error);
+    config = { domain: '', cashierId: '', authToken: '', apiToken: '' };
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadConfig();
+  // Resto del código...
+});
 
     let selectedUser = null;
 
