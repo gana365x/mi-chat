@@ -1047,22 +1047,26 @@
 <style>
 #sideToolPanel {
   font-family: Arial, sans-serif;
-  margin: 0 12px; /* Márgenes laterales iguales al padding de .input-wrapper */
   background-color: #121212;
   color: #fff;
-  display: flex;
-  justify-content: center;
-  padding: 20px 10px; /* Padding ajustado: 20px arriba, 10px lados */
+  padding: 20px 10px;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* Centra verticalmente */
   gap: 15px;
-  width: 300px; /* Ancho fijo para consistencia */
+  width: 300px;
   box-sizing: border-box;
   overflow-y: auto;
+  border: 2px solid #FF3B00; /* Borde naranja igual al chat */
+  border-bottom: 4px solid #FF3B00; /* Borde inferior más grueso, igual al chat */
+  border-radius: 10px; /* Mantiene la consistencia con otros elementos */
+  height: 100%; /* Asegura que ocupe todo el alto disponible */
+  display: flex; /* Mantiene flex para centrar */
 }
 
 #sideToolPanel h2 {
   margin-bottom: 5px;
+  text-align: center; /* Centra los títulos */
 }
 
 #sideToolPanel .input-wrapper {
@@ -1073,6 +1077,7 @@
   align-items: center;
   width: 190px;
   border: 2px solid #FF3B00;
+  margin: 0 auto; /* Centra horizontalmente */
 }
 
 #sideToolPanel .input-wrapper input {
@@ -1120,6 +1125,7 @@
   min-height: 90px;
   border: 2px solid #FF3B00;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  margin: 0 auto; /* Centra horizontalmente */
 }
 
 #sideToolPanel .button-action {
@@ -1155,6 +1161,12 @@
   background-color: #2a2a2a !important;
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+/* Centra el contenedor de botones */
+#sideToolPanel > div > div:nth-child(3) {
+  display: flex;
+  justify-content: center; /* Centra los botones horizontalmente */
 }
 </style>
 
