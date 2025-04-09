@@ -1047,15 +1047,18 @@
 <style>
 #sideToolPanel {
   font-family: Arial, sans-serif;
-  margin: 0;
+  margin: 0 12px; /* Márgenes laterales iguales al padding de .input-wrapper */
   background-color: #121212;
   color: #fff;
   display: flex;
   justify-content: center;
-  padding-top: 20px;
+  padding: 20px 10px; /* Padding ajustado: 20px arriba, 10px lados */
   flex-direction: column;
   align-items: center;
   gap: 15px;
+  width: 300px; /* Ancho fijo para consistencia */
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 #sideToolPanel h2 {
