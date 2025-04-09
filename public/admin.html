@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Panel de Agentes - GANA365</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-  <style>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Panel de Agentes - GANA365</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+<style>
     body {
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   background-color: #121212;
@@ -950,77 +951,70 @@
   </style>
 </head>
 <body>
-  <div id="menuWrapper" style="display: none;">
-    <div class="top-menu">
-      <div class="hamburger" onclick="toggleMenu()">
-        <i class="fas fa-bars"></i>
-      </div>
-      <div class="popup-menu" id="popupMenu">
-        <div onclick="goToConfig()"><i class="fas fa-cog"></i></div>
-        <div onclick="logoutAdmin()"><i class="fas fa-power-off"></i></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="loginScreen" style="position: absolute; top:0; left:0; width:100vw; height:100vh; background:#121212; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
-    <h2 style="color: white; font-size: 24px;">Login Admin</h2>
-    <input id="adminUsername" type="text" placeholder="Usuario" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;">
-    <input id="adminPassword" type="password" placeholder="Contraseña" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;">
-    <button id="loginButton" style="padding: 10px 20px; background: #FF3B00; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Ingresar</button>
-    <p id="loginError" style="color: red; margin-top: 10px; display: none;">Credenciales incorrectas</p>
-  </div>
-
-  <div class="admin-container">
-    <div class="inbox" id="userListContainer">
-      <div id="agentInfo">
-        <div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
-        <span>Admin: <span id="adminDisplayName">Cargando...</span></span>
-      </div>
-      <div class="topbar">
-        <span class="topbar-title">
-          <span style="margin-right: 5px;">📥</span> Bandeja de entrada
+<div id="menuWrapper" style="display: none;">
+<div class="top-menu">
+<div class="hamburger" onclick="toggleMenu()">
+<i class="fas fa-bars"></i>
+</div>
+<div class="popup-menu" id="popupMenu">
+<div onclick="goToConfig()"><i class="fas fa-cog"></i></div>
+<div onclick="logoutAdmin()"><i class="fas fa-power-off"></i></div>
+</div>
+</div>
+</div>
+<div id="loginScreen" style="position: absolute; top:0; left:0; width:100vw; height:100vh; background:#121212; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
+<h2 style="color: white; font-size: 24px;">Login Admin</h2>
+<input id="adminUsername" placeholder="Usuario" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;" type="text"/>
+<input id="adminPassword" placeholder="Contraseña" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;" type="password"/>
+<button id="loginButton" style="padding: 10px 20px; background: #FF3B00; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Ingresar</button>
+<p id="loginError" style="color: red; margin-top: 10px; display: none;">Credenciales incorrectas</p>
+</div>
+<div class="admin-container">
+<div class="inbox" id="userListContainer">
+<div id="agentInfo">
+<div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
+<span>Admin: <span id="adminDisplayName">Cargando...</span></span>
+</div>
+<div class="topbar">
+<span class="topbar-title">
+<span style="margin-right: 5px;">📥</span> Bandeja de entrada
         </span>
-        <button class="hamburger-btn" onclick="toggleMenuPopup()">
+<button class="hamburger-btn" onclick="toggleMenuPopup()">
           ☰
         </button>
-      </div>
-
-      <div id="menuPopup" class="menu-popup">
-        <div class="menu-icon-only" title="Configuración" onclick="openSettings()">
-          <i class="fas fa-cog"></i>
-        </div>
-        <div class="menu-icon-only" title="Filtro" onclick="toggleFilterPopup()">
-          <i class="fas fa-sliders-h"></i>
-        </div>
-        <div class="menu-icon-only" title="Salir" onclick="logOut()">
-          <i class="fas fa-power-off"></i>
-        </div>
-      </div>
-
-      <div id="filterPopup" class="filter-popup">
-        <div class="filter-option" data-value="all">Todos</div>
-        <div class="filter-option" data-value="active">Activos</div>
-        <div class="filter-option" data-value="closed">Cerrados</div>
-      </div>
-
-      <ul class="user-list" id="userList"></ul>
-    </div>
-
-    <div id="resizer"></div>
-
-    <div class="chat-view" id="chatArea" style="display: none !important;">
-      <div class="chat-header" id="chatHeader">
-        <div id="chatUser">
-          <span>Usuario:</span>
-          <strong id="currentUser">Nombre</strong>
-          <button id="editBtn" onclick="toggleEditInput()">✏️</button>
-          <input type="text" id="editNameInput" style="display: none;" placeholder="Nuevo nombre">
-          <button id="saveBtn" onclick="saveNewName()" style="display: none;">Guardar</button>
-          <button id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancelar</button>
-        </div>
-      </div>
-      <div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
-      <ul id="quickList" style="
+</div>
+<div class="menu-popup" id="menuPopup">
+<div class="menu-icon-only" onclick="openSettings()" title="Configuración">
+<i class="fas fa-cog"></i>
+</div>
+<div class="menu-icon-only" onclick="toggleFilterPopup()" title="Filtro">
+<i class="fas fa-sliders-h"></i>
+</div>
+<div class="menu-icon-only" onclick="logOut()" title="Salir">
+<i class="fas fa-power-off"></i>
+</div>
+</div>
+<div class="filter-popup" id="filterPopup">
+<div class="filter-option" data-value="all">Todos</div>
+<div class="filter-option" data-value="active">Activos</div>
+<div class="filter-option" data-value="closed">Cerrados</div>
+</div>
+<ul class="user-list" id="userList"></ul>
+</div>
+<div id="resizer"></div>
+<div class="chat-view" id="chatArea" style="display: none !important;">
+<div class="chat-header" id="chatHeader">
+<div id="chatUser">
+<span>Usuario:</span>
+<strong id="currentUser">Nombre</strong>
+<button id="editBtn" onclick="toggleEditInput()">✏️</button>
+<input id="editNameInput" placeholder="Nuevo nombre" style="display: none;" type="text"/>
+<button id="saveBtn" onclick="saveNewName()" style="display: none;">Guardar</button>
+<button id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancelar</button>
+</div>
+</div>
+<div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
+<ul id="quickList" style="
         display: none;
         position: absolute;
         bottom: 70px;
@@ -1042,55 +1036,51 @@
         list-style: none;
         text-align: left;
       "></ul>
-      <div class="chat-input" id="chatInputArea">
-        <input type="text" id="adminInput" placeholder="Escribir mensaje..." />
-        <button onclick="sendAdminMessage()">Enviar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="chatPopup" class="chat-popup">
-    <div class="popup-header">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span id="popupUser">Usuario</span>
-        <button id="editNameBtn" onclick="toggleNameEdit()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+<div class="chat-input" id="chatInputArea">
+<input id="adminInput" placeholder="Escribir mensaje..." type="text">
+<button onclick="sendAdminMessage()">Enviar</button>
+</input></div>
+</div>
+<div class="inbox" style="width: 300px; background: #1a1a1a; border-left: 2px solid #FF3B00; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #FF3B00;">ESPACIO RESERVADO</div></div>
+<div class="chat-popup" id="chatPopup">
+<div class="popup-header">
+<div style="display: flex; align-items: center; gap: 8px;">
+<span id="popupUser">Usuario</span>
+<button id="editNameBtn" onclick="toggleNameEdit()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
           ✏️
         </button>
-      </div>
-      <div class="popup-controls">
-        <button onclick="closePopup()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">⨉</button>
-      </div>
-    </div>
-    <div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
-      <input id="newPopupName" type="text" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" />
-      <button onclick="confirmPopupNameChange()" class="popup-edit-icon" title="Guardar">
+</div>
+<div class="popup-controls">
+<button onclick="closePopup()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">⨉</button>
+</div>
+</div>
+<div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
+<input id="newPopupName" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" type="text">
+<button class="popup-edit-icon" onclick="confirmPopupNameChange()" title="Guardar">
         💾
       </button>
-      <button onclick="document.getElementById('editNameContainer').style.display='none'" class="popup-edit-icon" title="Cancelar">
+<button class="popup-edit-icon" onclick="document.getElementById('editNameContainer').style.display='none'" title="Cancelar">
         ❌
       </button>
-    </div>
-
-    <div id="popupMessages" class="popup-messages"></div>
-    <div class="popup-input">
-      <input type="text" id="popupInput" placeholder="Escribir mensaje..." onkeypress="if(event.key==='Enter') sendPopupMessage()">
-      <button onclick="sendPopupMessage()">Enviar</button>
-    </div>
-  </div>
-
-  <div id="finalizePopup" class="popup-overlay">
-    <div class="popup-box">
-      <div class="popup-icon">⚠️</div>
-      <p class="popup-text">¿Seguro que querés finalizar el chat?</p>
-      <div class="popup-actions">
-        <button class="popup-btn confirm" onclick="confirmFinalize()">✔</button>
-        <button class="popup-btn cancel" onclick="closeFinalizePopup()">✖</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
+</input></div>
+<div class="popup-messages" id="popupMessages"></div>
+<div class="popup-input">
+<input id="popupInput" onkeypress="if(event.key==='Enter') sendPopupMessage()" placeholder="Escribir mensaje..." type="text"/>
+<button onclick="sendPopupMessage()">Enviar</button>
+</div>
+</div>
+<div class="popup-overlay" id="finalizePopup">
+<div class="popup-box">
+<div class="popup-icon">⚠️</div>
+<p class="popup-text">¿Seguro que querés finalizar el chat?</p>
+<div class="popup-actions">
+<button class="popup-btn confirm" onclick="confirmFinalize()">✔</button>
+<button class="popup-btn cancel" onclick="closeFinalizePopup()">✖</button>
+</div>
+</div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
     // Variable global para la zona horaria
     let systemTimezone = "UTC";
 
@@ -1905,7 +1895,7 @@ if (userId === currentAdminUser) {
       }
     });
   </script>
-  <script>
+<script>
     const resizer = document.getElementById('resizer');
 const inbox = document.getElementById('userListContainer');
 const chatView = document.getElementById('chatArea');
@@ -1941,4 +1931,4 @@ document.addEventListener('mouseup', function() {
 });
   </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928b333beff249f2',t:'MTc0MzM3NTM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html>
+</head></html>
