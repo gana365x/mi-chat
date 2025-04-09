@@ -1002,7 +1002,7 @@
 <ul class="user-list" id="userList"></ul>
 </div>
 <div id="resizer"></div>
-<div class="chat-view" id="chatArea" style="display: none !important;">
+<div class="chat-view active" id="chatArea">
 <div class="chat-header" id="chatHeader">
 <div id="chatUser">
 <span>Usuario:</span>
@@ -1037,9 +1037,9 @@
         text-align: left;
       "></ul>
 <div class="chat-input" id="chatInputArea">
-<input id="adminInput" placeholder="Escribir mensaje..." type="text">
+<input id="adminInput" placeholder="Escribir mensaje..." type="text"/>
 <button onclick="sendAdminMessage()">Enviar</button>
-</input></div>
+</div>
 </div>
 <div class="inbox" style="width: 300px; background: #1a1a1a; border-left: 2px solid #FF3B00; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #FF3B00;">ESPACIO RESERVADO</div></div>
 <div class="chat-popup" id="chatPopup">
@@ -1055,14 +1055,14 @@
 </div>
 </div>
 <div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
-<input id="newPopupName" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" type="text">
+<input id="newPopupName" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" type="text"/>
 <button class="popup-edit-icon" onclick="confirmPopupNameChange()" title="Guardar">
         💾
       </button>
 <button class="popup-edit-icon" onclick="document.getElementById('editNameContainer').style.display='none'" title="Cancelar">
         ❌
       </button>
-</input></div>
+</div>
 <div class="popup-messages" id="popupMessages"></div>
 <div class="popup-input">
 <input id="popupInput" onkeypress="if(event.key==='Enter') sendPopupMessage()" placeholder="Escribir mensaje..." type="text"/>
