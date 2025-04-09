@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
 <html lang="es">
-<head>
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
@@ -1203,7 +1201,7 @@
 
 async function loadConfig() {
   try {
-    const res = await fetch('/get-config', {
+    const res = await fetch('/get-panel-config', {
       method: 'GET',
       credentials: 'include' // Para enviar cookies de autenticación
     });
@@ -1216,19 +1214,24 @@ async function loadConfig() {
 
     let selectedUser = null;
 
-    app.get('/get-config', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+    async function searchUser(loginToFind = null) {
+      const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
+      let foundUser = null;
+      const limit = 1000;
+      const batchSize = 20;
+      let offset = 0;
+      let hasMore = true;
 
-  res.json({
-    authToken: process.env.AUTH_TOKEN,
-    apiToken: process.env.API_TOKEN,
-    domain: process.env.DOMAIN,
-    cashierId: process.env.CASHIER_ID
-  });
-});
+      if (!config.domain || !config.authToken) {
+        document.getElementById("userInfoBox").innerHTML = "Configuración no cargada.";
+        return;
+      }
+
+      try {
+        while (hasMore && !foundUser) {
+          const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
+          const userPromises = offsets.map(async (batchOffset) => {
+            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
             try {
               const res = await fetch(url, { method: "POST" });
               if (!res.ok) return { users: [], offset: batchOffset };
@@ -1528,112 +1531,113 @@ async function loadConfig() {
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
 
-      fetch("https://mi-chat-9uti.onrender.com/admin-login", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  credentials: "include", // ✅ AGREGÁ ESTA LÍNEA
-  body: JSON.stringify({ username, password })
-})
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      localStorage.setItem("adminLoggedIn", "true");
-      localStorage.setItem("adminUser", username);
-      if (data.name) {
-        localStorage.setItem("agentDisplayName", data.name);
-      }
-      if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-      }
-      document.getElementById("loginScreen").style.display = "none";
-      document.querySelector(".admin-container").style.display = "flex";
-      document.getElementById("menuWrapper").style.display = "none";
-      document.getElementById("sideToolPanel").style.display = "block";
-      socket.emit('admin connected');
-    } else {
-      throw new Error("Credenciales inválidas");
-    }
-  })
-  .catch(err => {
-    document.getElementById("loginError").style.display = "block";
-    console.error("Login fallido:", err);
-  });
+      fetch("/admin-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({ username, password })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            localStorage.setItem("adminLoggedIn", "true");
+            localStorage.setItem("adminUser", username);
+            if (data.name) {
+              localStorage.setItem("agentDisplayName", data.name);
+            }
+            if (data.token) {
+              document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+            }
+            document.getElementById("loginScreen").style.display = "none";
+            document.querySelector(".admin-container").style.display = "flex";
+            document.getElementById("menuWrapper").style.display = "none";
+            document.getElementById("sideToolPanel").style.display = "block";
+            socket.emit('admin connected');
+          } else {
+            throw new Error(data.message || "Credenciales inválidas");
+          }
+        })
+        .catch(err => {
+          document.getElementById("loginError").textContent = err.message;
+          document.getElementById("loginError").style.display = "block";
+          console.error("Login fallido:", err);
+        });
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-  await loadTimezoneFromServer();
-    await loadConfig();
+      await loadTimezoneFromServer();
+      await loadConfig();
 
-  // Adjuntar el event listener al botón de login
-  const loginButton = document.getElementById("loginButton");
-  if (loginButton) {
-    loginButton.addEventListener("click", submitLogin);
-  }
-
-  const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-  const agentUser = localStorage.getItem("adminUser");
-  const agentDisplayName = localStorage.getItem("agentDisplayName");
-
-  if (agentDisplayName) {
-    document.getElementById("adminDisplayName").textContent = adminDisplayName;
-  } else if (agentUser) {
-    fetch(`/get-agent-displayname?username=${agentUser}`)
-      .then(res => res.json())
-      .then(data => {
-        const displayName = data.name || agentUser;
-        document.getElementById("agentDisplayName").textContent = displayName;
-        localStorage.setItem("adminDisplayName", displayName);
-      })
-      .catch(err => {
-        console.error("Error al obtener el nombre visible del agente:", err);
-        document.getElementById("agentDisplayName").textContent = agentUser;
-      });
-  }
-
-  if (isLoggedIn) {
-    document.getElementById("loginScreen").style.display = "none";
-    document.querySelector(".admin-container").style.display = "flex";
-    document.getElementById("menuWrapper").style.display = "none";
-      document.getElementById("sideToolPanel").style.display = "block";
-    socket.emit('admin connected');
-
-    const lastUserId = sessionStorage.getItem('lastUserId');
-    const lastUsername = sessionStorage.getItem('lastUsername');
-    const lastUserClosed = sessionStorage.getItem('lastUserClosed') === 'true';
-
-    if (lastUserId && lastUsername) {
-      selectedUserId = lastUserId;
-      selectedUsername = lastUsername;
-      document.getElementById("currentUser").textContent = lastUsername;
-      document.getElementById("popupUser").textContent = lastUsername;
-
-      const chatInput = document.getElementById("adminInput");
-      const sendButton = document.querySelector("#chatInputArea button");
-      if (lastUserClosed) {
-        chatInput.disabled = true;
-        chatInput.placeholder = "Chat cerrado - Solo lectura";
-        sendButton.disabled = true;
-      } else {
-        chatInput.disabled = false;
-        chatInput.placeholder = "Escribir mensaje...";
-        sendButton.disabled = false;
-        if (window.innerWidth <= 767) {
-          document.getElementById("chatPopup").style.display = "flex";
-          document.getElementById("chatPopup").classList.add("show");
-        } else {
-          document.getElementById("chatArea").classList.add("active");
-        }
+      // Adjuntar el event listener al botón de login
+      const loginButton = document.getElementById("loginButton");
+      if (loginButton) {
+        loginButton.addEventListener("click", submitLogin);
       }
 
-      socket.emit('request chat history', { userId: lastUserId });
-    }
-  } else {
-    document.getElementById("loginScreen").style.display = "flex";
-    document.querySelector(".admin-container").style.display = "none";
-  }
-});
+      const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+      const agentUser = localStorage.getItem("adminUser");
+      const agentDisplayName = localStorage.getItem("agentDisplayName");
+
+      if (agentDisplayName) {
+        document.getElementById("adminDisplayName").textContent = agentDisplayName;
+      } else if (agentUser) {
+        fetch(`/get-agent-displayname?username=${agentUser}`)
+          .then(res => res.json())
+          .then(data => {
+            const displayName = data.name || agentUser;
+            document.getElementById("agentDisplayName").textContent = displayName;
+            localStorage.setItem("adminDisplayName", displayName);
+          })
+          .catch(err => {
+            console.error("Error al obtener el nombre visible del agente:", err);
+            document.getElementById("agentDisplayName").textContent = agentUser;
+          });
+      }
+
+      if (isLoggedIn) {
+        document.getElementById("loginScreen").style.display = "none";
+        document.querySelector(".admin-container").style.display = "flex";
+        document.getElementById("menuWrapper").style.display = "none";
+        document.getElementById("sideToolPanel").style.display = "block";
+        socket.emit('admin connected');
+
+        const lastUserId = sessionStorage.getItem('lastUserId');
+        const lastUsername = sessionStorage.getItem('lastUsername');
+        const lastUserClosed = sessionStorage.getItem('lastUserClosed') === 'true';
+
+        if (lastUserId && lastUsername) {
+          selectedUserId = lastUserId;
+          selectedUsername = lastUsername;
+          document.getElementById("currentUser").textContent = lastUsername;
+          document.getElementById("popupUser").textContent = lastUsername;
+
+          const chatInput = document.getElementById("adminInput");
+          const sendButton = document.querySelector("#chatInputArea button");
+          if (lastUserClosed) {
+            chatInput.disabled = true;
+            chatInput.placeholder = "Chat cerrado - Solo lectura";
+            sendButton.disabled = true;
+          } else {
+            chatInput.disabled = false;
+            chatInput.placeholder = "Escribir mensaje...";
+            sendButton.disabled = false;
+            if (window.innerWidth <= 767) {
+              document.getElementById("chatPopup").style.display = "flex";
+              document.getElementById("chatPopup").classList.add("show");
+            } else {
+              document.getElementById("chatArea").classList.add("active");
+            }
+          }
+
+          socket.emit('request chat history', { userId: lastUserId });
+        }
+      } else {
+        document.getElementById("loginScreen").style.display = "flex";
+        document.querySelector(".admin-container").style.display = "none";
+      }
+    });
 
     socket.on('user list', (users) => {
       console.log('Lista de usuarios recibida:', users);
@@ -2101,9 +2105,9 @@ if (userId === currentAdminUser) {
     function confirmFinalize() {
       if (pendingFinalizeUserId) {
         socket.emit("close chat", {
-  userId: pendingFinalizeUserId,
-  adminUsername: localStorage.getItem("adminUser")
-});
+          userId: pendingFinalizeUserId,
+          adminUsername: localStorage.getItem("adminUser")
+        });
         closeFinalizePopup();
       }
     }
@@ -2156,7 +2160,6 @@ if (userId === currentAdminUser) {
             sendAdminMessage();
           });
 
-
     const popupInput = document.getElementById('popupInput');
     popupInput.addEventListener('input', (e) => {
       const value = e.target.value.trim();
@@ -2173,6 +2176,22 @@ if (userId === currentAdminUser) {
             ignoreNextAdminEcho = true;
             sendPopupMessage();
           });
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          popupInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendPopupMessage();
+        }
+      } else {
+        quickList.style.display = 'none';
+      }
+    });
+    
           quickList.appendChild(li);
         });
         quickList.style.display = 'block';
