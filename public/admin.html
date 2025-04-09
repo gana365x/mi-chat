@@ -1862,6 +1862,40 @@ if (userId === currentAdminUser) {
             ignoreNextAdminEcho = true;
             sendAdminMessage();
           });
+
+
+    const popupInput = document.getElementById('popupInput');
+    popupInput.addEventListener('input', (e) => {
+      const value = e.target.value.trim();
+      if (value === '/') {
+        quickList.innerHTML = '';
+        quickReplies.forEach((msg, index) => {
+          const li = document.createElement('li');
+          li.textContent = `${msg.command} → ${msg.text}`;
+          li.style.marginBottom = '6px';
+          li.style.cursor = 'pointer';
+          li.addEventListener('click', () => {
+            popupInput.value = msg.text;
+            quickList.style.display = 'none';
+            ignoreNextAdminEcho = true;
+            sendPopupMessage();
+          });
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          popupInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendPopupMessage();
+        }
+      } else {
+        quickList.style.display = 'none';
+      }
+    });
+    
           quickList.appendChild(li);
         });
         quickList.style.display = 'block';
