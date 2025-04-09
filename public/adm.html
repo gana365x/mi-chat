@@ -147,16 +147,24 @@
         const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: body
+          body
         });
+
         const data = await res.json();
-        if (data.success) {
+
+        if (data.success || data.message?.includes("success") || res.status === 200) {
           showPopup(`Fichas ${operation === "in" ? "agregadas" : "retiradas"} correctamente.`, "success");
-          await searchUser(selectedUser.login); // ✅ actualiza datos automáticamente
+
+          // Esperamos 1.5 segundos antes de actualizar para que el backend refleje los cambios
+          setTimeout(() => {
+            searchUser(selectedUser.login);
+          }, 1500);
         } else {
           showPopup(`Error: ${data.error || "No se pudo completar la operación."}`, "error");
         }
-      } catch {
+
+      } catch (err) {
+        console.error("Error en la solicitud:", err);
         showPopup("Error de conexión con el servidor.", "error");
       }
     }
