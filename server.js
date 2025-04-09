@@ -1,3 +1,4 @@
+
 const moment = require("moment-timezone");
 require('dotenv').config();
 
@@ -110,11 +111,7 @@ app.get('/config.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'config.html'));
 });
 
-const MONGO_URI = process.env.MONGO_URI;
-if (!MONGO_URI) {
-  console.error('❌ MONGO_URI no definido en .env');
-  process.exit(1);
-}
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:ped1q2wzerA@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
@@ -593,18 +590,12 @@ app.post('/superadmin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-      path: '/',
-      maxAge: 604800000
-    });
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({
       success: true,
       name: agent.name,
       role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin'),
-      username: agent.username
+      username: agent.username // Agregamos el username para usarlo después
     });
   } catch (err) {
     console.error('❌ Error en login:', err);
@@ -630,13 +621,7 @@ app.post('/admin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-      path: '/',
-      maxAge: 604800000
-    });
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de admin:', err);
@@ -1185,21 +1170,6 @@ app.get('/get-performance-data', async (req, res) => {
     console.error('❌ Error al obtener datos de rendimiento:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
-});
-
-// Endpoint seguro para obtener config desde el backend (opcional, no obligatorio)
-app.get("/get-panel-config", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ error: "No autorizado" });
-  }
-
-  res.json({
-    domain: process.env.DOMAIN,
-    cashierId: process.env.CASHIER_ID,
-    authToken: process.env.AUTH_TOKEN,
-    apiToken: process.env.API_TOKEN
-  });
 });
 
 server.listen(PORT, () => {
