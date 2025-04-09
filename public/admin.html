@@ -1188,7 +1188,13 @@
 </div>
 <div style="display: flex; justify-content: center; gap: 10px;">
 <button class="button-action add-btn" onclick="addChips()">+</button>
-<button class="button-action remove-btn" onclick="removeChips()">−</button>
+<button class="button-action remove-btn" onclick="showConfirm()">−</button>
+<div id="confirmPopup">
+<span>¿Seguro?</span>
+<button onclick="confirmRemove()">✔</button>
+<button onclick="hideConfirm()">✖</button>
+</div>
+
 </div>
 <div id="addResult"></div>
 </div>
@@ -2250,5 +2256,41 @@ document.getElementById("chipsAmount").addEventListener("keypress", function(eve
     document.querySelector(".add-btn").click();
   }
 });
+</script><script>
+function showConfirm() {
+  const popup = document.getElementById("confirmPopup");
+  popup.style.display = "flex";
+}
+function hideConfirm() {
+  const popup = document.getElementById("confirmPopup");
+  popup.style.display = "none";
+}
+function confirmRemove() {
+  hideConfirm();
+  removeChips();
+}
 </script></body>
-</head></html>
+<style>
+#confirmPopup {
+  display: none;
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f1f1f;
+  border: 2px solid #FF3B00;
+  border-radius: 10px;
+  padding: 6px 12px;
+  color: white;
+  font-size: 14px;
+  z-index: 9999;
+}
+#confirmPopup button {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: white;
+  margin: 0 6px;
+  cursor: pointer;
+}
+</style></head></html>
