@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+
 <html lang="es">
+<head>
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
@@ -1197,20 +1199,12 @@
 <div id="addResult"></div>
 </div>
 <script>
-    let config = {};
-
-async function loadConfig() {
-  try {
-    const res = await fetch('/get-panel-config', {
-      method: 'GET',
-      credentials: 'include' // Para enviar cookies de autenticación
-    });
-    if (!res.ok) throw new Error('No autorizado');
-    config = await res.json();
-  } catch (err) {
-    console.error('Error cargando config:', err);
-  }
-}
+    const config = {
+      authToken: "805921b5b8cba1524630804a4da457f0",
+      apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
+      domain: "https://admin.gana365.online",
+      cashierId: "1601152"
+    };
 
     let selectedUser = null;
 
@@ -1221,11 +1215,6 @@ async function loadConfig() {
       const batchSize = 20;
       let offset = 0;
       let hasMore = true;
-
-      if (!config.domain || !config.authToken) {
-        document.getElementById("userInfoBox").innerHTML = "Configuración no cargada.";
-        return;
-      }
 
       try {
         while (hasMore && !foundUser) {
@@ -1531,113 +1520,111 @@ async function loadConfig() {
       const username = document.getElementById("adminUsername").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
 
-      fetch("/admin-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          localStorage.setItem("adminLoggedIn", "true");
-          localStorage.setItem("adminUser", username);
-          if (data.name) {
-            localStorage.setItem("agentDisplayName", data.name);
-          }
-          if (data.token) {
-            document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
-          }
-          document.getElementById("loginScreen").style.display = "none";
-          document.querySelector(".admin-container").style.display = "flex";
-          document.getElementById("menuWrapper").style.display = "none";
-          document.getElementById("sideToolPanel").style.display = "block";
-          socket.emit('admin connected');
-        } else {
-          throw new Error(data.message || "Credenciales inválidas");
-        }
-      })
-      .catch(err => {
-        document.getElementById("loginError").textContent = err.message;
-        document.getElementById("loginError").style.display = "block";
-        console.error("Login fallido:", err);
-      });
+      fetch("https://mi-chat-9uti.onrender.com/admin-login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  credentials: "include", // ✅ AGREGÁ ESTA LÍNEA
+  body: JSON.stringify({ username, password })
+})
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      localStorage.setItem("adminLoggedIn", "true");
+      localStorage.setItem("adminUser", username);
+      if (data.name) {
+        localStorage.setItem("agentDisplayName", data.name);
+      }
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
+      }
+      document.getElementById("loginScreen").style.display = "none";
+      document.querySelector(".admin-container").style.display = "flex";
+      document.getElementById("menuWrapper").style.display = "none";
+      document.getElementById("sideToolPanel").style.display = "block";
+      socket.emit('admin connected');
+    } else {
+      throw new Error("Credenciales inválidas");
+    }
+  })
+  .catch(err => {
+    document.getElementById("loginError").style.display = "block";
+    console.error("Login fallido:", err);
+  });
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadTimezoneFromServer();
-      await loadConfig();
+  await loadTimezoneFromServer();
 
-      // Adjuntar el event listener al botón de login
-      const loginButton = document.getElementById("loginButton");
-      if (loginButton) {
-        loginButton.addEventListener("click", submitLogin);
-      }
+  // Adjuntar el event listener al botón de login
+  const loginButton = document.getElementById("loginButton");
+  if (loginButton) {
+    loginButton.addEventListener("click", submitLogin);
+  }
 
-      const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-      const agentUser = localStorage.getItem("adminUser");
-      const agentDisplayName = localStorage.getItem("agentDisplayName");
+  const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+  const agentUser = localStorage.getItem("adminUser");
+  const agentDisplayName = localStorage.getItem("agentDisplayName");
 
-      if (agentDisplayName) {
-        document.getElementById("adminDisplayName").textContent = agentDisplayName;
-      } else if (agentUser) {
-        fetch(`/get-agent-displayname?username=${agentUser}`)
-          .then(res => res.json())
-          .then(data => {
-            const displayName = data.name || agentUser;
-            document.getElementById("agentDisplayName").textContent = displayName;
-            localStorage.setItem("adminDisplayName", displayName);
-          })
-          .catch(err => {
-            console.error("Error al obtener el nombre visible del agente:", err);
-            document.getElementById("agentDisplayName").textContent = agentUser;
-          });
-      }
+  if (agentDisplayName) {
+    document.getElementById("adminDisplayName").textContent = adminDisplayName;
+  } else if (agentUser) {
+    fetch(`/get-agent-displayname?username=${agentUser}`)
+      .then(res => res.json())
+      .then(data => {
+        const displayName = data.name || agentUser;
+        document.getElementById("agentDisplayName").textContent = displayName;
+        localStorage.setItem("adminDisplayName", displayName);
+      })
+      .catch(err => {
+        console.error("Error al obtener el nombre visible del agente:", err);
+        document.getElementById("agentDisplayName").textContent = agentUser;
+      });
+  }
 
-      if (isLoggedIn) {
-        document.getElementById("loginScreen").style.display = "none";
-        document.querySelector(".admin-container").style.display = "flex";
-        document.getElementById("menuWrapper").style.display = "none";
-        document.getElementById("sideToolPanel").style.display = "block";
-        socket.emit('admin connected');
+  if (isLoggedIn) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.querySelector(".admin-container").style.display = "flex";
+    document.getElementById("menuWrapper").style.display = "none";
+      document.getElementById("sideToolPanel").style.display = "block";
+    socket.emit('admin connected');
 
-        const lastUserId = sessionStorage.getItem('lastUserId');
-        const lastUsername = sessionStorage.getItem('lastUsername');
-        const lastUserClosed = sessionStorage.getItem('lastUserClosed') === 'true';
+    const lastUserId = sessionStorage.getItem('lastUserId');
+    const lastUsername = sessionStorage.getItem('lastUsername');
+    const lastUserClosed = sessionStorage.getItem('lastUserClosed') === 'true';
 
-        if (lastUserId && lastUsername) {
-          selectedUserId = lastUserId;
-          selectedUsername = lastUsername;
-          document.getElementById("currentUser").textContent = lastUsername;
-          document.getElementById("popupUser").textContent = lastUsername;
+    if (lastUserId && lastUsername) {
+      selectedUserId = lastUserId;
+      selectedUsername = lastUsername;
+      document.getElementById("currentUser").textContent = lastUsername;
+      document.getElementById("popupUser").textContent = lastUsername;
 
-          const chatInput = document.getElementById("adminInput");
-          const sendButton = document.querySelector("#chatInputArea button");
-          if (lastUserClosed) {
-            chatInput.disabled = true;
-            chatInput.placeholder = "Chat cerrado - Solo lectura";
-            sendButton.disabled = true;
-          } else {
-            chatInput.disabled = false;
-            chatInput.placeholder = "Escribir mensaje...";
-            sendButton.disabled = false;
-            if (window.innerWidth <= 767) {
-              document.getElementById("chatPopup").style.display = "flex";
-              document.getElementById("chatPopup").classList.add("show");
-            } else {
-              document.getElementById("chatArea").classList.add("active");
-            }
-          }
-
-          socket.emit('request chat history', { userId: lastUserId });
-        }
+      const chatInput = document.getElementById("adminInput");
+      const sendButton = document.querySelector("#chatInputArea button");
+      if (lastUserClosed) {
+        chatInput.disabled = true;
+        chatInput.placeholder = "Chat cerrado - Solo lectura";
+        sendButton.disabled = true;
       } else {
-        document.getElementById("loginScreen").style.display = "flex";
-        document.querySelector(".admin-container").style.display = "none";
+        chatInput.disabled = false;
+        chatInput.placeholder = "Escribir mensaje...";
+        sendButton.disabled = false;
+        if (window.innerWidth <= 767) {
+          document.getElementById("chatPopup").style.display = "flex";
+          document.getElementById("chatPopup").classList.add("show");
+        } else {
+          document.getElementById("chatArea").classList.add("active");
+        }
       }
-    });
+
+      socket.emit('request chat history', { userId: lastUserId });
+    }
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.querySelector(".admin-container").style.display = "none";
+  }
+});
 
     socket.on('user list', (users) => {
       console.log('Lista de usuarios recibida:', users);
@@ -2105,9 +2092,9 @@ if (userId === currentAdminUser) {
     function confirmFinalize() {
       if (pendingFinalizeUserId) {
         socket.emit("close chat", {
-          userId: pendingFinalizeUserId,
-          adminUsername: localStorage.getItem("adminUser")
-        });
+  userId: pendingFinalizeUserId,
+  adminUsername: localStorage.getItem("adminUser")
+});
         closeFinalizePopup();
       }
     }
@@ -2160,6 +2147,7 @@ if (userId === currentAdminUser) {
             sendAdminMessage();
           });
 
+
     const popupInput = document.getElementById('popupInput');
     popupInput.addEventListener('input', (e) => {
       const value = e.target.value.trim();
@@ -2176,41 +2164,58 @@ if (userId === currentAdminUser) {
             ignoreNextAdminEcho = true;
             sendPopupMessage();
           });
-         quickList.appendChild(li);
-      });
-      quickList.style.display = 'block';
-    } else if (/^\/\d+$/.test(value)) {
-      const index = parseInt(value.slice(1), 10) - 1;
-      if (quickReplies[index]) {
-        adminInput.value = quickReplies[index].text;
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          popupInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendPopupMessage();
+        }
+      } else {
         quickList.style.display = 'none';
-        ignoreNextAdminEcho = true;
+      }
+    });
+    
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          adminInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendAdminMessage();
+        }
+      } else {
+        quickList.style.display = 'none';
+      }
+    });
+
+    const usernameInput = document.getElementById("adminUsername");
+    const passwordInput = document.getElementById("adminPassword");
+
+    usernameInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") submitLogin();
+    });
+
+    passwordInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") submitLogin();
+    });
+
+    adminInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
         sendAdminMessage();
       }
-    } else {
-      quickList.style.display = 'none';
-    }
-  });
-
-  const usernameInput = document.getElementById("adminUsername");
-  const passwordInput = document.getElementById("adminPassword");
-
-  usernameInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") submitLogin();
-  });
-
-  passwordInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") submitLogin();
-  });
-
-  adminInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendAdminMessage();
-    }
-  });
+    });
+  </script>
 <script>
-  const resizer = document.getElementById('resizer');
+    const resizer = document.getElementById('resizer');
 const inbox = document.getElementById('userListContainer');
 const chatView = document.getElementById('chatArea');
 
@@ -2218,78 +2223,78 @@ let isResizing = false;
 
 // Establecer ancho inicial solo en escritorio
 document.addEventListener('DOMContentLoaded', () => {
-if (window.innerWidth >= 768) {
-  inbox.style.width = '300px'; // Ancho inicial fijo solo en escritorio
-} else {
-  inbox.style.width = 'calc(100vw - 10px)'; // Forzamos el ancho en móvil
-  inbox.style.margin = '0 5px'; // Forzamos el margen en móvil
-}
+  if (window.innerWidth >= 768) {
+    inbox.style.width = '300px'; // Ancho inicial fijo solo en escritorio
+  } else {
+    inbox.style.width = 'calc(100vw - 10px)'; // Forzamos el ancho en móvil
+    inbox.style.margin = '0 5px'; // Forzamos el margen en móvil
+  }
 });
 
 resizer.addEventListener('mousedown', function(e) {
-if (window.innerWidth < 768) return; // No permitir resize en móvil
-isResizing = true;
-document.body.style.cursor = 'col-resize';
+  if (window.innerWidth < 768) return; // No permitir resize en móvil
+  isResizing = true;
+  document.body.style.cursor = 'col-resize';
 });
 
 document.addEventListener('mousemove', function(e) {
-if (!isResizing) return;
-const newWidth = e.clientX;
-if (newWidth < 180 || newWidth > window.innerWidth - 300) return;
-inbox.style.width = `${newWidth}px`;
+  if (!isResizing) return;
+  const newWidth = e.clientX;
+  if (newWidth < 180 || newWidth > window.innerWidth - 300) return;
+  inbox.style.width = `${newWidth}px`;
 });
 
 document.addEventListener('mouseup', function() {
-isResizing = false;
-document.body.style.cursor = 'default';
+  isResizing = false;
+  document.body.style.cursor = 'default';
 });
-</script>
+  </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928b333beff249f2',t:'MTc0MzM3NTM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>
 document.getElementById("chipsAmount").addEventListener("keypress", function(event) {
-if (event.key === "Enter") {
-  event.preventDefault();
-  document.querySelector(".add-btn").click();
-}
+  if (event.key === "Enter") {
+    event.preventDefault();
+    document.querySelector(".add-btn").click();
+  }
 });
 </script><script>
 function showConfirm() {
-document.getElementById("confirmPopup").style.display = "flex";
+  document.getElementById("confirmPopup").style.display = "flex";
 }
 function hideConfirm() {
-document.getElementById("confirmPopup").style.display = "none";
+  document.getElementById("confirmPopup").style.display = "none";
 }
 function confirmRemove() {
-hideConfirm();
-removeChips(); // Llama la función original
+  hideConfirm();
+  removeChips(); // Llama la función original
 }
-</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92dd42cbaf2544e5',t:'MTc0NDIzNTg1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</script></body>
 <style>
 #confirmPopup {
-display: none;
-position: absolute;
-top: -45px;
-left: 50%;
-transform: translateX(-50%);
-background: #1f1f1f;
-border: 2px solid #FF3B00;
-border-radius: 10px;
-padding: 4px 8px;
-color: white;
-font-size: 12px;
-z-index: 9999;
-flex-direction: row;
-align-items: center;
+  display: none;
+  position: absolute;
+  top: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f1f1f;
+  border: 2px solid #FF3B00;
+  border-radius: 10px;
+  padding: 4px 8px;
+  color: white;
+  font-size: 12px;
+  z-index: 9999;
+  flex-direction: row;
+  align-items: center;
 }
 #confirmPopup button {
-background: transparent;
-border: none;
-font-size: 14px;
-color: white;
-margin: 0 5px;
-cursor: pointer;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: white;
+  margin: 0 5px;
+  cursor: pointer;
 }
 .confirm-container {
-position: relative;
-display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 </style></head></html>
