@@ -1136,7 +1136,7 @@
   border-radius: 10px;
   border: 2px solid #FF3B00;
   color: #fff;
-  margin: 10px;
+  margin: 10px 5px; /* Reduje el margen lateral para mejor alineación */
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -1166,7 +1166,10 @@
 /* Centra el contenedor de botones */
 #sideToolPanel > div > div:nth-child(3) {
   display: flex;
-  justify-content: center; /* Centra los botones horizontalmente */
+  justify-content: center; /* Centra horizontalmente los botones */
+  align-items: center; /* Asegura alineación vertical */
+  width: 190px; /* Igual al ancho del .input-wrapper para alineación */
+  margin: 0 auto; /* Centra el contenedor en el panel */
 }
 </style>
 
