@@ -1199,28 +1199,36 @@
 <div id="addResult"></div>
 </div>
 <script>
-    const config = {
-      authToken: "805921b5b8cba1524630804a4da457f0",
-      apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
-      domain: "https://admin.gana365.online",
-      cashierId: "1601152"
-    };
+    let config = {};
+
+async function loadConfig() {
+  try {
+    const res = await fetch('/get-config', {
+      method: 'GET',
+      credentials: 'include' // Para enviar cookies de autenticación
+    });
+    if (!res.ok) throw new Error('No autorizado');
+    config = await res.json();
+  } catch (err) {
+    console.error('Error cargando config:', err);
+  }
+}
 
     let selectedUser = null;
 
-    async function searchUser(loginToFind = null) {
-      const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
-      let foundUser = null;
-      const limit = 1000;
-      const batchSize = 20;
-      let offset = 0;
-      let hasMore = true;
+    app.get('/get-config', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
 
-      try {
-        while (hasMore && !foundUser) {
-          const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
-          const userPromises = offsets.map(async (batchOffset) => {
-            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
+  res.json({
+    authToken: process.env.AUTH_TOKEN,
+    apiToken: process.env.API_TOKEN,
+    domain: process.env.DOMAIN,
+    cashierId: process.env.CASHIER_ID
+  });
+});
             try {
               const res = await fetch(url, { method: "POST" });
               if (!res.ok) return { users: [], offset: batchOffset };
@@ -1556,6 +1564,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
   await loadTimezoneFromServer();
+    await loadConfig();
 
   // Adjuntar el event listener al botón de login
   const loginButton = document.getElementById("loginButton");
