@@ -172,7 +172,6 @@ const userSessions = new Map();
 const adminSubscriptions = new Map();
 
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
-const timezoneFile = path.join(__dirname, 'timezone.json');
 
 function getTimestamp() {
   const timezone = "America/Argentina/Buenos_Aires";
@@ -183,7 +182,6 @@ function getTimestamp() {
 }
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
-if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
 async function incrementPerformance(agentUsername) {
   try {
@@ -900,10 +898,7 @@ app.post('/quick-replies', express.json(), (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/get-timezone', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
+
   }
 
   try {
@@ -915,10 +910,7 @@ app.get('/get-timezone', (req, res) => {
   }
 });
 
-app.post('/update-timezone', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
+
   }
   const { timezone } = req.body;
   if (!timezone || typeof timezone !== 'string') {
