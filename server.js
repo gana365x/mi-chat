@@ -1175,3 +1175,21 @@ app.get("/get-panel-config", (req, res) => {
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+// Obtener token de un admin
+app.get("/api/token", async (req, res) => {
+    const username = req.query.username;
+    if (!username) return res.status(400).json({ error: "Falta el nombre de usuario" });
+
+    try {
+        const admin = await Admin.findOne({ username });
+        if (!admin || !admin.token) {
+            return res.status(404).json({ error: "Token no encontrado" });
+        }
+        res.json({ token: admin.token });
+    } catch (err) {
+        console.error("Error obteniendo token:", err);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+
