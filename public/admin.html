@@ -1378,25 +1378,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 <script src="/socket.io/socket.io.js"></script>
 <script>
     // Variable global para la zona horaria
-    let systemTimezone = "UTC";
+    let systemTimezone = "America/Argentina/Buenos_Aires";
 
     // Cargar la zona horaria desde el servidor
-    function loadTimezoneFromServer() {
-      return fetch('/get-timezone')
-        .then(res => {
-          if (!res.ok) throw new Error('Respuesta del servidor no OK');
-          return res.json();
-        })
-        .then(data => {
-          systemTimezone = data.timezone || "UTC";
-          console.log("🕒 Zona horaria cargada exitosamente:", systemTimezone);
-        })
-        .catch(err => {
-          console.warn("⚠️ Error al cargar la zona horaria, usando UTC:", err);
-          systemTimezone = "UTC";
-        });
-    }
-
+    
     const socket = io();
 
     socket.on('connect', () => {
@@ -1569,8 +1554,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-  await loadTimezoneFromServer();
-
+  
   // Adjuntar el event listener al botón de login
   const loginButton = document.getElementById("loginButton");
   if (loginButton) {
