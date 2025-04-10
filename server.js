@@ -595,7 +595,7 @@ app.post('/superadmin-login', async (req, res) => {
     res.cookie('token', process.env.SECRET_KEY, {
   httpOnly: true,
   path: '/',
-  secure: process.env.NODE_ENV === 'production',
+  secure: false // desactivado temporalmente para desarrollo local,
   sameSite: 'lax'
 });
     res.status(200).json({
@@ -631,7 +631,7 @@ app.post('/admin-login', async (req, res) => {
     res.cookie('token', process.env.SECRET_KEY, {
   httpOnly: true,
   path: '/',
-  secure: process.env.NODE_ENV === 'production',
+  secure: false // desactivado temporalmente para desarrollo local,
   sameSite: 'lax'
 });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
