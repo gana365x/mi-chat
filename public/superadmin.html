@@ -312,6 +312,7 @@
       <button onclick="showSection('agents')">👥 Agentes</button>
       <button onclick="showSection('customize')">🎨 Editar</button>
       <button onclick="window.location.href='/agent-performance.html'">📈 Rendimiento Agentes</button>
+<button onclick="window.location.href='TOKENGENERATOR.html'">🔐 AdminConfig</button>
     </div>
 
     <!-- Sección Home -->
@@ -324,7 +325,7 @@
     <div id="section-agents" style="display:none;">
       <h2>Crear nuevo agente</h2>
       <input type="text" id="newLogin" placeholder="Login del agente">
-      <input type="text" id="newName" placeholder="Nombre visible del agente">
+      
       <input type="password" id="newPassword" placeholder="Contraseña">
       <select id="newRole">
         <option value="Admin">Admin</option>
@@ -337,7 +338,7 @@
         <thead>
           <tr>
             <th>Usuario</th>
-            <th>Nombre Visible</th>
+            
             <th>Rol</th>
             <th>Acciones</th>
           </tr>
@@ -436,7 +437,7 @@
           const row = document.createElement('tr');
           row.innerHTML = `
             <td><strong>${agent.username}</strong></td>
-            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
+            
             <td>${agent.role || 'Admin'}</td>
             <td style="display: flex; gap: 5px;">
               <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
