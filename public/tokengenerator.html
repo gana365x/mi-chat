@@ -120,6 +120,8 @@
     <select id="adminSelect" onchange="mostrarTokenAsignado()">
       <option value="">Seleccionar agente</option>
     </select>
+    <input type="text" id="userId" placeholder="User ID del Casino" />
+    <input type="text" id="cashierId" placeholder="Cashier ID del Casino" />
     <input type="text" id="manualToken" placeholder="Pegar token aquí" />
     <button onclick="asignarToken()">Asignar Token</button>
     <div class="result" id="asignacionResult"></div>
@@ -210,11 +212,13 @@
 
     async function asignarToken() {
       const username = document.getElementById("adminSelect").value;
+      const userId = document.getElementById("userId").value.trim();
+      const cashierId = document.getElementById("cashierId").value.trim();
       const token = document.getElementById("manualToken").value.trim();
       const msg = document.getElementById("asignacionResult");
 
-      if (!username || !token) {
-        msg.innerHTML = "⚠️ Selecciona un agente y pega un token.";
+      if (!username || !userId || !cashierId || !token) {
+        msg.innerHTML = "⚠️ Completa todos los campos.";
         return;
       }
 
@@ -223,15 +227,21 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ username, token })
+          body: JSON.stringify({ username, userId, cashierId, token })
         });
 
         const data = await res.json();
         if (data.success) {
           msg.innerHTML = "✅ Token asignado correctamente.";
           document.getElementById("manualToken").value = "";
+          document.getElementById("userId").value = "";
+          document.getElementById("cashierId").value = "";
           const agente = agentes.find(a => a.username === username);
-          if (agente) agente.token = token;
+          if (agente) {
+            agente.token = token;
+            agente.userId = userId;
+            agente.cashierId = cashierId;
+          }
           mostrarTokenAsignado();
         } else {
           msg.innerHTML = "❌ Error al asignar token.";
@@ -256,14 +266,18 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ username, token: null })
+          body: JSON.stringify({ username, token: null, userId: null, cashierId: null })
         });
 
         const data = await res.json();
         if (data.success) {
           msg.innerHTML = "✅ Token borrado correctamente.";
           const agente = agentes.find(a => a.username === username);
-          if (agente) agente.token = null;
+          if (agente) {
+            agente.token = null;
+            agente.userId = null;
+            agente.cashierId = null;
+          }
           mostrarTokenAsignado();
         } else {
           msg.innerHTML = "❌ Error al borrar token.";
@@ -286,6 +300,8 @@
       const agente = agentes.find(a => a.username === username);
       if (agente && agente.token) {
         displayDiv.innerHTML = `
+          <div>User ID: ${agente.userId || 'No asignado'}</div>
+          <div>Cashier ID: ${agente.cashierId || 'No asignado'}</div>
           <div>Token asignado: ${agente.token}</div>
           <button class="delete-btn" onclick="borrarToken()">Borrar Token</button>
         `;
