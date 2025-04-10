@@ -1806,9 +1806,7 @@
         });
         if (!response.ok) throw new Error('No autorizado');
         config = await response.json();
-        config.authToken = localStorage.getItem("adminToken") || config.authToken;
-        config.apiToken = localStorage.getItem("adminToken") || config.apiToken;
-      } catch (error) {
+        } catch (error) {
         console.error('Error cargando config:', error);
         config = { domain: '', cashierId: '', authToken: '', apiToken: '' };
       }
