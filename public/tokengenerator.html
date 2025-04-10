@@ -79,6 +79,28 @@
       margin-left: auto;
       margin-right: auto;
     }
+
+    .token-display {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #fff;
+      text-align: center;
+    }
+
+    .delete-btn {
+      background-color: #ff3b00;
+      color: #fff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 5px;
+      font-size: 0.75rem;
+    }
+
+    .delete-btn:hover {
+      background-color: #d63100;
+    }
   </style>
 </head>
 <body>
@@ -95,16 +117,18 @@
   <!-- Cuadro B: Asignar Token a un Admin -->
   <div class="box">
     <h2>Asignar Token a Admin</h2>
-    <select id="adminSelect">
+    <select id="adminSelect" onchange="mostrarTokenAsignado()">
       <option value="">Seleccionar agente</option>
     </select>
     <input type="text" id="manualToken" placeholder="Pegar token aquí" />
     <button onclick="asignarToken()">Asignar Token</button>
     <div class="result" id="asignacionResult"></div>
+    <div class="token-display" id="tokenDisplay"></div>
   </div>
 
   <script>
     let ultimoToken = "";
+    let agentes = []; // Almacenar agentes para acceso local
 
     function copiarToken() {
       if (ultimoToken) {
@@ -124,7 +148,6 @@
       const password = document.getElementById("password").value.trim();
       const api_token = "89c3d37f5b16c3da1ef5af214bfea873d9ae..."; // Reemplazar con tu token real
 
-      // Validación básica de entrada
       if (!login || !password) {
         document.getElementById("tokenResult").innerHTML = "⚠️ Ingresa usuario y contraseña.";
         return;
@@ -169,7 +192,7 @@
 
         if (!res.ok) throw new Error("No autorizado o error en el servidor");
 
-        const agentes = await res.json();
+        agentes = await res.json();
         const select = document.getElementById("adminSelect");
         select.innerHTML = "<option value=''>Seleccionar agente</option>";
 
@@ -179,6 +202,8 @@
           opt.textContent = `${agente.username} (${agente.role})`;
           select.appendChild(opt);
         });
+
+        mostrarTokenAsignado(); // Mostrar token inicial si hay admin seleccionado
       } catch (error) {
         console.error("Error cargando agentes:", error);
         document.getElementById("asignacionResult").innerHTML = "⚠️ Error al cargar agentes.";
@@ -207,12 +232,68 @@
         if (data.success) {
           msg.innerHTML = "✅ Token asignado correctamente.";
           document.getElementById("manualToken").value = ""; // Limpiar input
+          // Actualizar el agente localmente y mostrar el token
+          const agente = agentes.find(a => a.username === username);
+          if (agente) agente.token = token;
+          mostrarTokenAsignado();
         } else {
           msg.innerHTML = "❌ Error al asignar token.";
         }
       } catch (error) {
         msg.innerHTML = "⚠️ Error al conectar con el servidor.";
         console.error("Error asignando token:", error);
+      }
+    }
+
+    async function borrarToken() {
+      const username = document.getElementById("adminSelect").value;
+      const msg = document.getElementById("asignacionResult");
+
+      if (!username) {
+        msg.innerHTML = "⚠️ Selecciona un agente para borrar su token.";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://mi-chat-9uti.onrender.com/update-agent-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ username, token: null }) // Enviar null para borrar
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          msg.innerHTML = "✅ Token borrado correctamente.";
+          const agente = agentes.find(a => a.username === username);
+          if (agente) agente.token = null;
+          mostrarTokenAsignado();
+        } else {
+          msg.innerHTML = "❌ Error al borrar token.";
+        }
+      } catch (error) {
+        msg.innerHTML = "⚠️ Error al conectar con el servidor.";
+        console.error("Error borrando token:", error);
+      }
+    }
+
+    function mostrarTokenAsignado() {
+      const username = document.getElementById("adminSelect").value;
+      const displayDiv = document.getElementById("tokenDisplay");
+
+      if (!username) {
+        displayDiv.innerHTML = "";
+        return;
+      }
+
+      const agente = agentes.find(a => a.username === username);
+      if (agente && agente.token) {
+        displayDiv.innerHTML = `
+          <div>Token asignado: ${agente.token}</div>
+          <button class="delete-btn" onclick="borrarToken()">Borrar Token</button>
+        `;
+      } else {
+        displayDiv.innerHTML = "<div>No hay token asignado.</div>";
       }
     }
 
