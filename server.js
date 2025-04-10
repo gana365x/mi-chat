@@ -174,7 +174,7 @@ const userSessions = new Map();
 const adminSubscriptions = new Map();
 
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
-const timezoneFile = path.join(__dirname, 'timezone.json');
+
 
 function getTimestamp() {
   const timezone = "America/Argentina/Buenos_Aires";
@@ -185,7 +185,7 @@ function getTimestamp() {
 }
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
-if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
+
 
 async function incrementPerformance(agentUsername) {
   try {
@@ -912,46 +912,9 @@ app.post('/quick-replies', express.json(), (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/get-timezone', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
 
-  try {
-    const timezoneData = fs.readFileSync(timezoneFile, 'utf-8');
-    const config = JSON.parse(timezoneData);
-    res.json({ timezone: config.timezone });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Error leyendo la zona horaria' });
-  }
-});
 
-app.post('/update-timezone', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { timezone } = req.body;
-  if (!timezone || typeof timezone !== 'string') {
-    return res.status(400).json({ success: false, message: "Zona inválida" });
-  }
 
-  const validTimezones = [
-    "America/Argentina/Buenos_Aires",
-    "America/Mexico_City",
-    "America/Bogota",
-    "Europe/Madrid",
-    "UTC"
-  ];
-
-  if (!validTimezones.includes(timezone)) {
-    return res.status(400).json({ success: false, message: "Zona horaria no válida" });
-  }
-
-  fs.writeFileSync(timezoneFile, JSON.stringify({ timezone }, null, 2));
-  res.json({ success: true });
-});
 
 app.get('/stats', async (req, res) => {
   const token = req.cookies.token;
