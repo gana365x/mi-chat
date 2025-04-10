@@ -12,6 +12,7 @@
       margin: 0;
       padding: 20px;
       display: flex;
+      flex-wrap: wrap;
       gap: 30px;
     }
 
@@ -114,17 +115,28 @@
     <button class="copy-icon" onclick="copiarToken()">📋 Copiar</button>
   </div>
 
-  <!-- Cuadro B: Asignar Token a un Admin -->
+  <!-- Cuadro B: Agregar ID del Sub-Usuario -->
   <div class="box">
-    <h2>Asignar Token a Admin</h2>
-    <select id="adminSelect" onchange="mostrarTokenAsignado()">
+    <h2>Agregar ID del Sub-Usuario</h2>
+    <select id="adminSelectIds" onchange="mostrarIdsAsignados()">
       <option value="">Seleccionar agente</option>
     </select>
     <input type="text" id="userId" placeholder="User ID del Casino" />
     <input type="text" id="cashierId" placeholder="Cashier ID del Casino" />
+    <button onclick="asignarIds()">Guardar</button>
+    <div class="result" id="idsResult"></div>
+    <div class="token-display" id="idsDisplay"></div>
+  </div>
+
+  <!-- Cuadro C: Asignar Token a un Admin -->
+  <div class="box">
+    <h2>Asignar Token a Admin</h2>
+    <select id="adminSelectToken" onchange="mostrarTokenAsignado()">
+      <option value="">Seleccionar agente</option>
+    </select>
     <input type="text" id="manualToken" placeholder="Pegar token aquí" />
     <button onclick="asignarToken()">Asignar Token</button>
-    <div class="result" id="asignacionResult"></div>
+    <div class="result" id="tokenAsignacionResult"></div>
     <div class="token-display" id="tokenDisplay"></div>
   </div>
 
@@ -193,32 +205,39 @@
         if (!res.ok) throw new Error("No autorizado o error en el servidor");
 
         agentes = await res.json();
-        const select = document.getElementById("adminSelect");
-        select.innerHTML = "<option value=''>Seleccionar agente</option>";
+        const selectToken = document.getElementById("adminSelectToken");
+        const selectIds = document.getElementById("adminSelectIds");
+        selectToken.innerHTML = "<option value=''>Seleccionar agente</option>";
+        selectIds.innerHTML = "<option value=''>Seleccionar agente</option>";
 
         agentes.forEach(agente => {
-          const opt = document.createElement("option");
-          opt.value = agente.username;
-          opt.textContent = `${agente.username} (${agente.role})`;
-          select.appendChild(opt);
+          const optToken = document.createElement("option");
+          optToken.value = agente.username;
+          optToken.textContent = `${agente.username} (${agente.role})`;
+          selectToken.appendChild(optToken);
+
+          const optIds = document.createElement("option");
+          optIds.value = agente.username;
+          optIds.textContent = `${agente.username} (${agente.role})`;
+          selectIds.appendChild(optIds);
         });
 
         mostrarTokenAsignado();
+        mostrarIdsAsignados();
       } catch (error) {
         console.error("Error cargando agentes:", error);
-        document.getElementById("asignacionResult").innerHTML = "⚠️ Error al cargar agentes.";
+        document.getElementById("tokenAsignacionResult").innerHTML = "⚠️ Error al cargar agentes.";
+        document.getElementById("idsResult").innerHTML = "⚠️ Error al cargar agentes.";
       }
     }
 
     async function asignarToken() {
-      const username = document.getElementById("adminSelect").value;
-      const userId = document.getElementById("userId").value.trim();
-      const cashierId = document.getElementById("cashierId").value.trim();
+      const username = document.getElementById("adminSelectToken").value;
       const token = document.getElementById("manualToken").value.trim();
-      const msg = document.getElementById("asignacionResult");
+      const msg = document.getElementById("tokenAsignacionResult");
 
-      if (!username || !userId || !cashierId || !token) {
-        msg.innerHTML = "⚠️ Completa todos los campos.";
+      if (!username || !token) {
+        msg.innerHTML = "⚠️ Selecciona un agente y pega un token.";
         return;
       }
 
@@ -227,21 +246,15 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ username, userId, cashierId, token })
+          body: JSON.stringify({ username, token })
         });
 
         const data = await res.json();
         if (data.success) {
           msg.innerHTML = "✅ Token asignado correctamente.";
           document.getElementById("manualToken").value = "";
-          document.getElementById("userId").value = "";
-          document.getElementById("cashierId").value = "";
           const agente = agentes.find(a => a.username === username);
-          if (agente) {
-            agente.token = token;
-            agente.userId = userId;
-            agente.cashierId = cashierId;
-          }
+          if (agente) agente.token = token;
           mostrarTokenAsignado();
         } else {
           msg.innerHTML = "❌ Error al asignar token.";
@@ -252,9 +265,48 @@
       }
     }
 
+    async function asignarIds() {
+      const username = document.getElementById("adminSelectIds").value;
+      const userId = document.getElementById("userId").value.trim();
+      const cashierId = document.getElementById("cashierId").value.trim();
+      const msg = document.getElementById("idsResult");
+
+      if (!username || !userId || !cashierId) {
+        msg.innerHTML = "⚠️ Completa todos los campos.";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://mi-chat-9uti.onrender.com/update-agent-ids", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ username, userId, cashierId })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          msg.innerHTML = "✅ IDs asignados correctamente.";
+          document.getElementById("userId").value = "";
+          document.getElementById("cashierId").value = "";
+          const agente = agentes.find(a => a.username === username);
+          if (agente) {
+            agente.userId = userId;
+            agente.cashierId = cashierId;
+          }
+          mostrarIdsAsignados();
+        } else {
+          msg.innerHTML = "❌ Error al asignar IDs.";
+        }
+      } catch (error) {
+        msg.innerHTML = "⚠️ Error al conectar con el servidor.";
+        console.error("Error asignando IDs:", error);
+      }
+    }
+
     async function borrarToken() {
-      const username = document.getElementById("adminSelect").value;
-      const msg = document.getElementById("asignacionResult");
+      const username = document.getElementById("adminSelectToken").value;
+      const msg = document.getElementById("tokenAsignacionResult");
 
       if (!username) {
         msg.innerHTML = "⚠️ Selecciona un agente para borrar su token.";
@@ -266,18 +318,14 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ username, token: null, userId: null, cashierId: null })
+          body: JSON.stringify({ username, token: null })
         });
 
         const data = await res.json();
         if (data.success) {
           msg.innerHTML = "✅ Token borrado correctamente.";
           const agente = agentes.find(a => a.username === username);
-          if (agente) {
-            agente.token = null;
-            agente.userId = null;
-            agente.cashierId = null;
-          }
+          if (agente) agente.token = null;
           mostrarTokenAsignado();
         } else {
           msg.innerHTML = "❌ Error al borrar token.";
@@ -288,8 +336,43 @@
       }
     }
 
+    async function borrarIds() {
+      const username = document.getElementById("adminSelectIds").value;
+      const msg = document.getElementById("idsResult");
+
+      if (!username) {
+        msg.innerHTML = "⚠️ Selecciona un agente para borrar sus IDs.";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://mi-chat-9uti.onrender.com/update-agent-ids", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ username, userId: null, cashierId: null })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          msg.innerHTML = "✅ IDs borrados correctamente.";
+          const agente = agentes.find(a => a.username === username);
+          if (agente) {
+            agente.userId = null;
+            agente.cashierId = null;
+          }
+          mostrarIdsAsignados();
+        } else {
+          msg.innerHTML = "❌ Error al borrar IDs.";
+        }
+      } catch (error) {
+        msg.innerHTML = "⚠️ Error al conectar con el servidor.";
+        console.error("Error borrando IDs:", error);
+      }
+    }
+
     function mostrarTokenAsignado() {
-      const username = document.getElementById("adminSelect").value;
+      const username = document.getElementById("adminSelectToken").value;
       const displayDiv = document.getElementById("tokenDisplay");
 
       if (!username) {
@@ -300,13 +383,32 @@
       const agente = agentes.find(a => a.username === username);
       if (agente && agente.token) {
         displayDiv.innerHTML = `
-          <div>User ID: ${agente.userId || 'No asignado'}</div>
-          <div>Cashier ID: ${agente.cashierId || 'No asignado'}</div>
           <div>Token asignado: ${agente.token}</div>
           <button class="delete-btn" onclick="borrarToken()">Borrar Token</button>
         `;
       } else {
         displayDiv.innerHTML = "<div>No hay token asignado.</div>";
+      }
+    }
+
+    function mostrarIdsAsignados() {
+      const username = document.getElementById("adminSelectIds").value;
+      const displayDiv = document.getElementById("idsDisplay");
+
+      if (!username) {
+        displayDiv.innerHTML = "";
+        return;
+      }
+
+      const agente = agentes.find(a => a.username === username);
+      if (agente && (agente.userId || agente.cashierId)) {
+        displayDiv.innerHTML = `
+          <div>User ID: ${agente.userId || 'No asignado'}</div>
+          <div>Cashier ID: ${agente.cashierId || 'No asignado'}</div>
+          <button class="delete-btn" onclick="borrarIds()">Borrar IDs</button>
+        `;
+      } else {
+        displayDiv.innerHTML = "<div>No hay IDs asignados.</div>";
       }
     }
 
