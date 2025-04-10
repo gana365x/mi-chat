@@ -1,12 +1,11 @@
-
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Token Manager</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Token Generator</title>
+  <style>
+    /* Estilos basados en el Token Manager original, adaptados */
     body {
       font-family: Arial, sans-serif;
       background-color: #121212;
@@ -41,6 +40,7 @@
       border: none;
       border-radius: 3px;
       font-size: 0.85rem;
+      box-sizing: border-box;
     }
 
     input, select {
@@ -84,44 +84,51 @@
   </style>
 </head>
 <body>
-<label for="agentSelect">Seleccionar Agente:</label>
-<select id="agentSelect">
-<option value="">-- Selecciona un agente --</option>
-</select>
-<br/><br/>
+  <!-- Cuadro A: Generador de Token -->
+  <div class="box">
+    <h2>Generar Token</h2>
+    <input type="text" id="login" placeholder="Usuario" />
+    <input type="password" id="password" placeholder="Contraseña" />
+    <button onclick="generarToken()">Generar</button>
+    <div class="result" id="tokenResult">Token generado aparecerá aquí.</div>
+    <button class="copy-icon" onclick="copiarToken()">📋 Copiar</button>
+  </div>
 
-<!-- Cuadro A: Generador de Token -->
-<div class="box">
-<h2>Generar Token</h2>
-<input id="login" placeholder="Usuario" type="text"/>
-<input id="password" placeholder="Contraseña" type="password"/>
-<button onclick="generarToken()">Generar</button>
-<div class="result" id="tokenResult">Token generado aparecerá aquí.</div>
-<button class="copy-icon" onclick="copiarToken()">📋 Copiar</button>
-</div>
-<!-- Cuadro B: Asignar Token a un admin -->
-<div class="box">
-<h2>Asignar Token a Admin</h2>
-<select id="adminSelect">
-<option value="">Cargando agentes...</option>
-</select>
-<input id="manualToken" placeholder="Pegar token aquí" type="text"/>
-<button onclick="asignarToken()">Asignar Token</button>
-<div class="result" id="asignacionResult"></div>
-</div>
-<script>
+  <!-- Cuadro B: Asignar Token a un Admin -->
+  <div class="box">
+    <h2>Asignar Token a Admin</h2>
+    <select id="adminSelect">
+      <option value="">Seleccionar agente</option>
+    </select>
+    <input type="text" id="manualToken" placeholder="Pegar token aquí" />
+    <button onclick="asignarToken()">Asignar Token</button>
+    <div class="result" id="asignacionResult"></div>
+  </div>
+
+  <script>
     let ultimoToken = "";
 
+    // Copiar token al portapapeles
     function copiarToken() {
-      navigator.clipboard.writeText(ultimoToken).then(() => {
-        alert("✅ Token copiado al portapapeles");
-      });
+      if (ultimoToken) {
+        navigator.clipboard.writeText(ultimoToken).then(() => {
+          alert("✅ Token copiado al portapapeles");
+        });
+      } else {
+        alert("⚠️ No hay token para copiar");
+      }
     }
 
+    // Generar token usando el endpoint externo
     async function generarToken() {
-      const login = document.getElementById("login").value;
-      const password = document.getElementById("password").value;
-      const api_token = "89c3d37f5b16c3da1ef5af214bfea873d9ae..."; // reemplazar con real
+      const login = document.getElementById("login").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const api_token = "89c3d37f5b16c3da1ef5af214bfea873d9ae..."; // Reemplazar con el token real
+
+      if (!login || !password) {
+        document.getElementById("tokenResult").innerHTML = "⚠️ Ingresa usuario y contraseña.";
+        return;
+      }
 
       const formData = new FormData();
       formData.append("api_token", api_token);
@@ -137,7 +144,7 @@
         });
 
         const data = await response.json();
-        if (data.status === "success") {
+        if (data.status === "success" && data.token) {
           ultimoToken = data.token;
           resultDiv.innerHTML = `<strong>TOKEN:</strong><br>${data.token}`;
         } else {
@@ -145,73 +152,72 @@
         }
       } catch (error) {
         resultDiv.innerHTML = "⚠️ Error al conectar con el servidor.";
-        console.error(error);
+        console.error("Error generando token:", error);
       }
     }
 
+    // Cargar lista de agentes desde el backend
     async function cargarAgentes() {
-      const res = await fetch("/api/agents");
-      const agentes = await res.json();
-      const select = document.getElementById("adminSelect");
-      select.innerHTML = "<option value=''>Seleccionar admin</option>";
-      agentes.forEach(agente => {
-        const opt = document.createElement("option");
-        opt.value = agente.username;
-        opt.textContent = agente.username;
-        select.appendChild(opt);
-      });
+      try {
+        const res = await fetch("https://mi-chat-9uti.onrender.com/agents", {
+          method: "GET",
+          credentials: "include"
+        });
+
+        if (!res.ok) throw new Error("No autorizado o error en el servidor");
+
+        const agentes = await res.json();
+        const select = document.getElementById("adminSelect");
+        select.innerHTML = "<option value=''>Seleccionar agente</option>";
+
+        agentes.forEach(agente => {
+          const opt = document.createElement("option");
+          opt.value = agente.username;
+          opt.textContent = `${agente.username} (${agente.role})`;
+          select.appendChild(opt);
+        });
+      } catch (error) {
+        console.error("Error cargando agentes:", error);
+        document.getElementById("asignacionResult").innerHTML = "⚠️ Error al cargar agentes.";
+      }
     }
 
+    // Asignar token al agente seleccionado
     async function asignarToken() {
       const username = document.getElementById("adminSelect").value;
-      const token = document.getElementById("manualToken").value;
+      const token = document.getElementById("manualToken").value.trim();
       const msg = document.getElementById("asignacionResult");
 
       if (!username || !token) {
-        msg.innerHTML = "⚠️ Selecciona un admin y pega un token.";
+        msg.innerHTML = "⚠️ Selecciona un agente y pega un token.";
         return;
       }
 
-      const res = await fetch("/api/update-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, token })
-      });
+      try {
+        const res = await fetch("https://mi-chat-9uti.onrender.com/update-agent-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ username, token })
+        });
 
-      const data = await res.json();
-      if (data.success) {
-        msg.innerHTML = "✅ Token asignado correctamente.";
-      } else {
-        msg.innerHTML = "❌ Error al asignar token.";
+        const data = await res.json();
+        if (data.success) {
+          msg.innerHTML = "✅ Token asignado correctamente.";
+          document.getElementById("manualToken").value = ""; // Limpiar input
+        } else {
+          msg.innerHTML = "❌ Error al asignar token.";
+        }
+      } catch (error) {
+        msg.innerHTML = "⚠️ Error al conectar con el servidor.";
+        console.error("Error asignando token:", error);
       }
     }
 
-    cargarAgentes();
+    // Cargar agentes al iniciar
+    document.addEventListener("DOMContentLoaded", () => {
+      cargarAgentes();
+    });
   </script>
-<div id="tokenDisplay"></div><script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const select = document.getElementById("agentSelect");
-  try {
-    const response = await fetch("/api/agents");
-    const agents = await response.json();
-    agents.forEach(agent => {
-      const option = document.createElement("option");
-      option.value = agent.login;
-      option.textContent = agent.login;
-      select.appendChild(option);
-    });
-
-    // Mostrar token actual si ya había uno
-    select.addEventListener("change", async () => {
-      const login = select.value;
-      if (!login) return;
-      const res = await fetch(`/api/token?username=${login}`);
-      const data = await res.json();
-      document.getElementById("tokenDisplay").textContent = "Token actual: " + (data.token || "No asignado");
-    });
-  } catch (err) {
-    console.error("Error cargando agentes", err);
-  }
-});
-</script></body>
+</body>
 </html>
