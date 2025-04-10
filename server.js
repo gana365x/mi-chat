@@ -63,8 +63,6 @@ function validateAuthInput(username, password) {
 }
 
 function isValidToken(token) {
-  console.log('🔑 Validando token:', token);
-  console.log('🔐 SECRET_KEY esperado:', process.env.SECRET_KEY);
   return token === process.env.SECRET_KEY;
 }
 
@@ -592,12 +590,7 @@ app.post('/superadmin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, {
-  httpOnly: true,
-  path: '/',
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax'
-});
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({
       success: true,
       name: agent.name,
@@ -628,12 +621,7 @@ app.post('/admin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, {
-  httpOnly: true,
-  path: '/',
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax'
-});
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de admin:', err);
