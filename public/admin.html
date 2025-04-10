@@ -1209,27 +1209,13 @@ async function loadConfig() {
     });
     if (!response.ok) throw new Error('No autorizado');
     config = await response.json();
-    isConfigLoaded = true;
   } catch (error) {
     console.error('Error cargando config:', error);
     config = { domain: '', cashierId: '', authToken: '', apiToken: '' };
   }
 }
 
-let isConfigLoaded = false;
-
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadConfig();
-  if (!isConfigLoaded) {
-    document.getElementById('userSearch').disabled = true;
-    const searchButton = document.querySelector('.icon-button');
-    if (searchButton) searchButton.disabled = true;
-  }
-
-  await loadConfig();
-  if (!config.domain || !config.apiToken || !config.authToken) {
-    alert('❌ Error cargando configuración. Es posible que tu sesión haya expirado.');
-  }
   await loadConfig();
   // Resto del código...
 });
