@@ -535,20 +535,42 @@ app.post('/update-agent-token', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
 
-  const { username, userId, cashierId, token: newToken } = req.body;
+  const { username, token: newToken } = req.body;
 
-  if (!username || !userId || !cashierId || !newToken) return res.status(400).json({ success: false, message: 'Faltan datos' });
+  if (!username || !newToken) return res.status(400).json({ success: false, message: 'Faltan datos' });
 
   try {
     const agent = await Agent.findOneAndUpdate(
       { username },
-      { token: newToken, userId, cashierId },
+      { token: newToken },
       { new: true }
     );
     if (!agent) return res.status(404).json({ success: false, message: 'Agente no encontrado' });
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('❌ Error actualizando token:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
+app.post('/update-agent-ids', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
+
+  const { username, userId, cashierId } = req.body;
+
+  if (!username || !userId || !cashierId) return res.status(400).json({ success: false, message: 'Faltan datos' });
+
+  try {
+    const agent = await Agent.findOneAndUpdate(
+      { username },
+      { userId, cashierId },
+      { new: true }
+    );
+    if (!agent) return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('❌ Error actualizando IDs:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
