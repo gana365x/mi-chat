@@ -898,9 +898,6 @@ app.post('/quick-replies', express.json(), (req, res) => {
   res.json({ success: true });
 });
 
-
-  }
-
   try {
     const timezoneData = fs.readFileSync(timezoneFile, 'utf-8');
     const config = JSON.parse(timezoneData);
@@ -908,10 +905,7 @@ app.post('/quick-replies', express.json(), (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error leyendo la zona horaria' });
   }
-});
-
-
-  }
+  
   const { timezone } = req.body;
   if (!timezone || typeof timezone !== 'string') {
     return res.status(400).json({ success: false, message: "Zona inválida" });
@@ -931,7 +925,6 @@ app.post('/quick-replies', express.json(), (req, res) => {
 
   fs.writeFileSync(timezoneFile, JSON.stringify({ timezone }, null, 2));
   res.json({ success: true });
-});
 
 app.get('/stats', async (req, res) => {
   const token = req.cookies.token;
