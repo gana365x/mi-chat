@@ -58,31 +58,26 @@ function validateAuthInput(username, password) {
     password.length < 4
   ) {
     return false;
-  }
+
   return true;
-}
 
 function isValidToken(token) {
   return token === process.env.SECRET_KEY;
-}
 
 async function isSuperAdmin(username) {
   const agent = await Agent.findOne({ username });
   return agent && (agent.role === 'SuperAdmin' || agent.type === 'superadmin');
-}
 
 // Protección para superadmin.html
 app.get('/superadmin.html', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.redirect('/index.html');
-  }
 
   // Verificar si el usuario es SuperAdmin
   const username = req.query.username; // Podrías pasar el username en la cookie o en otra forma segura
   if (!username || !(await isSuperAdmin(username))) {
     return res.redirect('/index.html');
-  }
 
   res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
 });
@@ -91,7 +86,7 @@ app.get('/admin.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.redirect('/index.html');
-  }
+
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
@@ -99,7 +94,7 @@ app.get('/agent-performance.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.redirect('/index.html');
-  }
+
   res.sendFile(path.join(__dirname, 'public', 'agent-performance.html'));
 });
 
@@ -107,7 +102,7 @@ app.get('/config.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.redirect('/index.html');
-  }
+
   res.sendFile(path.join(__dirname, 'public', 'config.html'));
 });
 
@@ -179,7 +174,6 @@ function getTimestamp() {
   console.log("Hora del servidor:", new Date());
   console.log("Hora ajustada a Argentina:", time.format());
   return time.toISOString(true);
-}
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
 
@@ -189,8 +183,7 @@ async function incrementPerformance(agentUsername) {
     console.log(`✅ Interacción registrada para ${agentUsername}`);
   } catch (err) {
     console.error('❌ Error al registrar interacción en PerformanceLog:', err);
-  }
-}
+
 
 async function getAllChatsSorted() {
   const lastMessages = await ChatMessage.aggregate([
@@ -200,8 +193,8 @@ async function getAllChatsSorted() {
       $group: {
         _id: "$userId",
         lastMessage: { $first: "$$ROOT" }
-      }
-    }
+
+
   ]);
 
   const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
@@ -217,14 +210,12 @@ async function getAllChatsSorted() {
   }));
 
   return sortedChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-}
 
 app.get('/performance-log', async (req, res) => {
   const { from, to } = req.query;
 
   if (!from || !to) {
     return res.status(400).json({ error: "Parámetros 'from' y 'to' son requeridos" });
-  }
 
   try {
     const fromDate = new Date(from);
@@ -233,14 +224,14 @@ app.get('/performance-log', async (req, res) => {
       timestamp: {
         $gte: fromDate,
         $lte: toDate
-      }
+
     }).lean();
 
     res.json(logs);
   } catch (err) {
     console.error("❌ Error al obtener performance logs:", err);
     res.status(500).json({ error: "Error interno del servidor" });
-  }
+
 });
 
 io.on('connection', (socket) => {
@@ -251,7 +242,6 @@ io.on('connection', (socket) => {
 
     if (!userId) {
       userId = uuidv4();
-    }
 
     try {
       const savedName = await UserName.findOne({ userId });
@@ -259,10 +249,9 @@ io.on('connection', (socket) => {
         username = savedName.name;
       } else {
         await new UserName({ userId, name: username }).save();
-      }
+
     } catch (e) {
       console.error("❌ Error manejando nombre del usuario:", e.message);
-    }
 
     userSessions.set(userId, { username, socket });
     socket.emit('session', { userId, username });
@@ -277,7 +266,7 @@ io.on('connection', (socket) => {
         username: username
       };
       await new ChatMessage(dateMessage).save();
-    }
+
   });
 
   socket.on('update username', async ({ userId, newUsername }) => {
@@ -288,7 +277,6 @@ io.on('connection', (socket) => {
         await existing.save();
       } else {
         await UserName.create({ userId, name: newUsername });
-      }
 
       if (userSessions.has(userId)) {
         const session = userSessions.get(userId);
@@ -302,15 +290,14 @@ io.on('connection', (socket) => {
         const userSocket = session.socket;
         if (userSocket) {
           userSocket.emit('update username cookie', { newUsername });
-        }
-      }
+
 
       io.emit('update username', { userId, newUsername });
       io.emit('user list', await getAllChatsSorted());
       console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
     } catch (err) {
       console.error('❌ Error al actualizar nombre del usuario:', err);
-    }
+
   });
 
   socket.on('admin connected', async () => {
@@ -326,10 +313,9 @@ io.on('connection', (socket) => {
       const savedName = await UserName.findOne({ userId: data.userId });
       if (savedName) {
         username = savedName.name;
-      }
+
     } catch (e) {
       console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
 
     const messageData = {
       userId: data.userId,
@@ -352,7 +338,6 @@ io.on('connection', (socket) => {
       };
       await new ChatMessage(reopenMsg).save();
       io.emit('user list', await getAllChatsSorted());
-    }
 
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) userSocket.emit('chat message', messageData);
@@ -360,8 +345,7 @@ io.on('connection', (socket) => {
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', messageData);
-      }
-    }
+
 
     if (data.message === 'Cargar Fichas') {
       const botMsg = {
@@ -377,9 +361,8 @@ io.on('connection', (socket) => {
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
           io.to(adminSocketId).emit('admin message', botMsg);
-        }
-      }
-    }
+
+
 
     if (data.message === 'Retirar') {
       const retiroMsg = {
@@ -405,26 +388,24 @@ io.on('connection', (socket) => {
       for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
         if (subscribedUserId === data.userId) {
           io.to(adminSocketId).emit('admin message', retiroMsg);
-        }
-      }
-    }
+
+
+
   });
 
   socket.on('image', async (data) => {
     if (!data.userId || !data.sender || !data.image) {
       console.error('Datos de imagen incompletos:', data);
       return;
-    }
 
     let username = userSessions.get(data.userId)?.username || 'Usuario';
     try {
       const savedName = await UserName.findOne({ userId: data.userId });
       if (savedName) {
         username = savedName.name;
-      }
+
     } catch (e) {
       console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
 
     const imageData = {
       userId: data.userId,
@@ -438,13 +419,11 @@ io.on('connection', (socket) => {
     const userSocket = userSessions.get(data.userId)?.socket;
     if (userSocket) {
       userSocket.emit('image', imageData);
-    }
 
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin image', imageData);
-      }
-    }
+
 
     const botResponse = {
       userId: data.userId,
@@ -458,8 +437,7 @@ io.on('connection', (socket) => {
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', botResponse);
-      }
-    }
+
 
     io.emit('user list', await getAllChatsSorted());
   });
@@ -472,10 +450,9 @@ io.on('connection', (socket) => {
       const savedName = await UserName.findOne({ userId: data.userId });
       if (savedName) {
         username = savedName.name;
-      }
+
     } catch (e) {
       console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
 
     const messageData = {
       userId: data.userId,
@@ -492,8 +469,7 @@ io.on('connection', (socket) => {
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === data.userId) {
         io.to(adminSocketId).emit('admin message', messageData);
-      }
-    }
+
 
     io.emit('user list', await getAllChatsSorted());
   });
@@ -510,26 +486,22 @@ io.on('connection', (socket) => {
     const userSocket = userSessions.get(userId)?.socket;
     if (userSocket) {
       userSocket.emit('chat closed', { userId });
-    }
 
     if (adminUsername) {
       await incrementPerformance(adminUsername);
-    }
 
     if (userSessions.has(userId)) {
       const session = userSessions.get(userId);
       userSessions.set(userId, { ...session, socket: null });
-    }
 
     let username = userSessions.get(userId)?.username || 'Usuario';
     try {
       const savedName = await UserName.findOne({ userId });
       if (savedName) {
         username = savedName.name;
-      }
+
     } catch (e) {
       console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
 
     const closeMsg = {
       userId,
@@ -544,13 +516,11 @@ io.on('connection', (socket) => {
 
     if (userSocket) {
       userSocket.emit('chat message', closeMsg);
-    }
 
     for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
       if (subscribedUserId === userId) {
         io.to(adminSocketId).emit('admin message', closeMsg);
-      }
-    }
+
 
     io.emit('user list', await getAllChatsSorted());
   });
@@ -562,8 +532,8 @@ io.on('connection', (socket) => {
         userSessions.set(userId, { ...session, socket: null });
         io.emit('user list', await getAllChatsSorted());
         break;
-      }
-    }
+
+
   });
 });
 
@@ -572,7 +542,6 @@ app.post('/superadmin-login', async (req, res) => {
 
   if (!validateAuthInput(username, password)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
 
   try {
     const agent = await Agent.findOne({ 
@@ -581,12 +550,10 @@ app.post('/superadmin-login', async (req, res) => {
     });
     if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
-    }
 
     const isMatch = await bcrypt.compare(password, agent.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
-    }
 
     res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({
@@ -598,7 +565,7 @@ app.post('/superadmin-login', async (req, res) => {
   } catch (err) {
     console.error('❌ Error en login:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.post('/admin-login', async (req, res) => {
@@ -606,25 +573,22 @@ app.post('/admin-login', async (req, res) => {
 
   if (!validateAuthInput(username, password)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
 
   try {
     const agent = await Agent.findOne({ username, $or: [{ role: 'Admin' }, { type: 'agent' }] });
     if (!agent) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
-    }
 
     const isMatch = await bcrypt.compare(password, agent.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
-    }
 
     res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de admin:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.get('/agents', async (req, res) => {
@@ -632,7 +596,7 @@ app.get('/agents', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   try {
     const agents = await Agent.find({}, 'username name role type');
     const formattedAgents = agents.map(agent => ({
@@ -644,14 +608,14 @@ app.get('/agents', async (req, res) => {
   } catch (err) {
     console.error('❌ Error al obtener agentes:', err);
     res.status(500).json({ success: false, message: 'Error al obtener agentes' });
-  }
+
 });
 
 app.delete('/agents/:username', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const { username } = req.params;
 
   try {
@@ -659,20 +623,19 @@ app.delete('/agents/:username', async (req, res) => {
 
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
 
     res.status(200).json({ success: true, message: 'Agente eliminado correctamente' });
   } catch (err) {
     console.error('❌ Error eliminando agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.put('/agents/:username', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const { username } = req.params;
   const { name, password, newUsername } = req.body;
 
@@ -681,13 +644,11 @@ app.put('/agents/:username', async (req, res) => {
       (password && typeof password !== 'string') || 
       (newUsername && typeof newUsername !== 'string')) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
 
   try {
     const agent = await Agent.findOne({ username });
     if (!agent) {
       return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
 
     if (name) agent.name = name;
     if (newUsername) agent.username = newUsername;
@@ -695,33 +656,29 @@ app.put('/agents/:username', async (req, res) => {
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       agent.password = hashedPassword;
-    }
 
     await agent.save();
     res.status(200).json({ success: true, message: 'Agente actualizado correctamente' });
   } catch (err) {
     console.error('❌ Error actualizando agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.post('/agents', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
 
   const { username, name, password, role } = req.body;
 
   if (!username || !name || !password || !role || !['Admin', 'SuperAdmin'].includes(role)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
 
   try {
     const existingAgent = await Agent.findOne({ username });
     if (existingAgent) {
       return res.status(400).json({ success: false, message: 'El usuario ya existe' });
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newAgent = new Agent({ username, name, password: hashedPassword, role });
@@ -731,19 +688,18 @@ app.post('/agents', async (req, res) => {
   } catch (err) {
     console.error('❌ Error al crear agente:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.post('/update-username', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const { userId, newUsername } = req.body;
 
   if (!userId || !newUsername) {
     return res.status(400).json({ success: false, message: 'Faltan datos' });
-  }
 
   try {
     const existing = await UserName.findOne({ userId });
@@ -753,29 +709,28 @@ app.post('/update-username', async (req, res) => {
       await existing.save();
     } else {
       await UserName.create({ userId, name: newUsername });
-    }
 
     io.emit('user name updated', { userId, newUsername });
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error('❌ Error al guardar nombre del usuario:', err);
     return res.status(500).json({ success: false, message: 'Error interno' });
-  }
+
 });
 
 app.get('/performance', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   try {
     const performanceData = await PerformanceLog.aggregate([
       {
         $group: {
           _id: "$agent",
           count: { $sum: 1 }
-        }
-      }
+
+
     ]);
 
     const result = {};
@@ -787,14 +742,14 @@ app.get('/performance', async (req, res) => {
   } catch (err) {
     console.error('❌ Error al obtener performance:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.get('/get-agent-displayname', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const username = req.query.username;
   try {
     const agent = await Agent.findOne({ username });
@@ -802,23 +757,22 @@ app.get('/get-agent-displayname', async (req, res) => {
       res.json({ name: agent.name || agent.username });
     } else {
       res.json({ name: username });
-    }
+
   } catch (err) {
     console.error('❌ Error obteniendo nombre:', err);
     res.status(500).json({ name: username });
-  }
+
 });
 
 app.post('/update-agent-name', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const { username, newName } = req.body;
 
   if (!username || !newName || typeof username !== 'string' || typeof newName !== 'string') {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
 
   try {
     const agent = await Agent.findOneAndUpdate(
@@ -828,27 +782,25 @@ app.post('/update-agent-name', async (req, res) => {
     );
     if (!agent) {
       return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
 
     io.emit('agent name updated', { username, newName });
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('❌ Error actualizando nombre:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.post('/update-agent-password', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const { username, newPassword } = req.body;
 
   if (!username || !newPassword || typeof username !== 'string' || typeof newPassword !== 'string' ||
       newPassword.length < 4 || newPassword.length > 16) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
 
   try {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -859,20 +811,19 @@ app.post('/update-agent-password', async (req, res) => {
     );
     if (!agent) {
       return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
-    }
 
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('❌ Error actualizando contraseña:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 app.get('/quick-replies', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   fs.readFile(quickRepliesPath, 'utf8', (err, data) => {
     if (err) return res.status(500).json([]);
     try {
@@ -880,7 +831,7 @@ app.get('/quick-replies', (req, res) => {
       res.json(replies);
     } catch (e) {
       res.status(500).json([]);
-    }
+
   });
 });
 
@@ -888,11 +839,10 @@ app.post('/quick-replies', express.json(), (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const replies = req.body;
   if (!Array.isArray(replies)) {
     return res.status(400).json({ success: false, message: "Formato incorrecto" });
-  }
 
   fs.writeFileSync(quickRepliesPath, JSON.stringify(replies, null, 2));
   res.json({ success: true });
@@ -904,12 +854,12 @@ app.post('/quick-replies', express.json(), (req, res) => {
     res.json({ timezone: config.timezone });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error leyendo la zona horaria' });
-  }
-  
+
+});
+
   const { timezone } = req.body;
   if (!timezone || typeof timezone !== 'string') {
     return res.status(400).json({ success: false, message: "Zona inválida" });
-  }
 
   const validTimezones = [
     "America/Argentina/Buenos_Aires",
@@ -921,21 +871,20 @@ app.post('/quick-replies', express.json(), (req, res) => {
 
   if (!validTimezones.includes(timezone)) {
     return res.status(400).json({ success: false, message: "Zona horaria no válida" });
-  }
 
   fs.writeFileSync(timezoneFile, JSON.stringify({ timezone }, null, 2));
   res.json({ success: true });
+});
 
 app.get('/stats', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const { from, to } = req.query;
 
   if (!from || !to) {
     return res.status(400).json({ error: 'Faltan parámetros from y to' });
-  }
 
   try {
     const fromDate = new Date(from);
@@ -943,7 +892,6 @@ app.get('/stats', async (req, res) => {
 
     if (isNaN(fromDate) || isNaN(toDate)) {
       return res.status(400).json({ error: 'Fechas inválidas' });
-    }
 
     const messages = await ChatMessage.find({
       timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
@@ -960,15 +908,13 @@ app.get('/stats', async (req, res) => {
       const userMessages = messages.filter(msg => msg.userId === userId);
       if (userMessages.some(msg => msg.status === 'closed')) {
         chatsClosed++;
-      }
 
       for (const msg of userMessages) {
         if (!['Agent', 'System', 'Bot'].includes(msg.sender)) {
           if (msg.message === 'Cargar Fichas' || msg.message === 'Retirar') {
             messagesCount += 1;
-          }
-        }
-      }
+
+
 
       imagenesCount += userMessages.filter(
         msg => msg.image && !['Agent', 'System', 'Bot'].includes(msg.sender)
@@ -981,7 +927,6 @@ app.get('/stats', async (req, res) => {
       retirosCount += userMessages.filter(
         msg => msg.message === 'Retirar'
       ).length;
-    }
 
     res.json({
       chats: chatsClosed,
@@ -993,19 +938,18 @@ app.get('/stats', async (req, res) => {
   } catch (error) {
     console.error('Error al procesar estadísticas:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
-  }
+
 });
 
 app.get('/stats-agents', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
+
   const { from, to } = req.query;
 
   if (!from || !to) {
     return res.status(400).json({ error: 'Faltan parámetros from y to' });
-  }
 
   try {
     const fromDate = new Date(from);
@@ -1013,20 +957,19 @@ app.get('/stats-agents', async (req, res) => {
 
     if (isNaN(fromDate) || isNaN(toDate)) {
       return res.status(400).json({ error: 'Fechas inválidas' });
-    }
 
     const agentInteractions = await PerformanceLog.aggregate([
       {
         $match: {
           timestamp: { $gte: fromDate, $lte: toDate }
-        }
+
       },
       {
         $group: {
           _id: "$agent",
           finalizados: { $sum: 1 }
-        }
-      }
+
+
     ]);
 
     const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name');
@@ -1040,7 +983,7 @@ app.get('/stats-agents', async (req, res) => {
   } catch (error) {
     console.error('Error al procesar estadísticas por agente:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
-  }
+
 });
 
 app.post('/get-performance-logs', async (req, res) => {
@@ -1054,21 +997,21 @@ app.post('/get-performance-logs', async (req, res) => {
       {
         $match: {
           timestamp: { $gte: start, $lte: end }
-        }
+
       },
       {
         $group: {
           _id: "$agent",
           count: { $sum: 1 }
-        }
-      }
+
+
     ]);
 
     res.json({ success: true, data: logs });
   } catch (err) {
     console.error("❌ Error al obtener performance logs:", err);
     res.status(500).json({ success: false, error: 'Error al obtener logs' });
-  }
+
 });
 
 app.post('/get-daily-performance', async (req, res) => {
@@ -1085,8 +1028,8 @@ app.post('/get-daily-performance', async (req, res) => {
           timestamp: {
             $gte: fromDate,
             $lte: toDate
-          }
-        }
+
+
       },
       {
         $group: {
@@ -1095,11 +1038,11 @@ app.post('/get-daily-performance', async (req, res) => {
             agent: "$agent"
           },
           count: { $sum: 1 }
-        }
+
       },
       {
         $sort: { "_id.day": -1, count: -1 }
-      }
+
     ]);
 
     const formatted = logs.map(l => ({
@@ -1112,14 +1055,13 @@ app.post('/get-daily-performance', async (req, res) => {
   } catch (e) {
     console.error("❌ Error en /get-daily-performance", e);
     res.status(500).json({ success: false });
-  }
+
 });
 
 app.get('/get-performance-data', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
     return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
 
   const { from, to } = req.query;
   const fromDate = from ? new Date(from) : null;
@@ -1154,7 +1096,7 @@ app.get('/get-performance-data', async (req, res) => {
   } catch (err) {
     console.error('❌ Error al obtener datos de rendimiento:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+
 });
 
 
@@ -1164,7 +1106,6 @@ app.get("/get-panel-config", (req, res) => {
   const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ error: "No autorizado" });
-  }
 
   res.json({
     domain: process.env.DOMAIN,
