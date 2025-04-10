@@ -107,8 +107,9 @@
   <!-- Cuadro A: Generador de Token -->
   <div class="box">
     <h2>Generar Token</h2>
-    <input type="text" id="login" placeholder="Usuario" />
-    <input type="password" id="password" placeholder="Contraseña" />
+    <input type="text" id="masterToken" placeholder="Token Maestro (SuperAdmin)" />
+    <input type="text" id="login" placeholder="Usuario del Casino" />
+    <input type="password" id="password" placeholder="Contraseña del Casino" />
     <button onclick="generarToken()">Generar</button>
     <div class="result" id="tokenResult">Token generado aparecerá aquí.</div>
     <button class="copy-icon" onclick="copiarToken()">📋 Copiar</button>
@@ -128,7 +129,7 @@
 
   <script>
     let ultimoToken = "";
-    let agentes = []; // Almacenar agentes para acceso local
+    let agentes = [];
 
     function copiarToken() {
       if (ultimoToken) {
@@ -144,17 +145,17 @@
     }
 
     async function generarToken() {
+      const masterToken = document.getElementById("masterToken").value.trim();
       const login = document.getElementById("login").value.trim();
       const password = document.getElementById("password").value.trim();
-      const api_token = "89c3d37f5b16c3da1ef5af214bfea873d9ae..."; // Reemplazar con tu token real
 
-      if (!login || !password) {
-        document.getElementById("tokenResult").innerHTML = "⚠️ Ingresa usuario y contraseña.";
+      if (!masterToken || !login || !password) {
+        document.getElementById("tokenResult").innerHTML = "⚠️ Ingresa token maestro, usuario y contraseña.";
         return;
       }
 
       const formData = new FormData();
-      formData.append("api_token", api_token);
+      formData.append("api_token", masterToken); // Usar el token maestro del SuperAdmin
       formData.append("login", login);
       formData.append("password", password);
 
@@ -203,7 +204,7 @@
           select.appendChild(opt);
         });
 
-        mostrarTokenAsignado(); // Mostrar token inicial si hay admin seleccionado
+        mostrarTokenAsignado();
       } catch (error) {
         console.error("Error cargando agentes:", error);
         document.getElementById("asignacionResult").innerHTML = "⚠️ Error al cargar agentes.";
@@ -231,8 +232,7 @@
         const data = await res.json();
         if (data.success) {
           msg.innerHTML = "✅ Token asignado correctamente.";
-          document.getElementById("manualToken").value = ""; // Limpiar input
-          // Actualizar el agente localmente y mostrar el token
+          document.getElementById("manualToken").value = "";
           const agente = agentes.find(a => a.username === username);
           if (agente) agente.token = token;
           mostrarTokenAsignado();
@@ -259,7 +259,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ username, token: null }) // Enviar null para borrar
+          body: JSON.stringify({ username, token: null })
         });
 
         const data = await res.json();
@@ -297,7 +297,6 @@
       }
     }
 
-    // Cargar agentes al iniciar
     document.addEventListener("DOMContentLoaded", () => {
       cargarAgentes();
     });
