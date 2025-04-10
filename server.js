@@ -822,7 +822,8 @@ app.get("/get-panel-config", async (req, res) => {
       domain: process.env.DOMAIN,
       cashierId: agent.cashierId || process.env.CASHIER_ID, // Usa el cashierId del agente
       authToken: agent.token, // TOKEN único del admin
-      apiToken: process.env.API_TOKEN // API_TOKEN fijo del .env
+      apiToken: process.env.API_TOKEN, // API_TOKEN fijo del .env
+      userId: agent.userId // Agrega el userId del agente
     });
   } catch (err) {
     console.error('❌ Error en /get-panel-config:', err);
