@@ -1,1170 +1,2314 @@
 
-const moment = require("moment-timezone");
-require('dotenv').config();
+<!DOCTYPE html>
 
-const fs = require('fs');
-const path = require('path');
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
-const cors = require("cors");
+<html lang="es">
+<head>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Panel de Agentes - GANA365</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+<style>
+    body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #121212;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+}
 
-console.log("MONGO_URI:", process.env.MONGO_URI);
-console.log("SECRET_KEY:", process.env.SECRET_KEY);
-console.log("PORT:", process.env.PORT);
+.admin-container {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 40px);
+  gap: 0; /* Quitamos el gap para evitar espacios */
+  margin: 0;
+  padding: 0;
+}
 
-const app = express();
-const server = http.createServer(app);
+.inbox {
+  width: 300px;
+  background: #1a1a1a;
+  color: white;
+  padding: 0;
+  border-radius: 10px;
+  box-sizing: border-box;
+  overflow-y: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+}
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://mi-chat-gln5.vercel.app",
-  "https://mi-chat-9uti.onrender.com"
-];
+#resizer {
+  width: 5px;
+  cursor: col-resize;
+  background-color: #FF3B00;
+  margin: 0;
+  height: 100%;
+  flex-shrink: 0; /* Evitamos que se colapse */
+}
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+.chat-view {
+  flex: 1;
+  background: #111;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  display: none;
+  flex-direction: column;
+  box-sizing: border-box;
+  border: 2px solid #FF3B00;
+  border-bottom: 4px solid #FF3B00;
+  color: white;
+  height: 100%;
+  overflow: hidden;
+}
 
-const io = socketIo(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
-    credentials: true
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+    .chat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1a1a1a;
+      padding: 8px 12px;
+      margin: 6px 10px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      color: white;
+      font-size: 14px;
+      position: relative;
+      gap: 10px;
+      border: 2px solid #FF3B00 !important;
+    }
+
+    .chat-item:hover {
+      background: #2a2a2a;
+      border-color: #FFA500;
+    }
+
+    .menu-icon-only {
+      width: 28px;
+      height: 28px;
+      border: 2px solid #FF3B00;
+      border-radius: 6px;
+      margin: 6px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .menu-icon-only:hover {
+      background-color: #2a2a2a;
+      transform: scale(1.1);
+    }
+
+    .chat-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .username {
+      font-weight: bold;
+      max-width: 100px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .badge.cerrado {
+      background: #0da8c6;
+      color: white;
+    }
+
+    .badge.finalizar {
+      background: #ff3b00;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .badge.finalizar:hover {
+      background: #d63100;
+    }
+
+    .hora {
+      font-size: 12px;
+      color: #ccc;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .chat-view {
+      flex: 1;
+      background: #111;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      display: none;
+      flex-direction: column;
+      box-sizing: border-box;
+      border: 2px solid #FF3B00;
+      border-bottom: 4px solid #FF3B00;
+      color: white;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .chat-view.active {
+      display: flex;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: #1c1c1c;
+      border-bottom: 2px solid #FF3B00;
+      border-radius: 10px 10px 0 0;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    #chatUser {
+      margin: 0;
+      font-size: 16px;
+      color: #bbb;
+      font-weight: 500;
+    }
+
+    #chatUser strong {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    #currentUser {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+    }
+
+    #editNameInput {
+      font-size: 18px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #FF3B00;
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      margin-left: 8px;
+    }
+
+    #editBtn,
+    #saveBtn,
+    #cancelBtn {
+      background-color: #1f1f1f;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.2s ease;
+      margin-left: 8px;
+    }
+
+    #editBtn:hover,
+    #saveBtn:hover,
+    #cancelBtn:hover {
+      background-color: #2a2a2a;
+      transform: scale(1.05);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #1a1a1a;
+      border-radius: 5px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      margin: 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 70%;
+      word-wrap: break-word;
+      position: relative;
+      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+      white-space: pre-wrap;
+      align-self: flex-start;
+      color: #111;
+    }
+
+    .message.bot {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 2px 4px; /* Reducido de 4px 6px */
+  font-size: 12px;
+  line-height: 1;  /* Reducido de 1.1 */
+  max-width: fit-content;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  margin: 1px 0; /* Reducido de 2px 0 */
+}
+
+    .message.bot::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -10px;
+      width: 10px;
+      height: 10px;
+      background: #FFFFFF;
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+    
+    .message.bot div {
+  margin: 1px 0; /* Reducido de 2px 0 */
+}
+
+    .message.user {
+      background: #DCF8C6;
+      align-self: flex-end;
+      border-top-right-radius: 0;
+    }
+
+    .message.user::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -10px;
+      width: 10px;
+      height: 10px;
+      background: #DCF8C6;
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+    }
+
+    .message.agent {
+      background: #ADD8E6;
+      font-size: 13px;
+      line-height: 1.2;
+      padding: 8px 10px;
+      border-radius: 10px;
+      white-space: pre-line;
+      align-self: flex-start;
+    }
+
+    .message.agent::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -10px;
+      width: 10px;
+      height: 10px;
+      background: #ADD8E6;
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+
+    .message img {
+      max-width: 150px;
+      border-radius: 8px;
+      display: block;
+      margin-top: 5px;
+      cursor: pointer;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1cm;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      outline: none;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .chat-input button {
+      background: #FF3B00;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+      font-size: 14px;
+    }
+
+    .chat-input button:hover {
+      background: #d63100;
+    }
+
+    .top-menu {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      z-index: 10000;
+      display: none;
+    }
+
+    .hamburger {
+      font-size: 22px;
+      color: white;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 5px;
+      transition: background 0.2s ease;
+    }
+
+    .hamburger:hover {
+      background: #333;
+    }
+
+    .popup-menu {
+      display: none;
+      position: absolute;
+      top: 38px;
+      right: 0;
+      background: #1f1f1f;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      z-index: 10001;
+    }
+
+    .popup-menu div {
+      padding: 10px;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .popup-menu div:hover {
+      background: #333;
+      border-radius: 8px;
+    }
+
+    .chat-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #1f1f1f;
+      z-index: 10001;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 0;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .chat-popup.show {
+      transform: translateY(0);
+    }
+
+    .popup-header {
+      background: #FF3B00;
+      color: white;
+      padding: 12px 16px;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 40px;
+      box-sizing: border-box;
+    }
+
+    .popup-messages {
+      height: calc(100% - 100px);
+      overflow-y: auto;
+      padding: 12px;
+      background: #121212;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .popup-input {
+      height: 60px;
+      position: sticky;
+      bottom: 0;
+      background: #222;
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      z-index: 10;
+      box-sizing: border-box;
+    }
+
+    .popup-input input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      background: #fff;
+      color: #000;
+      -webkit-appearance: none;
+    }
+
+    .popup-input button {
+      background: #FF3B00;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    .bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      margin: 6px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: pre-wrap;
+      position: relative;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bubble.user {
+      background-color: #DCF8C6;
+      align-self: flex-end;
+      margin-left: auto;
+      border-top-right-radius: 0;
+      color: #000;
+    }
+
+    .bubble.agent {
+      background-color: #ADD8E6;
+      font-size: 13px;
+      line-height: 1.2;
+      white-space: pre-line;
+      padding: 8px 10px;
+      border-radius: 10px;
+      align-self: flex-start;
+      margin-right: auto;
+      color: #000;
+    }
+
+    .bubble.bot {
+  background-color: #FFFFFF;
+  align-self: flex-start;
+  margin-right: auto;
+  border-top-left-radius: 0;
+  color: #000;
+  padding: 2px 4px !important; /* Reducido */
+  margin: 1px !important; /* Reducido */
+  font-size: 12px !important;
+  line-height: 1 !important; /* Reducido */
+  max-width: fit-content !important;
+}
+
+.bubble.bot div {
+  margin: 1px 0 !important; /* Reducido */
+  font-size: 12px !important;
+  line-height: 1 !important; /* Reducido */
+}
+
+.bubble.system {
+  background-color: #2e2e2e;
+  align-self: center;
+  margin: 8px auto;
+  border-radius: 10px;
+  color: #ccc;
+  text-align: center;
+  font-size: 12px;
+  padding: 6px 12px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: #555;
+  align-self: flex-end;
+  margin-top: 2px;
+}
+
+    .bubble strong {
+      color: #000;
+    }
+
+    input, button, textarea {
+      -webkit-appearance: none;
+    }
+
+    .user-offline {
+      opacity: 0.5;
+      border-left: none;
+    }
+
+    .user-online {
+      opacity: 1;
+      border-left: 3px solid white;
+    }
+
+    .closed-chat {
+      opacity: 0.4;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #181818;
+      border-bottom: 1px solid #2c2c2c;
+    }
+
+    .topbar-title {
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hamburger-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .hamburger-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .menu-popup {
+      position: absolute;
+      top: 52px;
+      right: 10px;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      z-index: 9999;
+      width: 80px;
+      padding: 10px 0;
+    }
+
+    .menu-popup.active {
+      display: flex;
+    }
+
+    .filter-popup {
+      position: absolute;
+      top: 130px;
+      right: 20px;
+      background: #1f1f1f;
+      border-radius: 10px;
+      border: 1px solid #333;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      display: none;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 9999;
+      width: 180px;
+    }
+
+    .filter-popup.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .filter-option {
+      padding: 10px 18px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .filter-option.selected {
+      border: 2px solid #FF3B00;
+      background-color: #2c2c2c;
+      border-radius: 8px;
+    }
+
+    .filter-option:hover {
+      background-color: #333;
+      border: 2px solid #FF3B00;
+      border-radius: 8px;
+    }
+
+    .filter-option.selected {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-overlay.active {
+      display: flex;
+    }
+
+    .popup-box {
+      background: #1e1e1e;
+      color: white;
+      padding: 25px 30px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+      max-width: 300px;
+      width: 90%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .popup-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .popup-text {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    .popup-actions {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+    }
+
+    .popup-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .popup-btn.confirm {
+      background-color: #34C759;
+      color: white;
+    }
+
+    .popup-btn.cancel {
+      background-color: #FF3B30;
+      color: white;
+    }
+
+    #agentInfo {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #ccc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #181818;
+  border-bottom: 1px solid #2c2c2c;
+  flex-shrink: 0; /* Evita que se encoja */
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #181818;
+  border-bottom: 1px solid #2c2c2c;
+  flex-shrink: 0; /* Evita que se encoja */
+}
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+   @media (max-width: 768px) {
+  body, html {
+    height: 100vh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .admin-container {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .inbox {
+    width: 100vw; /* Fullscreen */
+    margin: 0;
+    padding: 5px; /* Margen interno de 5px */
+    box-sizing: border-box;
+    height: 100vh;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+    flex: 1;
+    background: #1a1a1a; /* Fondo de la bandeja */
+  }
+
+  .user-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
+  }
+
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  .chat-item {
+    margin: 10px 0;
+    border-radius: 12px;
+    padding: 10px 15px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #resizer {
+    display: none !important;
+    width: 0;
+  }
+
+  .chat-view {
+    display: none !important;
+    width: 0;
+  }
+
+  .menu-popup {
+    top: 42px;
+    right: 8px;
+    width: 52px;
+    padding: 4px 0;
+    border-radius: 8px;
+  }
+
+  .menu-icon-only {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    margin: 3px auto;
+    border-radius: 5px;
+  }
+
+  .chat-popup {
+    width: 100vw;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+    transform: none;
+  }
+}
+
+      .inbox {
+        width: 100vw;
+        padding: 0 15px;
+        box-sizing: border-box;
+        height: calc(100vh - 44px);
+        overflow-y: hidden;
+      }
+
+      .topbar {
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+
+      .chat-item {
+        margin: 10px 0;
+        border-radius: 12px;
+        padding: 10px 15px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .user-list {
+        height: calc(100% - 44px);
+        overflow-y: auto;
+      }
+    }
+
+    .popup-edit-icon {
+      background-color: #1f1f1f;
+      color: white;
+      border: 2px solid #FF3B00;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .popup-edit-icon:hover {
+      background-color: #2a2a2a;
+      transform: scale(1.1);
+    }
+
+    #resizer {
+      width: 5px;
+      cursor: col-resize;
+      background-color: #FF3B00;
+      margin: 0;
+      height: 100%;
+    }
+
+    .date-label {
+      text-align: center;
+      font-size: 13px;
+      color: #aaa;
+      margin: 20px auto 10px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+<div id="menuWrapper" style="display: none;">
+<div class="top-menu">
+<div class="hamburger" onclick="toggleMenu()">
+<i class="fas fa-bars"></i>
+</div>
+<div class="popup-menu" id="popupMenu">
+<div onclick="goToConfig()"><i class="fas fa-cog"></i></div>
+<div onclick="logoutAdmin()"><i class="fas fa-power-off"></i></div>
+</div>
+</div>
+</div>
+<div id="loginScreen" style="position: absolute; top:0; left:0; width:100vw; height:100vh; background:#121212; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
+<h2 style="color: white; font-size: 24px;">Login Admin</h2>
+<input id="adminUsername" placeholder="Usuario" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;" type="text"/>
+<input id="adminPassword" placeholder="Contraseña" style="margin: 10px; padding: 10px; font-size: 16px; border-radius: 8px;" type="password"/>
+<button id="loginButton" style="padding: 10px 20px; background: #FF3B00; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Ingresar</button>
+<p id="loginError" style="color: red; margin-top: 10px; display: none;">Credenciales incorrectas</p>
+</div>
+<div class="admin-container">
+<div class="inbox" id="userListContainer">
+<div id="agentInfo">
+<div style="width: 10px; height: 10px; border-radius: 50%; background: #00FF00; box-shadow: 0 0 6px #00FF00;"></div>
+<span>Admin: <span id="adminDisplayName">Cargando...</span></span>
+</div>
+<div class="topbar">
+<span class="topbar-title">
+<span style="margin-right: 5px;">📥</span> Bandeja de entrada
+        </span>
+<button class="hamburger-btn" onclick="toggleMenuPopup()">
+          ☰
+        </button>
+</div>
+<div class="menu-popup" id="menuPopup">
+<div class="menu-icon-only" onclick="openSettings()" title="Configuración">
+<i class="fas fa-cog"></i>
+</div>
+<div class="menu-icon-only" onclick="toggleFilterPopup()" title="Filtro">
+<i class="fas fa-sliders-h"></i>
+</div>
+<div class="menu-icon-only" onclick="logOut()" title="Salir">
+<i class="fas fa-power-off"></i>
+</div>
+</div>
+<div class="filter-popup" id="filterPopup">
+<div class="filter-option" data-value="all">Todos</div>
+<div class="filter-option" data-value="active">Activos</div>
+<div class="filter-option" data-value="closed">Cerrados</div>
+</div>
+<ul class="user-list" id="userList"></ul>
+</div>
+<div id="resizer"></div>
+<div class="chat-view active" id="chatArea">
+<div class="chat-header" id="chatHeader">
+<div id="chatUser">
+<span>Usuario:</span>
+<strong id="currentUser">Nombre</strong>
+<button id="editBtn" onclick="toggleEditInput()">✏️</button>
+<input id="editNameInput" placeholder="Nuevo nombre" style="display: none;" type="text"/>
+<button id="saveBtn" onclick="saveNewName()" style="display: none;">Guardar</button>
+<button id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancelar</button>
+</div>
+</div>
+<div class="chat-messages" id="chatMessages">Aquí van los mensajes</div>
+<ul id="quickList" style="
+        display: none;
+        position: absolute;
+        bottom: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f1f1f;
+        border: 1px solid #FF3B00;
+        border-radius: 10px;
+        padding: 10px;
+        width: auto;
+        min-width: 300px;
+        max-width: 600px;
+        white-space: nowrap;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+        font-size: 14px;
+        color: white;
+        list-style: none;
+        text-align: left;
+      "></ul>
+<div class="chat-input" id="chatInputArea">
+<input id="adminInput" placeholder="Escribir mensaje..." type="text"/>
+<button onclick="sendAdminMessage()">Enviar</button>
+</div>
+</div>
+<div id="sideToolPanel" style="display: none; width: 300px; padding: 10px; overflow-y: auto;">
+<style>
+#sideToolPanel {
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #fff;
+  padding: 20px 10px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Centra verticalmente */
+  gap: 15px;
+  width: 300px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  border: 2px solid #FF3B00; /* Borde naranja igual al chat */
+  border-bottom: 4px solid #FF3B00; /* Borde inferior más grueso, igual al chat */
+  border-radius: 10px; /* Mantiene la consistencia con otros elementos */
+  height: 100%; /* Asegura que ocupe todo el alto disponible */
+  display: flex; /* Mantiene flex para centrar */
+}
+
+#sideToolPanel h2 {
+  margin-bottom: 5px;
+  text-align: center; /* Centra los títulos */
+}
+
+#sideToolPanel .input-wrapper {
+  background-color: #1f1f1f;
+  border-radius: 10px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  width: 190px;
+  border: 2px solid #FF3B00;
+  margin: 0 auto; /* Centra horizontalmente */
+}
+
+#sideToolPanel .input-wrapper input {
+  background-color: #1f1f1f;
+  color: #fff;
+  border: none;
+  outline: none;
+  font-size: 14.4px;
+  width: 100%;
+}
+
+#sideToolPanel .input-wrapper input::placeholder {
+  color: #ccc;
+  font-size: 15px;
+}
+
+#sideToolPanel #chipsAmount {
+  text-align: right;
+  padding-right: 5px;
+  -moz-appearance: textfield;
+}
+
+#sideToolPanel #chipsAmount::-webkit-outer-spin-button,
+#sideToolPanel #chipsAmount::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#sideToolPanel .icon-button {
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  color: #fff;
+  cursor: pointer;
+}
+
+#sideToolPanel .info-fixed {
+  background-color: #1a1a1a;
+  padding: 10px 15px;
+  border-radius: 12px;
+  width: 180px;
+  line-height: 1.5;
+  font-size: 16px;
+  text-align: center;
+  min-height: 90px;
+  border: 2px solid #FF3B00;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  margin: 0 auto; /* Centra horizontalmente */
+}
+
+#sideToolPanel .button-action {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 24px;
+  font-weight: bold;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  border: 2px solid #FF3B00;
+  color: #fff;
+  margin: 10px 5px; /* Reduje el margen lateral para mejor alineación */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#sideToolPanel .add-btn {
+  background-color: #FF3B00;
+}
+
+#sideToolPanel .add-btn:hover {
+  background-color: #d63100;
+}
+
+#sideToolPanel .remove-btn {
+  background-color: #FF3B00;
+}
+
+#sideToolPanel .remove-btn:hover {
+  background-color: #d63100;
+}
+
+#sideToolPanel .button-action:disabled {
+  background-color: #2a2a2a !important;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Centra el contenedor de botones */
+#sideToolPanel > div > div:nth-child(4) {
+  display: flex;
+  justify-content: center; /* Centra horizontalmente los botones */
+  align-items: center; /* Asegura alineación vertical */
+  width: 190px; /* Igual al ancho del .input-wrapper para alineación */
+  margin: 0 auto; /* Centra el contenedor en el panel */
+}
+</style>
+<div class="container">
+<h2>Búsqueda de usuario</h2>
+<div class="input-wrapper">
+<input id="userSearch" placeholder="Búsqueda de usuario" type="text"/>
+<button class="icon-button" onclick="searchUser()">🔍</button>
+</div>
+<div class="info-fixed" id="userInfoBox" style="margin-bottom: 60px; margin-top: 30px;">
+<!-- Se completa automáticamente -->
+</div>
+<h2>Gestión de Fichas</h2>
+<div class="input-wrapper">
+<input id="chipsAmount" min="1" placeholder="Monto" type="number"/>
+<span style="font-weight: bold;">ARS</span>
+</div>
+<div style="display: flex; justify-content: center; gap: 10px;">
+<button class="button-action add-btn" onclick="addChips()">+</button>
+<div class="confirm-container">
+<div id="confirmPopup">
+<span>¿Seguro?</span>
+<button onclick="confirmRemove()">✔</button>
+<button onclick="hideConfirm()">✖</button>
+</div>
+<button class="button-action remove-btn" onclick="showConfirm()">−</button></div>
+</div>
+<div id="addResult"></div>
+</div>
+<script>
+    let config = {};
+
+async function loadConfig() {
+  try {
+    const response = await fetch('/get-panel-config', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('No autorizado');
+    config = await response.json();
+    isConfigLoaded = true;
+  } catch (error) {
+    console.error('Error cargando config:', error);
+    config = { domain: '', cashierId: '', authToken: '', apiToken: '' };
+  }
+}
+
+let isConfigLoaded = false;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadConfig();
+  if (!isConfigLoaded) {
+    document.getElementById('userSearch').disabled = true;
+    const searchButton = document.querySelector('.icon-button');
+    if (searchButton) searchButton.disabled = true;
+  }
+
+  await loadConfig();
+  if (!config.domain || !config.apiToken || !config.authToken) {
+    alert('❌ Error cargando configuración. Es posible que tu sesión haya expirado.');
+  }
+  await loadConfig();
+  // Resto del código...
+});
+
+    let selectedUser = null;
+
+    async function searchUser(loginToFind = null) {
+      const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
+      let foundUser = null;
+      const limit = 1000;
+      const batchSize = 20;
+      let offset = 0;
+      let hasMore = true;
+
+      try {
+        while (hasMore && !foundUser) {
+          const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
+          const userPromises = offsets.map(async (batchOffset) => {
+            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
+            try {
+              const res = await fetch(url, { method: "POST" });
+              if (!res.ok) return { users: [], offset: batchOffset };
+              const data = await res.json();
+              return { users: data.users || [], offset: batchOffset };
+            } catch {
+              return { users: [], offset: batchOffset };
+            }
+          });
+
+          const usersArrays = await Promise.all(userPromises);
+
+          for (const { users } of usersArrays) {
+            const userMatch = users.find(user => user.login?.toLowerCase() === searchValue);
+            if (userMatch) {
+              foundUser = userMatch;
+              break;
+            }
+            if (users.length === 0) {
+              hasMore = false;
+              break;
+            }
+          }
+
+          if (!foundUser) offset += batchSize;
+        }
+
+        const userBox = document.getElementById("userInfoBox");
+        if (foundUser) {
+          selectedUser = {
+            id: foundUser.id,
+            login: foundUser.login.toLowerCase().trim()
+          };
+          renderUserBox(foundUser);
+        } else {
+          selectedUser = null;
+          userBox.innerHTML = "No se encontró ningún usuario con ese login.";
+        }
+      } catch {
+        document.getElementById("userInfoBox").innerHTML = "Error al buscar clientes.";
+      }
+    }
+
+    function renderUserBox(user) {
+      document.getElementById("userInfoBox").innerHTML = `
+        <strong>Login:</strong> ${user.login}<br>
+        <strong>Total:</strong> ${user.balances?.ARS || "0"} ARS<br>
+        <strong>Retirable:</strong> ${user.out_balance?.ARS || "0"} ARS<br>
+        <strong>Wager:</strong> ${user.limit?.ARS || "0"} ARS
+      `;
+    }
+
+    async function addChips() {
+      await sendChips("in");
+    }
+
+    async function removeChips() {
+      await sendChips("out");
+    }
+
+    async function sendChips(operation) {
+      const addBtn = document.querySelector(".add-btn");
+      const removeBtn = document.querySelector(".remove-btn");
+      const amountInput = document.getElementById("chipsAmount");
+
+      if (!selectedUser) return;
+
+      const amount = amountInput.value;
+      if (!amount || amount <= 0) return;
+
+      addBtn.disabled = true;
+      removeBtn.disabled = true;
+
+      const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
+      const body = `operation=${operation}&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
+
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
+        });
+
+        await res.json();
+
+        amountInput.value = "";
+
+        setTimeout(() => {
+          searchUser(selectedUser.login);
+        }, 200);
+
+      } catch (err) {
+        console.error("Error en la solicitud:", err);
+      }
+
+      setTimeout(() => {
+        addBtn.disabled = false;
+        removeBtn.disabled = false;
+      }, 5000);
+    }
+  </script>
+</div>
+</div>
+<div class="chat-popup" id="chatPopup">
+<div class="popup-header">
+<div style="display: flex; align-items: center; gap: 8px;">
+<span id="popupUser">Usuario</span>
+<button id="editNameBtn" onclick="toggleNameEdit()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+          ✏️
+        </button>
+</div>
+<div class="popup-controls">
+<button onclick="closePopup()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">⨉</button>
+</div>
+</div>
+<div id="editNameContainer" style="display: none; padding: 10px; background: #222; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
+<input id="newPopupName" placeholder="Nuevo nombre" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #FF3B00; background: #000; color: white; width: 60%;" type="text"/>
+<button class="popup-edit-icon" onclick="confirmPopupNameChange()" title="Guardar">
+        💾
+      </button>
+<button class="popup-edit-icon" onclick="document.getElementById('editNameContainer').style.display='none'" title="Cancelar">
+        ❌
+      </button>
+</div>
+<div class="popup-messages" id="popupMessages"></div>
+<div class="popup-input">
+<input id="popupInput" onkeypress="if(event.key==='Enter') sendPopupMessage()" placeholder="Escribir mensaje..." type="text"/>
+<button onclick="sendPopupMessage()">Enviar</button>
+</div>
+</div>
+<div class="popup-overlay" id="finalizePopup">
+<div class="popup-box">
+<div class="popup-icon">⚠️</div>
+<p class="popup-text">¿Seguro que querés finalizar el chat?</p>
+<div class="popup-actions">
+<button class="popup-btn confirm" onclick="confirmFinalize()">✔</button>
+<button class="popup-btn cancel" onclick="closeFinalizePopup()">✖</button>
+</div>
+</div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    // Variable global para la zona horaria
+    let systemTimezone = "America/Argentina/Buenos_Aires";
+
+    // Cargar la zona horaria desde el servidor
+    
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de Socket.IO');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Error de conexión a Socket.IO:', error);
+    });
+
+    socket.on('error', (error) => {
+      console.error('Error en Socket.IO:', error);
+    });
+
+    let selectedUserId = null;
+    let selectedUsername = null;
+    const localChatHistory = {};
+    let currentFilter = "all";
+    let pendingFinalizeUserId = null;
+    let ignoreNextAdminEcho = false;
+
+    // Función para formatear la hora en la lista de usuarios
+    function formatTime(dateStr) {
+  const date = new Date(dateStr); // Timestamp UTC del servidor
+  return new Intl.DateTimeFormat('es-AR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: systemTimezone
+  }).format(date);
+}
+
+    // Función para renderizar los mensajes con timestamps ajustados
+    function renderChat(messages) {
+  const popupContainer = document.getElementById("popupMessages");
+  const chatContainer = document.getElementById("chatMessages");
+  popupContainer.innerHTML = '';
+  chatContainer.innerHTML = '';
+
+  let lastRenderedDate = null;
+
+  messages.forEach(msg => {
+    if (!msg.timestamp) {
+      console.warn("Mensaje sin timestamp, asignando UTC actual:", msg);
+      msg.timestamp = new Date().toISOString();
+    }
+
+    const msgDate = new Date(msg.timestamp); // Timestamp UTC del servidor
+    if (isNaN(msgDate)) {
+      console.error("Timestamp inválido:", msg.timestamp);
+      msg.timestamp = new Date().toISOString();
+      msgDate = new Date(msg.timestamp);
+    }
+
+    const dateFormatter = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    });
+    const formattedDay = dateFormatter.format(msgDate);
+
+    const now = new Date();
+    const formattedNow = dateFormatter.format(now);
+    const yesterday = new Date(now - 86400000); // 24 horas en ms
+    const formattedYesterday = dateFormatter.format(yesterday);
+
+    let label = '';
+    if (formattedDay === formattedNow) label = 'Hoy';
+    else if (formattedDay === formattedYesterday) label = 'Ayer';
+    else label = new Intl.DateTimeFormat('es-AR', {
+      timeZone: systemTimezone,
+      day: 'numeric', month: 'long'
+    }).format(msgDate);
+
+    if (formattedDay !== lastRenderedDate) {
+      lastRenderedDate = formattedDay;
+      const dateLabel = document.createElement('div');
+      dateLabel.className = 'date-label';
+      dateLabel.textContent = label;
+      chatContainer.appendChild(dateLabel);
+    }
+
+    if (msg.sender === 'System') {
+      const systemMsg = document.createElement('div');
+      systemMsg.classList.add('bubble', 'system');
+      systemMsg.innerText = msg.message;
+      popupContainer.appendChild(systemMsg.cloneNode(true));
+      chatContainer.appendChild(systemMsg);
+    } else {
+      const div = document.createElement('div');
+      const senderClass = msg.sender === 'Agent' ? 'agent' : msg.sender === 'Bot' ? 'bot' : 'user';
+      div.classList.add("bubble", senderClass);
+
+      const timestamp = new Intl.DateTimeFormat('es-AR', {
+        timeZone: systemTimezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(msgDate);
+
+      if (msg.message) {
+        if (msg.sender === "Agent" || msg.sender === "Bot") {
+          div.innerHTML = `<div>${msg.message}</div>`;
+        } else {
+          div.innerHTML = `<div><strong>${msg.sender}:</strong><br>${msg.message}</div>`;
+        }
+      }
+
+      if (msg.image) {
+        const img = document.createElement("img");
+        img.src = msg.image;
+        img.alt = "imagen enviada";
+        img.style.maxWidth = "200px";
+        img.style.borderRadius = "10px";
+        img.style.marginTop = "5px";
+        img.onclick = () => openImageInNewWindow(msg.image);
+        div.appendChild(img);
+      }
+
+      const time = document.createElement("div");
+      time.className = "timestamp";
+      time.textContent = msg.sender === "Agent" ? `✅✅ ${timestamp}` : msg.sender === "Bot" ? `🤖 ${timestamp}` : timestamp;
+      div.appendChild(time);
+
+      popupContainer.appendChild(div.cloneNode(true));
+      chatContainer.appendChild(div);
+    }
+  });
+
+  popupContainer.scrollTop = popupContainer.scrollHeight;
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+  popupContainer.scrollTop = popupContainer.scrollHeight;
+}
+
+    function submitLogin() {
+      const username = document.getElementById("adminUsername").value.trim();
+      const password = document.getElementById("adminPassword").value.trim();
+
+      fetch("https://mi-chat-9uti.onrender.com/admin-login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
   },
-  transports: ['websocket', 'polling'],
-  allowEIO3: true
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-
-function validateAuthInput(username, password) {
-  if (
-    !username ||
-    !password ||
-    typeof username !== 'string' ||
-    typeof password !== 'string' ||
-    username.length < 3 ||
-    password.length < 4
-  ) {
-    return false;
-  }
-  return true;
-}
-
-function isValidToken(token) {
-  console.log('🔑 Validando token:', token);
-  console.log('🔐 SECRET_KEY esperado:', process.env.SECRET_KEY);
-  return token === process.env.SECRET_KEY;
-}
-
-async function isSuperAdmin(username) {
-  const agent = await Agent.findOne({ username });
-  return agent && (agent.role === 'SuperAdmin' || agent.type === 'superadmin');
-}
-
-// Protección para superadmin.html
-app.get('/superadmin.html', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-  }
-
-  // Verificar si el usuario es SuperAdmin
-  const username = req.query.username; // Podrías pasar el username en la cookie o en otra forma segura
-  if (!username || !(await isSuperAdmin(username))) {
-    return res.redirect('/index.html');
-  }
-
-  res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
-});
-
-app.get('/admin.html', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-app.get('/agent-performance.html', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'agent-performance.html'));
-});
-
-app.get('/config.html', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'config.html'));
-});
-
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:ped1q2wzerA@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
-
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+  credentials: "include", // ✅ AGREGÁ ESTA LÍNEA
+  body: JSON.stringify({ username, password })
 })
-.then(() => {
-  console.log('✅ Conectado a MongoDB Atlas');
-})
-.catch((err) => {
-  console.error('❌ Error conectando a MongoDB:', err);
-});
-
-const agentSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  name: String,
-  password: String,
-  type: { type: String },
-  role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' }
-});
-
-const Agent = mongoose.model('Agent', agentSchema);
-
-const userNameSchema = new mongoose.Schema({
-  userId: { type: String, required: true, unique: true },
-  name: { type: String, required: true }
-});
-
-const UserName = mongoose.model('UserName', userNameSchema);
-
-const performanceSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  count: { type: Number, default: 0 }
-});
-
-const Performance = mongoose.model('Performance', performanceSchema);
-
-const performanceLogSchema = new mongoose.Schema({
-  agent: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now }
-});
-
-const PerformanceLog = mongoose.model('PerformanceLog', performanceLogSchema);
-
-const chatMessageSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
-  sender: { type: String, required: true },
-  message: String,
-  image: String,
-  timestamp: { type: String, required: true },
-  status: String,
-  adminUsername: String,
-  username: String
-});
-
-const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
-
-const userSessions = new Map();
-const adminSubscriptions = new Map();
-
-const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
-
-
-function getTimestamp() {
-  const timezone = "America/Argentina/Buenos_Aires";
-  const time = moment().tz(timezone);
-  console.log("Hora del servidor:", new Date());
-  console.log("Hora ajustada a Argentina:", time.format());
-  return time.toISOString(true);
-}
-
-if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
-
-
-async function incrementPerformance(agentUsername) {
-  try {
-    await PerformanceLog.create({ agent: agentUsername });
-    console.log(`✅ Interacción registrada para ${agentUsername}`);
-  } catch (err) {
-    console.error('❌ Error al registrar interacción en PerformanceLog:', err);
-  }
-}
-
-async function getAllChatsSorted() {
-  const lastMessages = await ChatMessage.aggregate([
-    { $match: { sender: { $ne: 'System' } } },
-    { $sort: { timestamp: -1 } },
-    {
-      $group: {
-        _id: "$userId",
-        lastMessage: { $first: "$$ROOT" }
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      localStorage.setItem("adminLoggedIn", "true");
+      localStorage.setItem("adminUser", username);
+      if (data.name) {
+        localStorage.setItem("agentDisplayName", data.name);
       }
-    }
-  ]);
-
-  const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
-    const savedName = await UserName.findOne({ userId: _id });
-    const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
-    const isClosed = await ChatMessage.findOne({ userId: _id, status: 'closed' });
-    return {
-      userId: _id,
-      username: username,
-      lastMessageTime: lastMessage.timestamp,
-      isClosed: !!isClosed
-    };
-  }));
-
-  return sortedChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-}
-
-app.get('/performance-log', async (req, res) => {
-  const { from, to } = req.query;
-
-  if (!from || !to) {
-    return res.status(400).json({ error: "Parámetros 'from' y 'to' son requeridos" });
-  }
-
-  try {
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-    const logs = await PerformanceLog.find({
-      timestamp: {
-        $gte: fromDate,
-        $lte: toDate
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=604800; secure`;
       }
-    }).lean();
-
-    res.json(logs);
-  } catch (err) {
-    console.error("❌ Error al obtener performance logs:", err);
-    res.status(500).json({ error: "Error interno del servidor" });
-  }
-});
-
-io.on('connection', (socket) => {
-  socket.on('user joined', async (data) => {
-    let userId = data.userId;
-    let username = data.username;
-    if (!username) return;
-
-    if (!userId) {
-      userId = uuidv4();
-    }
-
-    try {
-      const savedName = await UserName.findOne({ userId });
-      if (savedName) {
-        username = savedName.name;
-      } else {
-        await new UserName({ userId, name: username }).save();
-      }
-    } catch (e) {
-      console.error("❌ Error manejando nombre del usuario:", e.message);
-    }
-
-    userSessions.set(userId, { username, socket });
-    socket.emit('session', { userId, username });
-
-    const existingChat = await ChatMessage.findOne({ userId });
-    if (!existingChat) {
-      const dateMessage = {
-        userId,
-        sender: 'System',
-        message: '💬 Chat iniciado',
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(dateMessage).save();
-    }
-  });
-
-  socket.on('update username', async ({ userId, newUsername }) => {
-    try {
-      const existing = await UserName.findOne({ userId });
-      if (existing) {
-        existing.name = newUsername;
-        await existing.save();
-      } else {
-        await UserName.create({ userId, name: newUsername });
-      }
-
-      if (userSessions.has(userId)) {
-        const session = userSessions.get(userId);
-        userSessions.set(userId, { ...session, username: newUsername });
-
-        await ChatMessage.updateMany(
-          { userId },
-          { $set: { username: newUsername } }
-        );
-
-        const userSocket = session.socket;
-        if (userSocket) {
-          userSocket.emit('update username cookie', { newUsername });
-        }
-      }
-
-      io.emit('update username', { userId, newUsername });
-      io.emit('user list', await getAllChatsSorted());
-      console.log(`✅ Nombre actualizado para el usuario ${userId}: ${newUsername}`);
-    } catch (err) {
-      console.error('❌ Error al actualizar nombre del usuario:', err);
-    }
-  });
-
-  socket.on('admin connected', async () => {
-    socket.join('admins');
-    socket.emit('user list', await getAllChatsSorted());
-  });
-
-  socket.on('chat message', async (data) => {
-    if (!data.userId || !data.sender || !data.message) return;
-
-    let username = userSessions.get(data.userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId: data.userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
-
-    const messageData = {
-      userId: data.userId,
-      sender: data.sender,
-      message: data.message,
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(messageData).save();
-
-    const wasClosed = await ChatMessage.findOne({ userId: data.userId, status: 'closed' });
-    if (wasClosed) {
-      await ChatMessage.deleteMany({ userId: data.userId, status: 'closed' });
-      const reopenMsg = {
-        userId: data.userId,
-        sender: 'System',
-        message: '🔄 El chat fue reabierto por el cliente',
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(reopenMsg).save();
-      io.emit('user list', await getAllChatsSorted());
-    }
-
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('chat message', messageData);
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin message', messageData);
-      }
-    }
-
-    if (data.message === 'Cargar Fichas') {
-      const botMsg = {
-        userId: data.userId,
-        sender: 'Bot',
-        message: `1- Usar cuenta personal.\n\n2- Enviar comprobante visible.\n\nTITULARctaBANCARIA LEPRANCE SRL\n\nCBU\n0000156002555796327337\n\nALIAS\nleprance`,
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(botMsg).save();
-      io.emit('user list', await getAllChatsSorted());
-      if (userSocket) userSocket.emit('chat message', botMsg);
-      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-        if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', botMsg);
-        }
-      }
-    }
-
-    if (data.message === 'Retirar') {
-      const retiroMsg = {
-        userId: data.userId,
-        sender: 'Bot',
-        message: `
-          <div style="font-family:'Segoe UI',sans-serif;color:#222;margin:0;padding:0;">
-            <strong>1 - PARA RETIRAR COMPLETAR:</strong> Usar cuenta bancaria propia<br>
-            👉👉👉<br>
-            <strong>USUARIO:</strong><br>
-            <strong>MONTO A RETIRAR:</strong><br>
-            <strong>NOMBRE DE CTA BANCARIA:</strong><br>
-            <strong>CBU:</strong><br>
-            <strong>COMPROBANTE DE ÚLTIMA CARGA:</strong>
-          </div>
-        `,
-        timestamp: getTimestamp(),
-        username: username
-      };
-      await new ChatMessage(retiroMsg).save();
-      io.emit('user list', await getAllChatsSorted());
-      if (userSocket) userSocket.emit('chat message', retiroMsg);
-      for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-        if (subscribedUserId === data.userId) {
-          io.to(adminSocketId).emit('admin message', retiroMsg);
-        }
-      }
-    }
-  });
-
-  socket.on('image', async (data) => {
-    if (!data.userId || !data.sender || !data.image) {
-      console.error('Datos de imagen incompletos:', data);
-      return;
-    }
-
-    let username = userSessions.get(data.userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId: data.userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
-
-    const imageData = {
-      userId: data.userId,
-      sender: data.sender,
-      image: data.image,
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(imageData).save();
-
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) {
-      userSocket.emit('image', imageData);
-    }
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin image', imageData);
-      }
-    }
-
-    const botResponse = {
-      userId: data.userId,
-      sender: 'Bot',
-      message: '✅️¡Excelente! Recibido✅️<br>¡En menos de 5 minutos<br>sus fichas serán acreditadas!',
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(botResponse).save();
-    if (userSocket) userSocket.emit('chat message', botResponse);
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin message', botResponse);
-      }
-    }
-
-    io.emit('user list', await getAllChatsSorted());
-  });
-
-  socket.on('agent message', async (data) => {
-    if (!data.userId || !data.message) return;
-
-    let username = userSessions.get(data.userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId: data.userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
-
-    const messageData = {
-      userId: data.userId,
-      sender: 'Agent',
-      message: data.message,
-      timestamp: getTimestamp(),
-      username: username
-    };
-    await new ChatMessage(messageData).save();
-
-    const userSocket = userSessions.get(data.userId)?.socket;
-    if (userSocket) userSocket.emit('chat message', messageData);
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === data.userId) {
-        io.to(adminSocketId).emit('admin message', messageData);
-      }
-    }
-
-    io.emit('user list', await getAllChatsSorted());
-  });
-
-  socket.on('request chat history', async (data) => {
-    if (!data.userId) return;
-    adminSubscriptions.set(socket.id, data.userId);
-
-    const history = await ChatMessage.find({ userId: data.userId }).sort({ timestamp: 1 });
-    socket.emit('chat history', { userId: data.userId, messages: history });
-  });
-
-  socket.on('close chat', async ({ userId, adminUsername }) => {
-    const userSocket = userSessions.get(userId)?.socket;
-    if (userSocket) {
-      userSocket.emit('chat closed', { userId });
-    }
-
-    if (adminUsername) {
-      await incrementPerformance(adminUsername);
-    }
-
-    if (userSessions.has(userId)) {
-      const session = userSessions.get(userId);
-      userSessions.set(userId, { ...session, socket: null });
-    }
-
-    let username = userSessions.get(userId)?.username || 'Usuario';
-    try {
-      const savedName = await UserName.findOne({ userId });
-      if (savedName) {
-        username = savedName.name;
-      }
-    } catch (e) {
-      console.error("❌ Error obteniendo nombre del usuario:", e.message);
-    }
-
-    const closeMsg = {
-      userId,
-      sender: 'System',
-      message: '💬 Chat cerrado',
-      timestamp: getTimestamp(),
-      status: 'closed',
-      adminUsername: adminUsername,
-      username: username
-    };
-    await new ChatMessage(closeMsg).save();
-
-    if (userSocket) {
-      userSocket.emit('chat message', closeMsg);
-    }
-
-    for (let [adminSocketId, subscribedUserId] of adminSubscriptions.entries()) {
-      if (subscribedUserId === userId) {
-        io.to(adminSocketId).emit('admin message', closeMsg);
-      }
-    }
-
-    io.emit('user list', await getAllChatsSorted());
-  });
-
-  socket.on('disconnect', async () => {
-    adminSubscriptions.delete(socket.id);
-    for (let [userId, session] of userSessions.entries()) {
-      if (session.socket?.id === socket.id) {
-        userSessions.set(userId, { ...session, socket: null });
-        io.emit('user list', await getAllChatsSorted());
-        break;
-      }
-    }
-  });
-});
-
-app.post('/superadmin-login', async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!validateAuthInput(username, password)) {
-    return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
-
-  try {
-    const agent = await Agent.findOne({ 
-      username, 
-      $or: [{ role: 'SuperAdmin' }, { type: 'superadmin' }]
-    });
-    if (!agent) {
-      return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
-    }
-
-    const isMatch = await bcrypt.compare(password, agent.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
-    }
-
-    res.cookie('token', process.env.SECRET_KEY, {
-  httpOnly: true,
-  path: '/',
-  secure: false // desactivado temporalmente para desarrollo local,
-  sameSite: 'lax'
-});
-    res.status(200).json({
-      success: true,
-      name: agent.name,
-      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin'),
-      username: agent.username // Agregamos el username para usarlo después
-    });
-  } catch (err) {
-    console.error('❌ Error en login:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.post('/admin-login', async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!validateAuthInput(username, password)) {
-    return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
-
-  try {
-    const agent = await Agent.findOne({ username, $or: [{ role: 'Admin' }, { type: 'agent' }] });
-    if (!agent) {
-      return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
-    }
-
-    const isMatch = await bcrypt.compare(password, agent.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
-    }
-
-    res.cookie('token', process.env.SECRET_KEY, {
-  httpOnly: true,
-  path: '/',
-  secure: false // desactivado temporalmente para desarrollo local,
-  sameSite: 'lax'
-});
-    res.status(200).json({ success: true, name: agent.name, username: agent.username });
-  } catch (err) {
-    console.error('❌ Error en login de admin:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.get('/agents', async (req, res) => {
-  console.log('Solicitud recibida en /agents:', req.headers);
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  try {
-    const agents = await Agent.find({}, 'username name role type');
-    const formattedAgents = agents.map(agent => ({
-      username: agent.username,
-      name: agent.name || agent.username,
-      role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin')
-    }));
-    res.json(formattedAgents);
-  } catch (err) {
-    console.error('❌ Error al obtener agentes:', err);
-    res.status(500).json({ success: false, message: 'Error al obtener agentes' });
-  }
-});
-
-app.delete('/agents/:username', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { username } = req.params;
-
-  try {
-    const deleted = await Agent.findOneAndDelete({ username });
-
-    if (!deleted) {
-      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
-
-    res.status(200).json({ success: true, message: 'Agente eliminado correctamente' });
-  } catch (err) {
-    console.error('❌ Error eliminando agente:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.put('/agents/:username', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { username } = req.params;
-  const { name, password, newUsername } = req.body;
-
-  if ((!name && !password && !newUsername) || 
-      (name && typeof name !== 'string') || 
-      (password && typeof password !== 'string') || 
-      (newUsername && typeof newUsername !== 'string')) {
-    return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
-
-  try {
-    const agent = await Agent.findOne({ username });
-    if (!agent) {
-      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
-
-    if (name) agent.name = name;
-    if (newUsername) agent.username = newUsername;
-
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      agent.password = hashedPassword;
-    }
-
-    await agent.save();
-    res.status(200).json({ success: true, message: 'Agente actualizado correctamente' });
-  } catch (err) {
-    console.error('❌ Error actualizando agente:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.post('/agents', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-
-  const { username, name, password, role } = req.body;
-
-  if (!username || !name || !password || !role || !['Admin', 'SuperAdmin'].includes(role)) {
-    return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
-
-  try {
-    const existingAgent = await Agent.findOne({ username });
-    if (existingAgent) {
-      return res.status(400).json({ success: false, message: 'El usuario ya existe' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newAgent = new Agent({ username, name, password: hashedPassword, role });
-    await newAgent.save();
-
-    res.status(201).json({ success: true, message: 'Agente creado correctamente' });
-  } catch (err) {
-    console.error('❌ Error al crear agente:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.post('/update-username', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { userId, newUsername } = req.body;
-
-  if (!userId || !newUsername) {
-    return res.status(400).json({ success: false, message: 'Faltan datos' });
-  }
-
-  try {
-    const existing = await UserName.findOne({ userId });
-
-    if (existing) {
-      existing.name = newUsername;
-      await existing.save();
+      document.getElementById("loginScreen").style.display = "none";
+      document.querySelector(".admin-container").style.display = "flex";
+      document.getElementById("menuWrapper").style.display = "none";
+      document.getElementById("sideToolPanel").style.display = "block";
+      socket.emit('admin connected');
     } else {
-      await UserName.create({ userId, name: newUsername });
+      throw new Error("Credenciales inválidas");
+    }
+  })
+  .catch(err => {
+    document.getElementById("loginError").style.display = "block";
+    console.error("Login fallido:", err);
+  });
     }
 
-    io.emit('user name updated', { userId, newUsername });
-    return res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('❌ Error al guardar nombre del usuario:', err);
-    return res.status(500).json({ success: false, message: 'Error interno' });
-  }
-});
+    document.addEventListener("DOMContentLoaded", async () => {
+  
 
-app.get('/performance', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
+  // Adjuntar el event listener al botón de login
+  const loginButton = document.getElementById("loginButton");
+  if (loginButton) {
+    loginButton.addEventListener("click", submitLogin);
   }
-  try {
-    const performanceData = await PerformanceLog.aggregate([
-      {
-        $group: {
-          _id: "$agent",
-          count: { $sum: 1 }
+
+  const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+  const agentUser = localStorage.getItem("adminUser");
+  const agentDisplayName = localStorage.getItem("agentDisplayName");
+
+  if (agentDisplayName) {
+    document.getElementById("adminDisplayName").textContent = adminDisplayName;
+  } else if (agentUser) {
+    fetch(`/get-agent-displayname?username=${agentUser}`)
+      .then(res => res.json())
+      .then(data => {
+        const displayName = data.name || agentUser;
+        document.getElementById("agentDisplayName").textContent = displayName;
+        localStorage.setItem("adminDisplayName", displayName);
+      })
+      .catch(err => {
+        console.error("Error al obtener el nombre visible del agente:", err);
+        document.getElementById("agentDisplayName").textContent = agentUser;
+      });
+  }
+
+  if (isLoggedIn) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.querySelector(".admin-container").style.display = "flex";
+    document.getElementById("menuWrapper").style.display = "none";
+      document.getElementById("sideToolPanel").style.display = "block";
+    socket.emit('admin connected');
+
+    const lastUserId = sessionStorage.getItem('lastUserId');
+    const lastUsername = sessionStorage.getItem('lastUsername');
+    const lastUserClosed = sessionStorage.getItem('lastUserClosed') === 'true';
+
+    if (lastUserId && lastUsername) {
+      selectedUserId = lastUserId;
+      selectedUsername = lastUsername;
+      document.getElementById("currentUser").textContent = lastUsername;
+      document.getElementById("popupUser").textContent = lastUsername;
+
+      const chatInput = document.getElementById("adminInput");
+      const sendButton = document.querySelector("#chatInputArea button");
+      if (lastUserClosed) {
+        chatInput.disabled = true;
+        chatInput.placeholder = "Chat cerrado - Solo lectura";
+        sendButton.disabled = true;
+      } else {
+        chatInput.disabled = false;
+        chatInput.placeholder = "Escribir mensaje...";
+        sendButton.disabled = false;
+        if (window.innerWidth <= 767) {
+          document.getElementById("chatPopup").style.display = "flex";
+          document.getElementById("chatPopup").classList.add("show");
+        } else {
+          document.getElementById("chatArea").classList.add("active");
         }
       }
-    ]);
 
-    const result = {};
-    performanceData.forEach(item => {
-      result[item._id] = item.count;
+      socket.emit('request chat history', { userId: lastUserId });
+    }
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.querySelector(".admin-container").style.display = "none";
+  }
+});
+
+    socket.on('user list', (users) => {
+      console.log('Lista de usuarios recibida:', users);
+      window.chatUsers = users;
+      renderUserList();
     });
 
-    res.json(result);
-  } catch (err) {
-    console.error('❌ Error al obtener performance:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
+    function renderUserList() {
+      const listContainer = document.getElementById("userList");
+      const users = window.chatUsers || [];
 
-app.get('/get-agent-displayname', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const username = req.query.username;
-  try {
-    const agent = await Agent.findOne({ username });
-    if (agent) {
-      res.json({ name: agent.name || agent.username });
-    } else {
-      res.json({ name: username });
-    }
-  } catch (err) {
-    console.error('❌ Error obteniendo nombre:', err);
-    res.status(500).json({ name: username });
-  }
-});
+      listContainer.innerHTML = "";
 
-app.post('/update-agent-name', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { username, newName } = req.body;
+      users.forEach(user => {
+        const isClosed = user.isClosed;
 
-  if (!username || !newName || typeof username !== 'string' || typeof newName !== 'string') {
-    return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
+        if (
+          currentFilter === "all" ||
+          (currentFilter === "active" && !isClosed) ||
+          (currentFilter === "closed" && isClosed)
+        ) {
+          const chatDiv = document.createElement('div');
+          chatDiv.classList.add('chat-item');
+          chatDiv.classList.add(user.isClosed ? 'user-offline' : 'user-online');
+          if (user.isClosed) {
+            chatDiv.classList.add('closed-chat');
+          }
+          chatDiv.dataset.userId = user.userId;
 
-  try {
-    const agent = await Agent.findOneAndUpdate(
-      { username },
-      { name: newName },
-      { new: true }
-    );
-    if (!agent) {
-      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+          chatDiv.innerHTML = `
+            <div class="chat-left">
+              <span class="username">${user.username}</span>
+              <div class="badges">
+                ${user.isClosed ? `<span class="badge cerrado">Cerrado</span>` : `<button class="badge finalizar" onclick="showFinalizePopup('${user.userId}')">Finalizar</button>`}
+              </div>
+            </div>
+            <div class="hora">${formatTime(user.lastMessageTime)}</div>
+          `;
+
+          chatDiv.onclick = (e) => {
+            if (e.target.classList.contains('finalizar')) return;
+            selectUser(user.userId, user.username);
+          };
+          listContainer.appendChild(chatDiv);
+        }
+      });
     }
 
-    io.emit('agent name updated', { username, newName });
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('❌ Error actualizando nombre:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
+    function updateUsername(userId, newUsername) {
+      console.log('Actualizando nombre de usuario para', userId, 'a', newUsername);
+      socket.emit('update username', { userId, newUsername });
 
-app.post('/update-agent-password', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { username, newPassword } = req.body;
-
-  if (!username || !newPassword || typeof username !== 'string' || typeof newPassword !== 'string' ||
-      newPassword.length < 4 || newPassword.length > 16) {
-    return res.status(400).json({ success: false, message: 'Datos inválidos' });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const agent = await Agent.findOneAndUpdate(
-      { username },
-      { password: hashedPassword },
-      { new: true }
-    );
-    if (!agent) {
-      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+      if (userId === selectedUserId) {
+        selectedUsername = newUsername;
+        document.getElementById('currentUser').textContent = newUsername;
+        sessionStorage.setItem('lastUsername', newUsername);
+      }
     }
 
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('❌ Error actualizando contraseña:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.get('/quick-replies', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  fs.readFile(quickRepliesPath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json([]);
-    try {
-      const replies = JSON.parse(data);
-      res.json(replies);
-    } catch (e) {
-      res.status(500).json([]);
+    function selectUser(userId, username) {
+  const user = window.chatUsers.find(u => u.userId === userId);
+  if (!user) return;
+  console.log('Usuario seleccionado:', { userId, username });
+  selectedUserId = userId;
+  selectedUsername = username;
+  const userList = document.getElementById('userList').children;
+  for (let div of userList) {
+    div.classList.remove('active');
+    if (div.dataset.userId === userId) {
+      div.classList.add('active');
+      sessionStorage.setItem('lastUserId', userId);
+      sessionStorage.setItem('lastUsername', username);
+      sessionStorage.setItem('lastUserClosed', user.isClosed.toString());
     }
-  });
-});
-
-app.post('/quick-replies', express.json(), (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
   }
-  const replies = req.body;
-  if (!Array.isArray(replies)) {
-    return res.status(400).json({ success: false, message: "Formato incorrecto" });
-  }
+  document.getElementById("popupUser").textContent = username;
+  document.getElementById("currentUser").textContent = username;
 
-  fs.writeFileSync(quickRepliesPath, JSON.stringify(replies, null, 2));
-  res.json({ success: true });
-});
-
-
-
-
-
-app.get('/stats', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { from, to } = req.query;
-
-  if (!from || !to) {
-    return res.status(400).json({ error: 'Faltan parámetros from y to' });
+  const chatInput = document.getElementById("adminInput");
+  const sendButton = document.querySelector("#chatInputArea button");
+  const popupInput = document.getElementById("popupInput");
+  const popupSendButton = document.querySelector("#chatPopup .popup-input button");
+  if (user.isClosed) {
+    chatInput.disabled = true;
+    chatInput.placeholder = "Chat cerrado - Solo lectura";
+    sendButton.disabled = true;
+    popupInput.disabled = true;
+    popupInput.placeholder = "Chat cerrado - Solo lectura";
+    popupSendButton.disabled = true;
+  } else {
+    chatInput.disabled = false;
+    chatInput.placeholder = "Escribir mensaje...";
+    sendButton.disabled = false;
+    popupInput.disabled = false;
+    popupInput.placeholder = "Escribir mensaje...";
+    popupSendButton.disabled = false;
   }
 
-  try {
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
+  if (window.innerWidth <= 767) {
+    document.getElementById("chatPopup").style.display = "flex";
+    document.getElementById("chatPopup").classList.add("show");
+    document.getElementById("editNameContainer").style.display = "none";
+  } else {
+    document.getElementById("chatArea").classList.add("active");
+  }
 
-    if (isNaN(fromDate) || isNaN(toDate)) {
-      return res.status(400).json({ error: 'Fechas inválidas' });
+  socket.emit('request chat history', { userId });
+}
+
+    function sendPopupMessage() {
+      const input = document.getElementById("popupInput");
+      const msg = input.value.trim();
+      if (!msg || !selectedUserId) return;
+
+      const timestamp = new Date().toISOString(); // Generar timestamp actual
+      socket.emit('agent message', { userId: selectedUserId, message: msg, timestamp });
+
+      if (!localChatHistory[selectedUserId]) localChatHistory[selectedUserId] = [];
+      localChatHistory[selectedUserId].push({ sender: 'Agent', message: msg, timestamp });
+
+      input.value = '';
+      renderChat(localChatHistory[selectedUserId]);
     }
 
-    const messages = await ChatMessage.find({
-      timestamp: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() }
-    }).sort({ timestamp: 1 });
+    function sendAdminMessage() {
+      const input = document.getElementById("adminInput");
+      const message = input.value.trim();
+      if (!message || !selectedUserId) return;
 
-    let chatsClosed = 0;
-    let messagesCount = 0;
-    let cargarFichasCount = 0;
-    let retirosCount = 0;
-    let imagenesCount = 0;
+      const timestamp = new Date().toISOString(); // Generar timestamp actual
+      socket.emit("agent message", { userId: selectedUserId, message, timestamp });
 
-    const userIds = [...new Set(messages.map(msg => msg.userId))];
-    for (const userId of userIds) {
-      const userMessages = messages.filter(msg => msg.userId === userId);
-      if (userMessages.some(msg => msg.status === 'closed')) {
-        chatsClosed++;
+      if (!localChatHistory[selectedUserId]) localChatHistory[selectedUserId] = [];
+      localChatHistory[selectedUserId].push({ sender: "Agent", message, timestamp });
+      renderChat(localChatHistory[selectedUserId]);
+
+      ignoreNextAdminEcho = true;
+
+      input.value = '';
+    }
+
+    function closePopup() {
+      document.getElementById("chatPopup").classList.remove("show");
+      setTimeout(() => {
+        document.getElementById("chatPopup").style.display = "none";
+      }, 300);
+    }
+
+    socket.on('chat history', (data) => {
+      console.log('Historial de chat recibido:', data);
+      localChatHistory[data.userId] = data.messages || [];
+      if (data.userId === selectedUserId) {
+        renderChat(data.messages);
+        if (window.innerWidth >= 768) {
+          document.getElementById('chatArea').style.display = 'flex';
+        }
+      }
+    });
+
+    socket.on('admin message', (data) => {
+  console.log('Mensaje recibido en tiempo real:', data);
+
+  if (ignoreNextAdminEcho) {
+    ignoreNextAdminEcho = false;
+    return;
+  }
+
+  if (!data || !data.sender || !data.message) {
+    console.error('Mensaje recibido inválido, falta sender o message:', data);
+    return;
+  }
+
+  if (data.sender !== 'System' && !data.userId) {
+    console.error('Mensaje recibido inválido, falta userId:', data);
+    return;
+  }
+
+  const timestamp = data.timestamp || new Date().toISOString();
+
+  if (data.userId && !localChatHistory[data.userId]) {
+    localChatHistory[data.userId] = [];
+  }
+
+  if (data.userId) {
+    localChatHistory[data.userId].push({ sender: data.sender, message: data.message, timestamp });
+
+    const chatElement = document.querySelector(`div[data-user-id="${data.userId}"]`);
+    const wasClosed = chatElement && chatElement.querySelector('.cerrado');
+
+    if (wasClosed && data.sender !== 'Agent' && data.sender !== 'System' && data.sender !== 'Bot') {
+      showFinalizarButton(data.userId);
+      if (data.userId === selectedUserId) {
+        document.getElementById("adminInput").disabled = false;
+        document.getElementById("adminInput").placeholder = "Escribir mensaje...";
+        document.querySelector("#chatInputArea button").disabled = false;
+        renderChat(localChatHistory[data.userId]);
+      } else {
+        selectUser(data.userId, selectedUsername || 'Usuario');
+      }
+    } else if (data.userId === selectedUserId) {
+      renderChat(localChatHistory[data.userId]);
+    }
+  } else if (selectedUserId && localChatHistory[selectedUserId]) {
+    localChatHistory[selectedUserId].push({ sender: data.sender, message: data.message, timestamp });
+    renderChat(localChatHistory[selectedUserId]);
+  }
+});
+
+    socket.on('admin image', (data) => {
+      console.log('Imagen recibida en tiempo real:', data);
+      if (!data || !data.userId || !data.sender || !data.image) {
+        console.error('Imagen recibida inválida, falta userId, sender o image:', data);
+        return;
+      }
+      if (!localChatHistory[data.userId]) {
+        localChatHistory[data.userId] = [];
+      }
+      // Asegurarse de que la imagen tenga un timestamp
+      const timestamp = data.timestamp || new Date().toISOString();
+      localChatHistory[data.userId].push({ 
+        sender: data.sender, 
+        image: data.image, 
+        timestamp 
+      });
+      
+      if (data.userId === selectedUserId) {
+        renderChat(localChatHistory[data.userId]);
+      }
+    });
+
+    // Escuchar actualizaciones de nombre desde config.html
+    socket.on('update username', (data) => {
+      console.log('Evento update username recibido:', data);
+      const { userId, newUsername } = data;
+
+      // Actualizar el nombre del admin conectado en #adminDisplayName si coincide con adminUser
+const currentAdminUser = localStorage.getItem("adminUser");
+if (userId === currentAdminUser) {
+  document.getElementById("adminDisplayName").textContent = newUsername;
+  localStorage.setItem("adminDisplayName", newUsername);
+}
+
+      // Actualizar la lista de usuarios en la bandeja de entrada
+      if (window.chatUsers) {
+        const user = window.chatUsers.find(u => u.userId === userId);
+        if (user) {
+          user.username = newUsername;
+          renderUserList();
+        }
       }
 
-      for (const msg of userMessages) {
-        if (!['Agent', 'System', 'Bot'].includes(msg.sender)) {
-          if (msg.message === 'Cargar Fichas' || msg.message === 'Retirar') {
-            messagesCount += 1;
+      // Si el usuario seleccionado es el que cambió su nombre, actualizarlo en el chat
+      if (selectedUserId === userId) {
+        selectedUsername = newUsername;
+        document.getElementById("currentUser").textContent = newUsername;
+        document.getElementById("popupUser").textContent = newUsername;
+      }
+    });
+
+    function showFinalizarButton(userId) {
+      const chatElement = document.querySelector(`div[data-user-id="${userId}"]`);
+      if (chatElement) {
+        const cerradoBadge = chatElement.querySelector('.cerrado');
+        if (cerradoBadge) {
+          cerradoBadge.remove();
+        }
+        chatElement.style.opacity = 1;
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Finalizar';
+        closeBtn.classList.add('badge', 'finalizar');
+        closeBtn.onclick = (e) => {
+          e.stopPropagation();
+          showFinalizePopup(userId);
+        };
+        chatElement.querySelector('.badges').appendChild(closeBtn);
+      }
+    }
+
+    function openImageInNewWindow(imageSrc) {
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Imagen</title>
+          <style>
+            body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+            img { max-width: 90%; max-height: 90%; }
+          </style>
+        </head>
+        <body>
+          <img src="${imageSrc}" alt="Imagen">
+        </body>
+        </html>
+      `);
+      newWindow.document.close();
+    }
+
+    function finalizeChat(userId) {
+      if (userId) {
+        console.log('Finalizando chat para el usuario:', userId);
+        const agentUsername = localStorage.getItem("adminUser");
+        socket.emit('close chat', { userId, adminUsername });
+
+        const chatElement = document.querySelector(`div[data-user-id="${userId}"]`);
+        if (chatElement) {
+          chatElement.classList.remove('active');
+          chatElement.classList.remove('user-online');
+          chatElement.classList.add('user-offline');
+          chatElement.classList.add('closed-chat');
+          const btn = chatElement.querySelector('.finalizar');
+          if (btn) {
+            btn.remove();
+            const cerradoBadge = document.createElement('span');
+            cerradoBadge.className = 'badge cerrado';
+            cerradoBadge.textContent = 'Cerrado';
+            chatElement.querySelector('.badges').appendChild(cerradoBadge);
           }
         }
+
+        if (userId === selectedUserId) {
+          closePopup();
+          selectedUserId = null;
+          selectedUsername = null;
+        }
       }
-
-      imagenesCount += userMessages.filter(
-        msg => msg.image && !['Agent', 'System', 'Bot'].includes(msg.sender)
-      ).length;
-
-      cargarFichasCount += userMessages.filter(
-        msg => msg.message === 'Cargar Fichas'
-      ).length;
-
-      retirosCount += userMessages.filter(
-        msg => msg.message === 'Retirar'
-      ).length;
     }
 
-    res.json({
-      chats: chatsClosed,
-      messages: messagesCount,
-      cargarFichas: cargarFichasCount,
-      retiros: retirosCount,
-      imagenes: imagenesCount
-    });
-  } catch (error) {
-    console.error('Error al procesar estadísticas:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
-
-app.get('/stats-agents', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-  const { from, to } = req.query;
-
-  if (!from || !to) {
-    return res.status(400).json({ error: 'Faltan parámetros from y to' });
-  }
-
-  try {
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-
-    if (isNaN(fromDate) || isNaN(toDate)) {
-      return res.status(400).json({ error: 'Fechas inválidas' });
+    function logoutAdmin() {
+      localStorage.removeItem("adminLoggedIn");
+      localStorage.removeItem("adminUser");
+      localStorage.removeItem("agentDisplayName");
+      location.reload();
     }
 
-    const agentInteractions = await PerformanceLog.aggregate([
-      {
-        $match: {
-          timestamp: { $gte: fromDate, $lte: toDate }
-        }
-      },
-      {
-        $group: {
-          _id: "$agent",
-          finalizados: { $sum: 1 }
-        }
+    function goToConfig() {
+      window.location.href = "/config.html";
+    }
+
+    function toggleMenu() {
+      const popup = document.getElementById("popupMenu");
+      popup.style.display = (popup.style.display === "block") ? "none" : "block";
+    }
+
+    document.addEventListener("click", function (e) {
+      const popup = document.getElementById("popupMenu");
+      const menu = document.querySelector(".hamburger");
+      if (!popup.contains(e.target) && !menu.contains(e.target)) {
+        popup.style.display = "none";
       }
-    ]);
-
-    const agents = await Agent.find({ $or: [{ role: 'Admin' }, { type: 'agent' }] }, 'username name');
-    const agentStats = agents.map(agent => ({
-      username: agent.username,
-      name: agent.name || agent.username,
-      finalizados: agentInteractions.find(a => a._id === agent.username)?.finalizados || 0
-    }));
-
-    res.json(agentStats);
-  } catch (error) {
-    console.error('Error al procesar estadísticas por agente:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
-
-app.post('/get-performance-logs', async (req, res) => {
-  const { from, to } = req.body;
-
-  try {
-    const start = new Date(from);
-    const end = new Date(to);
-
-    const logs = await PerformanceLog.aggregate([
-      {
-        $match: {
-          timestamp: { $gte: start, $lte: end }
-        }
-      },
-      {
-        $group: {
-          _id: "$agent",
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
-    res.json({ success: true, data: logs });
-  } catch (err) {
-    console.error("❌ Error al obtener performance logs:", err);
-    res.status(500).json({ success: false, error: 'Error al obtener logs' });
-  }
-});
-
-app.post('/get-daily-performance', async (req, res) => {
-  const { from, to } = req.body;
-  try {
-    const fromDate = new Date(from);
-    fromDate.setHours(0, 0, 0, 0);
-    const toDate = new Date(to);
-    toDate.setHours(23, 59, 59, 999);
-
-    const logs = await PerformanceLog.aggregate([
-      {
-        $match: {
-          timestamp: {
-            $gte: fromDate,
-            $lte: toDate
-          }
-        }
-      },
-      {
-        $group: {
-          _id: {
-            day: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
-            agent: "$agent"
-          },
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { "_id.day": -1, count: -1 }
-      }
-    ]);
-
-    const formatted = logs.map(l => ({
-      date: l._id.day,
-      agent: l._id.agent,
-      count: l.count
-    }));
-
-    res.json({ success: true, logs: formatted });
-  } catch (e) {
-    console.error("❌ Error en /get-daily-performance", e);
-    res.status(500).json({ success: false });
-  }
-});
-
-app.get('/get-performance-data', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-
-  const { from, to } = req.query;
-  const fromDate = from ? new Date(from) : null;
-  const toDate = to ? new Date(to) : null;
-
-  try {
-    const agents = await Agent.find({ role: 'Admin' }, 'username name');
-    const closuresQuery = { ...(fromDate && { timestamp: { $gte: fromDate } }), ...(toDate && { timestamp: { $lte: toDate } }) };
-    const closures = await PerformanceLog.aggregate([
-      { $match: closuresQuery },
-      { $group: { _id: "$agent", count: { $sum: 1 } } }
-    ]);
-    const interactions = await PerformanceLog.aggregate([
-      { $match: closuresQuery },
-      { $group: { _id: "$agent", count: { $sum: 1 } } }
-    ]);
-
-    const agentData = agents.map(agent => {
-      const closureCount = closures.find(c => c._id === agent.username)?.count || 0;
-      const interactionCount = interactions.find(i => i._id === agent.username)?.count || 0;
-      return {
-        name: agent.name || agent.username,
-        closures: closureCount,
-        interactions: interactionCount
-      };
     });
 
-    const totalClosures = closures.reduce((sum, c) => sum + c.count, 0);
-    const totalInteractions = interactions.reduce((sum, i) => sum + i.count, 0);
+    let originalUserName = "";
 
-    res.json({ agents: agentData, totalClosures, totalInteractions });
-  } catch (err) {
-    console.error('❌ Error al obtener datos de rendimiento:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    function toggleEditInput() {
+      const currentUserSpan = document.getElementById("currentUser");
+      const input = document.getElementById("editNameInput");
+      const editBtn = document.getElementById("editBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+
+      originalUserName = currentUserSpan.textContent;
+      input.value = originalUserName;
+      currentUserSpan.style.display = "none";
+      input.style.display = "inline-block";
+      editBtn.style.display = "none";
+      saveBtn.style.display = "inline-block";
+      cancelBtn.style.display = "inline-block";
+    }
+
+    function saveNewName() {
+      const newName = document.getElementById("editNameInput").value.trim();
+      const currentUserSpan = document.getElementById("currentUser");
+
+      if (newName && selectedUserId) {
+        socket.emit('update username', { userId: selectedUserId, newUsername: newName });
+        currentUserSpan.textContent = newName;
+
+        const inboxName = document.querySelector(`#inboxUserName-${selectedUserId}`);
+        if (inboxName) inboxName.textContent = newName;
+      }
+
+      resetEditUI();
+    }
+
+    function cancelEdit() {
+      const input = document.getElementById("editNameInput");
+      const currentUserSpan = document.getElementById("currentUser");
+      currentUserSpan.textContent = originalUserName;
+      resetEditUI();
+    }
+
+    function resetEditUI() {
+      document.getElementById("currentUser").style.display = "inline-block";
+      document.getElementById("editNameInput").style.display = "none";
+      document.getElementById("saveBtn").style.display = "none";
+      document.getElementById("cancelBtn").style.display = "none";
+      document.getElementById("editBtn").style.display = "inline-block";
+    }
+
+    function toggleMenuPopup() {
+      const popup = document.getElementById("menuPopup");
+      popup.classList.toggle("active");
+
+      document.getElementById("filterPopup").classList.remove("active");
+    }
+
+    function toggleFilterPopup() {
+      const popup = document.getElementById("filterPopup");
+      popup.classList.toggle("active");
+
+      document.querySelectorAll('.filter-option').forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.dataset.value === currentFilter) {
+          opt.classList.add('selected');
+        }
+      });
+
+      document.getElementById("menuPopup").classList.remove("active");
+    }
+
+    function applyFilter(value) {
+      currentFilter = value;
+      document.getElementById("filterPopup").classList.remove("active");
+      renderUserList();
+    }
+
+    document.querySelectorAll('.filter-option').forEach(opt => {
+      opt.addEventListener('click', () => applyFilter(opt.dataset.value));
+    });
+
+    document.addEventListener("click", (e) => {
+      const menu = document.getElementById("menuPopup");
+      const filter = document.getElementById("filterPopup");
+      const hamburger = document.querySelector(".hamburger-btn");
+
+      if (
+        !menu.contains(e.target) &&
+        !filter.contains(e.target) &&
+        !hamburger.contains(e.target)
+      ) {
+        menu.classList.remove("active");
+        filter.classList.remove("active");
+      }
+    });
+
+    function openSettings() {
+      window.location.href = "/config.html";
+    }
+
+    function logOut() {
+      logoutAdmin();
+    }
+
+    function showFinalizePopup(userId) {
+      pendingFinalizeUserId = userId;
+      document.getElementById("finalizePopup").classList.add("active");
+    }
+
+    function closeFinalizePopup() {
+      pendingFinalizeUserId = null;
+      document.getElementById("finalizePopup").classList.remove("active");
+    }
+
+    function confirmFinalize() {
+      if (pendingFinalizeUserId) {
+        socket.emit("close chat", {
+  userId: pendingFinalizeUserId,
+  adminUsername: localStorage.getItem("adminUser")
+});
+        closeFinalizePopup();
+      }
+    }
+
+    function toggleNameEdit() {
+      document.getElementById("editNameContainer").style.display = "block";
+    }
+
+    function confirmPopupNameChange() {
+      const newName = document.getElementById("newPopupName").value.trim();
+      if (!newName) return;
+
+      document.getElementById("popupUser").textContent = newName;
+      socket.emit("update username", { userId: selectedUserId, newUsername: newName });
+
+      if (selectedUserId) {
+        selectedUsername = newName;
+        document.getElementById("currentUser").textContent = newName;
+        const chatItem = document.querySelector(`div[data-user-id="${selectedUserId}"] .username`);
+        if (chatItem) chatItem.textContent = newName;
+      }
+
+      document.getElementById("editNameContainer").style.display = "none";
+    }
+
+    const adminInput = document.getElementById('adminInput');
+    const quickList = document.getElementById('quickList');
+    let quickReplies = [];
+
+    fetch('/quick-replies')
+      .then(res => res.json())
+      .then(data => {
+        quickReplies = data;
+      });
+
+    adminInput.addEventListener('input', (e) => {
+      const value = e.target.value.trim();
+
+      if (value === '/') {
+        quickList.innerHTML = '';
+        quickReplies.forEach((msg, index) => {
+          const li = document.createElement('li');
+          li.textContent = `${msg.command} → ${msg.text}`;
+          li.style.marginBottom = '6px';
+          li.style.cursor = 'pointer';
+          li.addEventListener('click', () => {
+            adminInput.value = msg.text;
+            quickList.style.display = 'none';
+            ignoreNextAdminEcho = true;
+            sendAdminMessage();
+          });
+
+
+    const popupInput = document.getElementById('popupInput');
+    popupInput.addEventListener('input', (e) => {
+      const value = e.target.value.trim();
+      if (value === '/') {
+        quickList.innerHTML = '';
+        quickReplies.forEach((msg, index) => {
+          const li = document.createElement('li');
+          li.textContent = `${msg.command} → ${msg.text}`;
+          li.style.marginBottom = '6px';
+          li.style.cursor = 'pointer';
+          li.addEventListener('click', () => {
+            popupInput.value = msg.text;
+            quickList.style.display = 'none';
+            ignoreNextAdminEcho = true;
+            sendPopupMessage();
+          });
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          popupInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendPopupMessage();
+        }
+      } else {
+        quickList.style.display = 'none';
+      }
+    });
+    
+          quickList.appendChild(li);
+        });
+        quickList.style.display = 'block';
+      } else if (/^\/\d+$/.test(value)) {
+        const index = parseInt(value.slice(1), 10) - 1;
+        if (quickReplies[index]) {
+          adminInput.value = quickReplies[index].text;
+          quickList.style.display = 'none';
+          ignoreNextAdminEcho = true;
+          sendAdminMessage();
+        }
+      } else {
+        quickList.style.display = 'none';
+      }
+    });
+
+    const usernameInput = document.getElementById("adminUsername");
+    const passwordInput = document.getElementById("adminPassword");
+
+    usernameInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") submitLogin();
+    });
+
+    passwordInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") submitLogin();
+    });
+
+    adminInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendAdminMessage();
+      }
+    });
+  </script>
+<script>
+    const resizer = document.getElementById('resizer');
+const inbox = document.getElementById('userListContainer');
+const chatView = document.getElementById('chatArea');
+
+let isResizing = false;
+
+// Establecer ancho inicial solo en escritorio
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth >= 768) {
+    inbox.style.width = '300px'; // Ancho inicial fijo solo en escritorio
+  } else {
+    inbox.style.width = 'calc(100vw - 10px)'; // Forzamos el ancho en móvil
+    inbox.style.margin = '0 5px'; // Forzamos el margen en móvil
   }
 });
 
+resizer.addEventListener('mousedown', function(e) {
+  if (window.innerWidth < 768) return; // No permitir resize en móvil
+  isResizing = true;
+  document.body.style.cursor = 'col-resize';
+});
 
+document.addEventListener('mousemove', function(e) {
+  if (!isResizing) return;
+  const newWidth = e.clientX;
+  if (newWidth < 180 || newWidth > window.innerWidth - 300) return;
+  inbox.style.width = `${newWidth}px`;
+});
 
-// Endpoint seguro para obtener config desde el backend (opcional, no obligatorio)
-app.get("/get-panel-config", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ error: "No autorizado" });
+document.addEventListener('mouseup', function() {
+  isResizing = false;
+  document.body.style.cursor = 'default';
+});
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'928b333beff249f2',t:'MTc0MzM3NTM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>
+document.getElementById("chipsAmount").addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    document.querySelector(".add-btn").click();
   }
-
-  res.json({
-    domain: process.env.DOMAIN,
-    cashierId: process.env.CASHIER_ID,
-    authToken: process.env.AUTH_TOKEN,
-    apiToken: process.env.API_TOKEN
-  });
 });
-
-
-server.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
+</script><script>
+function showConfirm() {
+  document.getElementById("confirmPopup").style.display = "flex";
+}
+function hideConfirm() {
+  document.getElementById("confirmPopup").style.display = "none";
+}
+function confirmRemove() {
+  hideConfirm();
+  removeChips(); // Llama la función original
+}
+</script></body>
+<style>
+#confirmPopup {
+  display: none;
+  position: absolute;
+  top: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f1f1f;
+  border: 2px solid #FF3B00;
+  border-radius: 10px;
+  padding: 4px 8px;
+  color: white;
+  font-size: 12px;
+  z-index: 9999;
+  flex-direction: row;
+  align-items: center;
+}
+#confirmPopup button {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: white;
+  margin: 0 5px;
+  cursor: pointer;
+}
+.confirm-container {
+  position: relative;
+  display: inline-block;
+}
+</style></head></html>
