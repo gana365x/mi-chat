@@ -131,8 +131,8 @@ const agentSchema = new mongoose.Schema({
   name: String,
   password: String,
   type: { type: String },
-  role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' },
-  token: { type: String },  // NUEVO CAMPO DE TOKEN});
+  role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' }
+});
 
 const Agent = mongoose.model('Agent', agentSchema);
 
@@ -1174,49 +1174,4 @@ app.get("/get-panel-config", (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
-});
-
-
-// ✅ OBTENER TOKEN DE UN AGENTE
-app.get('/agent-token/:username', async (req, res) => {
-  const { username } = req.params;
-  try {
-    const agent = await Agent.findOne({ username });
-    if (!agent) {
-      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
-    res.json({ token: agent.token || null });
-  } catch (err) {
-    console.error("❌ Error al obtener token:", err);
-    res.status(500).json({ success: false, message: 'Error interno' });
-  }
-});
-
-
-// ✅ GUARDAR TOKEN DE UN AGENTE
-app.post('/agent-token', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.status(401).json({ success: false, message: 'No autorizado' });
-  }
-
-  const { username, newToken } = req.body;
-  if (!username || !newToken) {
-    return res.status(400).json({ success: false, message: 'Faltan datos' });
-  }
-
-  try {
-    const agent = await Agent.findOne({ username });
-    if (!agent) {
-      return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    }
-
-    agent.token = newToken;
-    await agent.save();
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error("❌ Error guardando token:", err);
-    res.status(500).json({ success: false, message: 'Error interno' });
-  }
 });
