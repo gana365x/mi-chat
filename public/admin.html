@@ -1799,72 +1799,73 @@
     let config = {};
 
     async function loadConfig() {
-      try {
-        const response = await fetch(`/get-panel-config?username=${localStorage.getItem("adminUser")}`, {
-          method: 'GET',
-          credentials: 'include'
-        });
-        if (!response.ok) throw new Error('No autorizado');
-        config = await response.json();
-        } catch (error) {
-        console.error('Error cargando config:', error);
-        config = { domain: '', cashierId: '', authToken: '', apiToken: '' };
-      }
-    }
+  try {
+    const response = await fetch(`/get-panel-config?username=${localStorage.getItem("adminUser")}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('No autorizado');
+    config = await response.json();
+    console.log('Configuración cargada:', config); // Para verificar que userId está llegando
+  } catch (error) {
+    console.error('Error cargando config:', error);
+    config = { domain: '', cashierId: '', authToken: '', apiToken: '', userId: '' };
+  }
+}
 
     let selectedUser = null;
 
     async function searchUser(loginToFind = null) {
-      await loadConfig(); // Asegurarse de que config esté cargado
-      const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
-      let foundUser = null;
-      const limit = 1000;
-      const batchSize = 20;
-      let offset = 0;
-      let hasMore = true;
+  await loadConfig(); // Asegurarse de que config esté cargado
+  const searchValue = (loginToFind || document.getElementById("userSearch").value).toLowerCase().trim();
+  let foundUser = null;
+  const limit = 1000;
+  const batchSize = 20;
+  let offset = 0;
+  let hasMore = true;
 
-      try {
-        while (hasMore && !foundUser) {
-          const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
-          const userPromises = offsets.map(async (batchOffset) => {
-            const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
-            try {
-              const res = await fetch(url, { method: "POST", body: "" });
-              if (!res.ok) return { users: [], offset: batchOffset };
-              const data = await res.json();
-              return { users: data.users || [], offset: batchOffset };
-            } catch {
-              return { users: [], offset: batchOffset };
-            }
-          });
-
-          const usersArrays = await Promise.all(userPromises);
-          for (const { users } of usersArrays) {
-            const userMatch = users.find(user => user.login?.toLowerCase() === searchValue);
-            if (userMatch) {
-              foundUser = userMatch;
-              break;
-            }
-            if (users.length === 0) {
-              hasMore = false;
-              break;
-            }
-          }
-          if (!foundUser) offset += batchSize;
+  try {
+    while (hasMore && !foundUser) {
+      const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
+      const userPromises = offsets.map(async (batchOffset) => {
+        const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&userId=${config.userId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
+        try {
+          const res = await fetch(url, { method: "POST", body: "" });
+          if (!res.ok) return { users: [], offset: batchOffset };
+          const data = await res.json();
+          return { users: data.users || [], offset: batchOffset };
+        } catch {
+          return { users: [], offset: batchOffset };
         }
+      });
 
-        const userBox = document.getElementById("userInfoBox");
-        if (foundUser) {
-          selectedUser = { id: foundUser.id, login: foundUser.login.toLowerCase().trim() };
-          renderUserBox(foundUser);
-        } else {
-          selectedUser = null;
-          userBox.innerHTML = "No se encontró ningún usuario con ese login.";
+      const usersArrays = await Promise.all(userPromises);
+      for (const { users } of usersArrays) {
+        const userMatch = users.find(user => user.login?.toLowerCase() === searchValue);
+        if (userMatch) {
+          foundUser = userMatch;
+          break;
         }
-      } catch {
-        document.getElementById("userInfoBox").innerHTML = "Error al buscar clientes.";
+        if (users.length === 0) {
+          hasMore = false;
+          break;
+        }
       }
+      if (!foundUser) offset += batchSize;
     }
+
+    const userBox = document.getElementById("userInfoBox");
+    if (foundUser) {
+      selectedUser = { id: foundUser.id, login: foundUser.login.toLowerCase().trim() };
+      renderUserBox(foundUser);
+    } else {
+      selectedUser = null;
+      userBox.innerHTML = "No se encontró ningún usuario con ese login.";
+    }
+  } catch {
+    document.getElementById("userInfoBox").innerHTML = "Error al buscar clientes.";
+  }
+}
 
     function renderUserBox(user) {
       document.getElementById("userInfoBox").innerHTML = `
@@ -1884,41 +1885,41 @@
     }
 
     async function sendChips(operation) {
-      await loadConfig(); // Asegurarse de que config esté cargado
-      const addBtn = document.querySelector(".add-btn");
-      const removeBtn = document.querySelector(".remove-btn");
-      const amountInput = document.getElementById("chipsAmount");
+  await loadConfig(); // Asegurarse de que config esté cargado
+  const addBtn = document.querySelector(".add-btn");
+  const removeBtn = document.querySelector(".remove-btn");
+  const amountInput = document.getElementById("chipsAmount");
 
-      if (!selectedUser) return;
+  if (!selectedUser) return;
 
-      const amount = amountInput.value;
-      if (!amount || amount <= 0) return;
+  const amount = amountInput.value;
+  if (!amount || amount <= 0) return;
 
-      addBtn.disabled = true;
-      removeBtn.disabled = true;
+  addBtn.disabled = true;
+  removeBtn.disabled = true;
 
-      const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
-      const body = `operation=${operation}&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
+  const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&userId=${config.userId}&response=js`;
+  const body = `operation=${operation}&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
 
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body
-        });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body
+    });
 
-        await res.json();
-        amountInput.value = "";
-        setTimeout(() => searchUser(selectedUser.login), 200);
-      } catch (err) {
-        console.error("Error en la solicitud:", err);
-      }
+    await res.json();
+    amountInput.value = "";
+    setTimeout(() => searchUser(selectedUser.login), 200);
+  } catch (err) {
+    console.error("Error en la solicitud:", err);
+  }
 
-      setTimeout(() => {
-        addBtn.disabled = false;
-        removeBtn.disabled = false;
-      }, 5000);
-    }
+  setTimeout(() => {
+    addBtn.disabled = false;
+    removeBtn.disabled = false;
+  }, 5000);
+}
 
     const resizer = document.getElementById('resizer');
     const inbox = document.getElementById('userListContainer');
