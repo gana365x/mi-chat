@@ -1,11 +1,12 @@
 
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Token Manager</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Token Manager</title>
+<style>
     body {
       font-family: Arial, sans-serif;
       background-color: #121212;
@@ -83,29 +84,32 @@
   </style>
 </head>
 <body>
+<label for="agentSelect">Seleccionar Agente:</label>
+<select id="agentSelect">
+<option value="">-- Selecciona un agente --</option>
+</select>
+<br/><br/>
 
-  <!-- Cuadro A: Generador de Token -->
-  <div class="box">
-    <h2>Generar Token</h2>
-    <input type="text" id="login" placeholder="Usuario" />
-    <input type="password" id="password" placeholder="Contraseña" />
-    <button onclick="generarToken()">Generar</button>
-    <div class="result" id="tokenResult">Token generado aparecerá aquí.</div>
-    <button class="copy-icon" onclick="copiarToken()">📋 Copiar</button>
-  </div>
-
-  <!-- Cuadro B: Asignar Token a un admin -->
-  <div class="box">
-    <h2>Asignar Token a Admin</h2>
-    <select id="adminSelect">
-      <option value="">Cargando agentes...</option>
-    </select>
-    <input type="text" id="manualToken" placeholder="Pegar token aquí" />
-    <button onclick="asignarToken()">Asignar Token</button>
-    <div class="result" id="asignacionResult"></div>
-  </div>
-
-  <script>
+<!-- Cuadro A: Generador de Token -->
+<div class="box">
+<h2>Generar Token</h2>
+<input id="login" placeholder="Usuario" type="text"/>
+<input id="password" placeholder="Contraseña" type="password"/>
+<button onclick="generarToken()">Generar</button>
+<div class="result" id="tokenResult">Token generado aparecerá aquí.</div>
+<button class="copy-icon" onclick="copiarToken()">📋 Copiar</button>
+</div>
+<!-- Cuadro B: Asignar Token a un admin -->
+<div class="box">
+<h2>Asignar Token a Admin</h2>
+<select id="adminSelect">
+<option value="">Cargando agentes...</option>
+</select>
+<input id="manualToken" placeholder="Pegar token aquí" type="text"/>
+<button onclick="asignarToken()">Asignar Token</button>
+<div class="result" id="asignacionResult"></div>
+</div>
+<script>
     let ultimoToken = "";
 
     function copiarToken() {
@@ -184,6 +188,30 @@
 
     cargarAgentes();
   </script>
+<div id="tokenDisplay"></div><script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const select = document.getElementById("agentSelect");
+  try {
+    const response = await fetch("/api/agents");
+    const agents = await response.json();
+    agents.forEach(agent => {
+      const option = document.createElement("option");
+      option.value = agent.login;
+      option.textContent = agent.login;
+      select.appendChild(option);
+    });
 
-</body>
+    // Mostrar token actual si ya había uno
+    select.addEventListener("change", async () => {
+      const login = select.value;
+      if (!login) return;
+      const res = await fetch(`/api/token?username=${login}`);
+      const data = await res.json();
+      document.getElementById("tokenDisplay").textContent = "Token actual: " + (data.token || "No asignado");
+    });
+  } catch (err) {
+    console.error("Error cargando agentes", err);
+  }
+});
+</script></body>
 </html>
