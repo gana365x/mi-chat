@@ -48,6 +48,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+
 function validateAuthInput(username, password) {
   if (
     !username ||
@@ -58,46 +59,18 @@ function validateAuthInput(username, password) {
     password.length < 4
   ) {
     return false;
-
+  }
   return true;
+}
 
 function isValidToken(token) {
   return token === process.env.SECRET_KEY;
+}
 
 async function isSuperAdmin(username) {
   const agent = await Agent.findOne({ username });
   return agent && (agent.role === 'SuperAdmin' || agent.type === 'superadmin');
-
-// Protección para superadmin.html
-app.get('/superadmin.html', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-
-  // Verificar si el usuario es SuperAdmin
-  const username = req.query.username; // Podrías pasar el username en la cookie o en otra forma segura
-  if (!username || !(await isSuperAdmin(username))) {
-    return res.redirect('/index.html');
-
-  res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
-});
-
-app.get('/admin.html', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-app.get('/agent-performance.html', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-
-  res.sendFile(path.join(__dirname, 'public', 'agent-performance.html'));
-});
-
+}
 app.get('/config.html', (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) {
