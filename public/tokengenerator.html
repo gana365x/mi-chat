@@ -107,7 +107,6 @@
   <!-- Cuadro A: Generador de Token -->
   <div class="box">
     <h2>Generar Token</h2>
-    <input type="text" id="masterToken" placeholder="Token Maestro (SuperAdmin)" />
     <input type="text" id="login" placeholder="Usuario del Casino" />
     <input type="password" id="password" placeholder="Contraseña del Casino" />
     <button onclick="generarToken()">Generar</button>
@@ -145,17 +144,15 @@
     }
 
     async function generarToken() {
-      const masterToken = document.getElementById("masterToken").value.trim();
       const login = document.getElementById("login").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      if (!masterToken || !login || !password) {
-        document.getElementById("tokenResult").innerHTML = "⚠️ Ingresa token maestro, usuario y contraseña.";
+      if (!login || !password) {
+        document.getElementById("tokenResult").innerHTML = "⚠️ Ingresa usuario y contraseña.";
         return;
       }
 
       const formData = new FormData();
-      formData.append("api_token", masterToken); // Usar el token maestro del SuperAdmin
       formData.append("login", login);
       formData.append("password", password);
 
