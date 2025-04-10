@@ -109,7 +109,9 @@ const agentSchema = new mongoose.Schema({
   password: String,
   type: { type: String },
   role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' },
-  token: { type: String, default: null } // Campo para el token
+  token: { type: String, default: null }, // Campo para el token
+  userId: { type: String, default: null }, // Nuevo campo para User ID
+  cashierId: { type: String, default: null } // Nuevo campo para Cashier ID
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
@@ -533,12 +535,16 @@ app.post('/update-agent-token', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
 
-  const { username, token: newToken } = req.body;
+  const { username, userId, cashierId, token: newToken } = req.body;
 
-  if (!username || !newToken) return res.status(400).json({ success: false, message: 'Faltan datos' });
+  if (!username || !userId || !cashierId || !newToken) return res.status(400).json({ success: false, message: 'Faltan datos' });
 
   try {
-    const agent = await Agent.findOneAndUpdate({ username }, { token: newToken }, { new: true });
+    const agent = await Agent.findOneAndUpdate(
+      { username },
+      { token: newToken, userId, cashierId },
+      { new: true }
+    );
     if (!agent) return res.status(404).json({ success: false, message: 'Agente no encontrado' });
     res.status(200).json({ success: true });
   } catch (err) {
@@ -792,9 +798,9 @@ app.get("/get-panel-config", async (req, res) => {
 
     res.json({
       domain: process.env.DOMAIN,
-      cashierId: process.env.CASHIER_ID,
-      authToken: agent.token, // TOKEN único del admin para búsquedas y rastreo
-      apiToken: process.env.API_TOKEN // API_TOKEN fijo del .env para modificaciones
+      cashierId: agent.cashierId || process.env.CASHIER_ID, // Usa el cashierId del agente
+      authToken: agent.token, // TOKEN único del admin
+      apiToken: process.env.API_TOKEN // API_TOKEN fijo del .env
     });
   } catch (err) {
     console.error('❌ Error en /get-panel-config:', err);
