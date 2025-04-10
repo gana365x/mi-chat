@@ -1829,7 +1829,7 @@
           const userPromises = offsets.map(async (batchOffset) => {
             const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
             try {
-              const res = await fetch(url, { method: "POST" });
+              const res = await fetch(url, { method: "POST", body: "" });
               if (!res.ok) return { users: [], offset: batchOffset };
               const data = await res.json();
               return { users: data.users || [], offset: batchOffset };
