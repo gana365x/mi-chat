@@ -1713,9 +1713,19 @@
     const quickList = document.getElementById('quickList');
     let quickReplies = [];
 
-    fetch('/quick-replies')
-      .then(res => res.json())
-      .then(data => quickReplies = data);
+    fetch('/quick-replies', {
+  method: 'GET',
+  credentials: 'include'
+})
+  .then(res => {
+    if (!res.ok) throw new Error('No autorizado');
+    return res.json();
+  })
+  .then(data => {
+    quickReplies = data;
+    console.log('📜 Respuestas rápidas cargadas:', quickReplies);
+  })
+  .catch(err => console.error('❌ Error cargando respuestas rápidas:', err));
 
     adminInput.addEventListener('input', (e) => {
       const value = e.target.value.trim();
