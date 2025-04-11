@@ -109,7 +109,9 @@ const agentSchema = new mongoose.Schema({
   password: String,
   type: { type: String },
   role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' },
-  apiKey: { type: String, default: null } // Campo para la API_KEY (encriptada)
+  apiKey: { type: String, default: null }, // Campo para la API_KEY (encriptada)
+  userId: { type: String, default: null }, // Restauramos el campo userId
+  cashierId: { type: String, default: null } // Restauramos el campo cashierId
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
@@ -523,9 +525,9 @@ app.post('/agents', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
 
-  const { username, password, role, apiKey } = req.body;
+  const { username, password, role, apiKey, userId, cashierId } = req.body;
 
-  if (!username || !password || !role || !apiKey || !['Admin', 'SuperAdmin'].includes(role)) {
+  if (!username || !password || !role || !apiKey || !userId || !cashierId || !['Admin', 'SuperAdmin'].includes(role)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
@@ -535,7 +537,7 @@ app.post('/agents', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedApiKey = await bcrypt.hash(apiKey, 10);
-    const newAgent = new Agent({ username, password: hashedPassword, role, apiKey: hashedApiKey });
+    const newAgent = new Agent({ username, password: hashedPassword, role, apiKey: hashedApiKey, userId, cashierId });
     await newAgent.save();
 
     res.status(201).json({ success: true, message: 'Agente creado correctamente' });
@@ -790,8 +792,10 @@ app.get("/get-panel-config", async (req, res) => {
 
     res.json({
       domain: process.env.DOMAIN,
+      cashierId: agent.cashierId || process.env.CASHIER_ID, // Restauramos cashierId
       authToken: process.env.API_TOKEN, // Usa el API_TOKEN del .env
-      apiToken: agent.apiKey || process.env.API_TOKEN // Usa la API_KEY del subusuario
+      apiToken: agent.apiKey || process.env.API_TOKEN, // Usa la API_KEY del subusuario
+      userId: agent.userId // Restauramos userId
     });
   } catch (err) {
     console.error('❌ Error en /get-panel-config:', err);
