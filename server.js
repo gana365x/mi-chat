@@ -38,8 +38,11 @@ const io = socketIo(server, {
     allowedHeaders: ['Content-Type'],
     credentials: true
   },
-  transports: process.env.NODE_ENV === 'production' ? ['polling'] : ['websocket', 'polling'], // Usar solo polling en producción
-  allowEIO3: true
+  transports: process.env.NODE_ENV === 'production' ? ['polling', 'websocket'] : ['websocket', 'polling'], // Permitir ambos en producción
+  allowEIO3: true,
+  pingTimeout: 20000, // Aumentar el tiempo de espera para ping
+  pingInterval: 25000, // Intervalo para enviar pings
+  maxHttpBufferSize: 1e6 // 1 MB, ajustar según necesidades
 });
 
 const PORT = process.env.PORT || 3000;
