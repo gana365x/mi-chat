@@ -1828,14 +1828,24 @@
     while (hasMore && !foundUser) {
       const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
       const userPromises = offsets.map(async (batchOffset) => {
-        const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&userId=${config.userId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
+        const url = `${config.domain}/index.php?act=admin&area=users&response=js&cashier=all&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
+        const body = `token=${config.authToken}`;
         try {
-          const res = await fetch(url, { method: "POST", body: "" });
-          if (!res.ok) return { users: [], offset: batchOffset };
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body
+          });
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Error ${res.status}: ${errorText}`);
+          }
           const data = await res.json();
+          console.log("Respuesta del casino:", data); // Para depurar
           return { users: data.users || [], offset: batchOffset };
-        } catch {
-          return { users: [], offset: batchOffset };
+        } catch (err) {
+          console.error("Error en la solicitud al casino:", err);
+          throw err; // Propaga el error para que se muestre en el userInfoBox
         }
       });
 
@@ -1862,8 +1872,8 @@
       selectedUser = null;
       userBox.innerHTML = "No se encontró ningún usuario con ese login.";
     }
-  } catch {
-    document.getElementById("userInfoBox").innerHTML = "Error al buscar clientes.";
+  } catch (err) {
+    document.getElementById("userInfoBox").innerHTML = `Error al buscar clientes: ${err.message}`;
   }
 }
 
