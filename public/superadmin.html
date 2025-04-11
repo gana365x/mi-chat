@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Super Admin - Gestión de Accesos</title>
   <style>
+    /* Variables CSS */
     :root {
       --primary-color: #FF3B00;
       --secondary-color: #ffa500;
@@ -21,6 +23,7 @@
       --shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
 
+    /* Estilos base */
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
@@ -32,6 +35,7 @@
       align-items: center;
     }
 
+    /* Estilos específicos para el login box */
     #loginBox {
       position: fixed;
       top: 0;
@@ -56,6 +60,7 @@
       max-width: 400px;
     }
 
+    /* Estilos para el main box */
     .main-box {
       background: var(--bg-darker);
       border-radius: var(--border-radius-lg);
@@ -122,33 +127,110 @@
       background-color: var(--bg-input);
     }
 
+    /* Desktop (≥1024px) */
     @media (min-width: 1024px) {
-      body { padding: 30px; overflow-x: hidden; }
-      .main-box { width: 900px; padding: 40px; }
-      .home-buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
-      .home-buttons button { font-size: 16px; padding: 15px; }
-      th, td { padding: 15px; }
+      body {
+        padding: 30px;
+        overflow-x: hidden;
+      }
+
+      .main-box {
+        width: 900px;
+        padding: 40px;
+      }
+
+      .home-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+      }
+
+      .home-buttons button {
+        font-size: 16px;
+        padding: 15px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 15px;
+      }
     }
 
+    /* Tablet (≥768px y <1024px) */
     @media (min-width: 768px) and (max-width: 1023px) {
-      .main-box { width: 90%; padding: 25px; }
-      .home-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-      .home-buttons button { font-size: 14px; padding: 12px; }
-      th, td { padding: 12px; }
+      .main-box {
+        width: 90%;
+        padding: 25px;
+      }
+
+      .home-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+
+      .home-buttons button {
+        font-size: 14px;
+        padding: 12px;
+      }
+
+      table {
+        font-size: 13px;
+      }
+
+      th, td {
+        padding: 12px;
+      }
     }
 
+    /* Mobile (<768px) */
     @media (max-width: 767px) {
-      #loginBox .login-content { padding: 20px; }
-      .main-box { margin: 0; width: 100%; padding: 15px; border-radius: 0; border-left: none; border-right: none; }
-      .home-buttons { display: grid; grid-template-columns: 1fr; gap: 10px; }
-      .home-buttons button { font-size: 14px; padding: 12px; }
+      #loginBox .login-content {
+        padding: 20px;
+      }
+
+      .main-box {
+        margin: 0;
+        width: 100%;
+        padding: 15px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+
+      .home-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .home-buttons button {
+        font-size: 14px;
+        padding: 12px;
+      }
+
       h1 { font-size: 24px; }
       h2 { font-size: 20px; }
       h3 { font-size: 18px; }
-      th, td { padding: 8px; }
-      .delete-btn { padding: 6px; font-size: 12px; }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+
+      .delete-btn, .edit-btn {
+        padding: 6px;
+        font-size: 12px;
+      }
     }
 
+    /* Estilos para popups */
     .popup-overlay {
       position: fixed;
       top: 0;
@@ -171,7 +253,6 @@
       border-radius: var(--border-radius-lg);
       border: 2px solid var(--primary-color);
       box-shadow: 0 0 20px rgba(255, 59, 0, 0.3);
-      padding: 20px;
     }
 
     .input-group {
@@ -198,7 +279,7 @@
       background: var(--bg-darker);
     }
 
-    .delete-btn {
+    .delete-btn, .edit-btn {
       min-width: 32px;
       height: 32px;
       display: flex;
@@ -232,7 +313,6 @@
       <button onclick="showSection('agents')">👥 Agentes</button>
       <button onclick="showSection('customize')">🎨 Editar</button>
       <button onclick="window.location.href='/agent-performance.html'">📈 Rendimiento Agentes</button>
-      <button onclick="window.location.href='/tokengenerator.html'">⚙️ AdminConfig</button>
     </div>
 
     <!-- Sección Home -->
@@ -244,29 +324,21 @@
     <!-- Sección de agentes -->
     <div id="section-agents" style="display:none;">
       <h2>Crear nuevo agente</h2>
-<div class="input-group">
-  <input type="text" id="newLogin" placeholder="Usuario del agente" required>
-  <label for="newLogin">Usuario</label>
-</div>
-<div class="input-group">
-  <input type="password" id="newPassword" placeholder="Contraseña" required>
-  <label for="newPassword">Contraseña</label>
-</div>
-<select id="newRole">
-  <option value="Admin">Admin</option>
-  <option value="SuperAdmin">SuperAdmin</option>
-</select>
-<div class="input-group">
-  <input type="text" id="newApiKey" placeholder="API_KEY del agente" required>
-  <label for="newApiKey">API_KEY</label>
-</div>
-<button onclick="createAgent()">Crear</button>
-<p id="createError" style="color: red; display: none;"></p>
+      <input type="text" id="newLogin" placeholder="Login del agente">
+      <input type="text" id="newName" placeholder="Nombre visible del agente">
+      <input type="password" id="newPassword" placeholder="Contraseña">
+      <select id="newRole">
+        <option value="Admin">Admin</option>
+        <option value="SuperAdmin">SuperAdmin</option>
+      </select>
+      <button onclick="createAgent()">Crear</button>
+      <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
       <table>
         <thead>
           <tr>
             <th>Usuario</th>
+            <th>Nombre Visible</th>
             <th>Rol</th>
             <th>Acciones</th>
           </tr>
@@ -288,9 +360,27 @@
     <div class="popup-box">
       <div class="popup-icon">⚠️</div>
       <p class="popup-text">¿Seguro que querés eliminar este agente?</p>
-      <div class="popup-actions" style="display: flex; justify-content: space-around; gap: 20px;">
-        <button class="popup-btn confirm" onclick="confirmDelete()" style="background-color: #34C759; padding: 10px 20px; border-radius: 8px;">✔</button>
-        <button class="popup-btn cancel" onclick="closeDeletePopup()" style="background-color: #FF3B30; padding: 10px 20px; border-radius: 8px;">✖</button>
+      <div class="popup-actions">
+        <button class="popup-btn confirm" onclick="confirmDelete()">✔</button>
+        <button class="popup-btn cancel" onclick="closeDeletePopup()">✖</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP EDITAR AGENTE -->
+  <div id="editPopup" class="popup-overlay">
+    <div class="popup-box">
+      <div class="popup-icon">✏️</div>
+      <p class="popup-text">Editar agente</p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+        <input type="text" id="editAgentName" placeholder="Nuevo nombre visible" 
+               style="padding: 8px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+        <input type="password" id="editAgentPassword" placeholder="Nueva contraseña (opcional)" 
+               style="padding: 8px; border-radius: 6px; border: 2px solid #FF3B00; background: #1a1a1a; color: white;" />
+      </div>
+      <div class="popup-actions" style="margin-top: 15px;">
+        <button class="popup-btn confirm" onclick="confirmEdit()">✔</button>
+        <button class="popup-btn cancel" onclick="closeEditPopup()">✖</button>
       </div>
     </div>
   </div>
@@ -347,55 +437,56 @@
           const row = document.createElement('tr');
           row.innerHTML = `
             <td><strong>${agent.username}</strong></td>
-            <td>${agent.role}</td>
+            <td id="agent-name-${agent.username}">${agent.name || 'Sin nombre'}</td>
+            <td>${agent.role || 'Admin'}</td>
             <td style="display: flex; gap: 5px;">
+              <button class="edit-btn" onclick="openEditPopup('${agent.username}', '${agent.name || ''}')">✏️</button>
               <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
             </td>
           `;
           table.appendChild(row);
         });
-      })
-      .catch(err => console.error("Error cargando agentes:", err));
+      });
     }
 
     function createAgent() {
-  const login = document.getElementById('newLogin').value.trim();
-  const password = document.getElementById('newPassword').value.trim();
-  const role = document.getElementById('newRole').value;
-  const apiKey = document.getElementById('newApiKey').value.trim();
+      const login = document.getElementById('newLogin').value.trim();
+      const name = document.getElementById('newName').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      const role = document.getElementById('newRole').value;
 
-  if (!login || !password || !role || !apiKey) {
-    document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
-    document.getElementById('createError').style.display = 'block';
-    return;
-  }
+      if (!login || !name || !password || !role) {
+        document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+        document.getElementById('createError').style.display = 'block';
+      }
 
-  fetch('https://mi-chat-9uti.onrender.com/agents', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ username: login, password, role, apiKey })
-  })
-  .then(res => {
-    if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
-    return res.json();
-  })
-  .then(() => {
-    document.getElementById('newLogin').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('newRole').value = 'Admin';
-    document.getElementById('newApiKey').value = '';
-    document.getElementById('createError').style.display = 'none';
-    loadAgents();
-  })
-  .catch(err => {
-    console.error("Error al crear agente:", err);
-    document.getElementById('createError').textContent = err.message || 'Error al crear agente';
-    document.getElementById('createError').style.display = 'block';
-  });
-}
+      fetch('https://mi-chat-9uti.onrender.com/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username: login, name, password, role })
+      })
+      .then(res => {
+        if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
+        return res.json();
+      })
+      .then(() => {
+        document.getElementById('newLogin').value = '';
+        document.getElementById('newName').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('newRole').value = 'Admin';
+        document.getElementById('createError').style.display = 'none';
+        loadAgents();
+      })
+      .catch(err => {
+        console.error("Error al crear agente:", err);
+        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+        document.getElementById('createError').style.display = 'block';
+      });
+    }
 
     let selectedUsernameToDelete = null;
+    let selectedUsernameToEdit = null;
 
     function openDeletePopup(username) {
       selectedUsernameToDelete = username;
@@ -416,9 +507,50 @@
       .then(() => {
         loadAgents();
         closeDeletePopup();
-      })
-      .catch(err => console.error("Error eliminando agente:", err));
+      });
     }
+
+    function openEditPopup(username, name) {
+      selectedUsernameToEdit = username;
+      document.getElementById("editAgentName").value = name || '';
+      document.getElementById("editAgentPassword").value = '';
+      document.getElementById("editPopup").classList.add("active");
+    }
+
+    function closeEditPopup() {
+      selectedUsernameToEdit = null;
+      document.getElementById("editPopup").classList.remove("active");
+    }
+
+    function confirmEdit() {
+      const newName = document.getElementById("editAgentName").value.trim();
+      const newPass = document.getElementById("editAgentPassword").value.trim();
+
+      if (!newName) return alert("El nombre no puede estar vacío.");
+
+      const body = { name: newName };
+      if (newPass) body.password = newPass;
+
+      fetch(`https://mi-chat-9uti.onrender.com/agents/${selectedUsernameToEdit}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        loadAgents();
+        closeEditPopup();
+      })
+      .catch(() => alert("Error al editar agente"));
+    }
+
+    socket.on('update username', (data) => {
+      console.log('Evento update username recibido en superadmin:', data);
+      const { userId, newUsername } = data;
+      const agentRow = document.getElementById(`agent-name-${userId}`);
+      if (agentRow) agentRow.textContent = newUsername;
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       const userInput = document.getElementById('superUsername');
@@ -431,5 +563,5 @@
       });
     });
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92b641ef5fe2c006',t:'MTc0MzgyNjg3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
