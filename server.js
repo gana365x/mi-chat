@@ -180,7 +180,9 @@ async function getAllChatsSorted() {
         lastMessage: { $first: "$$ROOT" }
       }
     }
-  ], { allowDiskUse: true }); // Habilitar el uso de disco
+  ], { allowDiskUse: true });
+
+  console.log('📜 Resultado de la agregación (lastMessages):', lastMessages);
 
   const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
     const savedName = await UserName.findOne({ userId: _id });
@@ -193,6 +195,8 @@ async function getAllChatsSorted() {
       isClosed: !!isClosed
     };
   }));
+
+  console.log('📜 Chats ordenados (sortedChats):', sortedChats);
 
   return sortedChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 }
@@ -265,9 +269,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('admin connected', async () => {
-    socket.join('admins');
-    socket.emit('user list', await getAllChatsSorted());
-  });
+  socket.join('admins');
+  const chats = await getAllChatsSorted();
+  console.log('📜 Enviando lista de chats al cliente:', chats);
+  socket.emit('user list', chats);
+});
 
   socket.on('chat message', async (data) => {
     if (!data.userId || !data.sender || !data.message) return;
