@@ -1161,10 +1161,28 @@
     <script src="/socket.io/socket.io.js"></script>
   <script>
     let systemTimezone = "America/Argentina/Buenos_Aires";
+    
     const socket = io('https://mi-chat-9uti.onrender.com', {
   withCredentials: true,
-  transports: ['polling'] // Forzar polling en el cliente también
+  transports: ['polling', 'websocket'], // Permitir ambos transportes
+  reconnection: true, // Habilitar reconexión automática
+  reconnectionAttempts: 10, // Intentar reconectar 10 veces
+  reconnectionDelay: 1000, // Esperar 1 segundo entre intentos
+  reconnectionDelayMax: 5000 // Máximo 5 segundos entre intentos
 });
+
+socket.on('connect_error', (err) => {
+  console.error('❌ Error de conexión con socket.io:', err);
+});
+
+socket.on('reconnect', (attempt) => {
+  console.log('✅ Reconectado a socket.io después de', attempt, 'intentos');
+});
+
+socket.on('reconnect_error', (err) => {
+  console.error('❌ Error al intentar reconectar con socket.io:', err);
+});
+    
     let selectedUserId = null;
     let selectedUsername = null;
     const localChatHistory = {};
