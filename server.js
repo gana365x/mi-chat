@@ -488,6 +488,21 @@ app.get('/agents', async (req, res) => {
   }
 });
 
+app.get('/get-agent-apikey', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
+
+  const username = req.query.username;
+  try {
+    const agent = await Agent.findOne({ username });
+    if (!agent) return res.status(404).json({ success: false, message: 'Agente no encontrado' });
+    res.json({ apiKey: agent.apiKey || 'No asignada' });
+  } catch (err) {
+    console.error('❌ Error obteniendo API_KEY:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
 app.delete('/agents/:username', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
