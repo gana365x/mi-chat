@@ -109,9 +109,7 @@ const agentSchema = new mongoose.Schema({
   password: String,
   type: { type: String },
   role: { type: String, enum: ['Admin', 'SuperAdmin'], default: 'Admin' },
-  token: { type: String, default: null }, // Campo para el token
-  userId: { type: String, default: null }, // Nuevo campo para User ID
-  cashierId: { type: String, default: null } // Nuevo campo para Cashier ID
+  apiKey: { type: String, default: null } // Campo para la API_KEY (encriptada)
 });
 
 const Agent = mongoose.model('Agent', agentSchema);
@@ -510,9 +508,9 @@ app.post('/agents', async (req, res) => {
   const token = req.cookies.token;
   if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
 
-  const { username, password, role } = req.body;
+  const { username, password, role, apiKey } = req.body;
 
-  if (!username || !password || !role || !['Admin', 'SuperAdmin'].includes(role)) {
+  if (!username || !password || !role || !apiKey || !['Admin', 'SuperAdmin'].includes(role)) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
@@ -521,56 +519,13 @@ app.post('/agents', async (req, res) => {
     if (existingAgent) return res.status(400).json({ success: false, message: 'El usuario ya existe' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAgent = new Agent({ username, password: hashedPassword, role });
+    const hashedApiKey = await bcrypt.hash(apiKey, 10);
+    const newAgent = new Agent({ username, password: hashedPassword, role, apiKey: hashedApiKey });
     await newAgent.save();
 
     res.status(201).json({ success: true, message: 'Agente creado correctamente' });
   } catch (err) {
     console.error('❌ Error al crear agente:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.post('/update-agent-token', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
-
-  const { username, token: newToken } = req.body;
-
-  if (!username || !newToken) return res.status(400).json({ success: false, message: 'Faltan datos' });
-
-  try {
-    const agent = await Agent.findOneAndUpdate(
-      { username },
-      { token: newToken },
-      { new: true }
-    );
-    if (!agent) return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('❌ Error actualizando token:', err);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-});
-
-app.post('/update-agent-ids', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) return res.status(401).json({ success: false, message: 'No autorizado' });
-
-  const { username, userId, cashierId } = req.body;
-
-  if (!username || !userId || !cashierId) return res.status(400).json({ success: false, message: 'Faltan datos' });
-
-  try {
-    const agent = await Agent.findOneAndUpdate(
-      { username },
-      { userId, cashierId },
-      { new: true }
-    );
-    if (!agent) return res.status(404).json({ success: false, message: 'Agente no encontrado' });
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('❌ Error actualizando IDs:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
@@ -820,10 +775,8 @@ app.get("/get-panel-config", async (req, res) => {
 
     res.json({
       domain: process.env.DOMAIN,
-      cashierId: agent.cashierId || process.env.CASHIER_ID, // Usa el cashierId del agente
-      authToken: agent.token, // TOKEN único del admin
-      apiToken: process.env.API_TOKEN, // API_TOKEN fijo del .env
-      userId: agent.userId // Agrega el userId del agente
+      authToken: process.env.API_TOKEN, // Usa el API_TOKEN del .env
+      apiToken: agent.apiKey || process.env.API_TOKEN // Usa la API_KEY del subusuario
     });
   } catch (err) {
     console.error('❌ Error en /get-panel-config:', err);
