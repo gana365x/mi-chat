@@ -243,14 +243,24 @@
     <!-- Sección de agentes -->
     <div id="section-agents" style="display:none;">
       <h2>Crear nuevo agente</h2>
-      <input type="text" id="newLogin" placeholder="Usuario del agente">
-      <input type="password" id="newPassword" placeholder="Contraseña">
-      <select id="newRole">
-        <option value="Admin">Admin</option>
-        <option value="SuperAdmin">SuperAdmin</option>
-      </select>
-      <button onclick="createAgent()">Crear</button>
-      <p id="createError" style="color: red; display: none;"></p>
+<div class="input-group">
+  <input type="text" id="newLogin" placeholder="Usuario del agente" required>
+  <label for="newLogin">Usuario</label>
+</div>
+<div class="input-group">
+  <input type="password" id="newPassword" placeholder="Contraseña" required>
+  <label for="newPassword">Contraseña</label>
+</div>
+<select id="newRole">
+  <option value="Admin">Admin</option>
+  <option value="SuperAdmin">SuperAdmin</option>
+</select>
+<div class="input-group">
+  <input type="text" id="newApiKey" placeholder="API_KEY del agente" required>
+  <label for="newApiKey">API_KEY</label>
+</div>
+<button onclick="createAgent()">Crear</button>
+<p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
       <table>
         <thead>
@@ -348,39 +358,41 @@
     }
 
     function createAgent() {
-      const login = document.getElementById('newLogin').value.trim();
-      const password = document.getElementById('newPassword').value.trim();
-      const role = document.getElementById('newRole').value;
+  const login = document.getElementById('newLogin').value.trim();
+  const password = document.getElementById('newPassword').value.trim();
+  const role = document.getElementById('newRole').value;
+  const apiKey = document.getElementById('newApiKey').value.trim();
 
-      if (!login || !password || !role) {
-        document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
-        document.getElementById('createError').style.display = 'block';
-        return;
-      }
+  if (!login || !password || !role || !apiKey) {
+    document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
+    document.getElementById('createError').style.display = 'block';
+    return;
+  }
 
-      fetch('https://mi-chat-9uti.onrender.com/agents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username: login, password, role })
-      })
-      .then(res => {
-        if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
-        return res.json();
-      })
-      .then(() => {
-        document.getElementById('newLogin').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('newRole').value = 'Admin';
-        document.getElementById('createError').style.display = 'none';
-        loadAgents();
-      })
-      .catch(err => {
-        console.error("Error al crear agente:", err);
-        document.getElementById('createError').textContent = err.message || 'Error al crear agente';
-        document.getElementById('createError').style.display = 'block';
-      });
-    }
+  fetch('https://mi-chat-9uti.onrender.com/agents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username: login, password, role, apiKey })
+  })
+  .then(res => {
+    if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
+    return res.json();
+  })
+  .then(() => {
+    document.getElementById('newLogin').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('newRole').value = 'Admin';
+    document.getElementById('newApiKey').value = '';
+    document.getElementById('createError').style.display = 'none';
+    loadAgents();
+  })
+  .catch(err => {
+    console.error("Error al crear agente:", err);
+    document.getElementById('createError').textContent = err.message || 'Error al crear agente';
+    document.getElementById('createError').style.display = 'block';
+  });
+}
 
     let selectedUsernameToDelete = null;
 
