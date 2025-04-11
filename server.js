@@ -174,34 +174,45 @@ async function incrementPerformance(agentUsername) {
 }
 
 async function getAllChatsSorted() {
-  const lastMessages = await ChatMessage.aggregate([
-    { $match: { sender: { $ne: 'System' } } },
-    { $sort: { timestamp: -1 } },
-    {
-      $group: {
-        _id: "$userId",
-        lastMessage: { $first: "$$ROOT" }
+  try {
+    const lastMessages = await ChatMessage.aggregate([
+      { $match: { sender: { $ne: 'System' } } },
+      { $sort: { timestamp: -1 } },
+      {
+        $group: {
+          _id: "$userId",
+          lastMessage: { $first: "$$ROOT" }
+        }
       }
-    }
-  ], { allowDiskUse: true });
+    ], { allowDiskUse: true });
 
-  console.log('📜 Resultado de la agregación (lastMessages):', lastMessages);
+    console.log('📜 Resultado de la agregación (lastMessages):', lastMessages);
 
-  const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
-    const savedName = await UserName.findOne({ userId: _id });
-    const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
-    const isClosed = await ChatMessage.findOne({ userId: _id, status: 'closed' });
-    return {
-      userId: _id,
-      username: username,
-      lastMessageTime: lastMessage.timestamp,
-      isClosed: !!isClosed
-    };
-  }));
+    const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
+      try {
+        const savedName = await UserName.findOne({ userId: _id });
+        const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
+        const isClosed = await ChatMessage.findOne({ userId: _id, status: 'closed' });
+        return {
+          userId: _id,
+          username: username,
+          lastMessageTime: lastMessage.timestamp,
+          isClosed: !!isClosed
+        };
+      } catch (err) {
+        console.error(`❌ Error procesando chat para userId ${_id}:`, err);
+        return null; // Devolver null para este chat y continuar con los demás
+      }
+    }));
 
-  console.log('📜 Chats ordenados (sortedChats):', sortedChats);
+    const filteredChats = sortedChats.filter(chat => chat !== null); // Filtrar chats nulos
+    console.log('📜 Chats ordenados (filteredChats):', filteredChats);
 
-  return sortedChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+    return filteredChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+  } catch (err) {
+    console.error('❌ Error en getAllChatsSorted:', err);
+    return []; // Devolver un arreglo vacío en caso de error
+  }
 }
 
 app.get('/performance-log', async (req, res) => {
