@@ -789,15 +789,15 @@ app.get("/get-panel-config", async (req, res) => {
     const agent = await Agent.findOne({ username });
     if (!agent) return res.status(404).json({ error: "Agente no encontrado" });
 
-    if (!process.env.DOMAIN || !process.env.API_TOKEN || !process.env.CASHIER_ID) {
+    if (!process.env.DOMAIN || !process.env.AUTH_TOKEN || !process.env.CASHIER_ID || !process.env.API_TOKEN) {
       return res.status(500).json({ error: "Configuración del servidor incompleta" });
     }
 
     res.json({
       domain: process.env.DOMAIN,
-      authToken: process.env.API_TOKEN, // Token global de Cajatiorico
+      authToken: process.env.AUTH_TOKEN, // Token global de Cajatiorico para búsqueda
       cashierId: process.env.CASHIER_ID, // Cashier ID global de Cajatiorico
-      apiToken: agent.apiKey || process.env.API_TOKEN // API_KEY específica del subusuario
+      apiToken: agent.apiKey || process.env.API_TOKEN // API_KEY específica del subusuario para carga/descarga
     });
   } catch (err) {
     console.error('❌ Error en /get-panel-config:', err);
