@@ -38,11 +38,20 @@ const io = socketIo(server, {
     allowedHeaders: ['Content-Type'],
     credentials: true
   },
-  transports: process.env.NODE_ENV === 'production' ? ['polling', 'websocket'] : ['websocket', 'polling'], // Permitir ambos en producción
+  transports: ['polling', 'websocket'], // Permitir ambos transportes
   allowEIO3: true,
-  pingTimeout: 20000, // Aumentar el tiempo de espera para ping
-  pingInterval: 25000, // Intervalo para enviar pings
-  maxHttpBufferSize: 1e6 // 1 MB, ajustar según necesidades
+  pingTimeout: 30000, // Aumentar el tiempo de espera para ping
+  pingInterval: 25000,
+  maxHttpBufferSize: 1e6,
+  connectTimeout: 45000, // Aumentar el tiempo de espera para la conexión inicial
+  perMessageDeflate: false // Deshabilitar compresión para evitar problemas
+});
+
+io.on('connection', (socket) => {
+  console.log('✅ Cliente conectado:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('❌ Cliente desconectado:', socket.id);
+  });
 });
 
 const PORT = process.env.PORT || 3000;
@@ -59,7 +68,11 @@ function validateAuthInput(username, password) {
 }
 
 function isValidToken(token) {
-  return token === process.env.SECRET_KEY;
+  console.log('🔑 Token recibido:', token);
+  console.log('🔐 SECRET_KEY esperado:', process.env.SECRET_KEY);
+  const isValid = token === process.env.SECRET_KEY;
+  console.log('🔑 Token válido:', isValid);
+  return isValid;
 }
 
 async function isSuperAdmin(username) {
@@ -283,10 +296,15 @@ io.on('connection', (socket) => {
   });
 
   socket.on('admin connected', async () => {
-  socket.join('admins');
-  const chats = await getAllChatsSorted();
-  console.log('📜 Enviando lista de chats al cliente:', chats);
-  socket.emit('user list', chats);
+  try {
+    socket.join('admins');
+    const chats = await getAllChatsSorted();
+    console.log('📜 Enviando lista de chats al cliente:', chats);
+    socket.emit('user list', chats);
+  } catch (err) {
+    console.error('❌ Error en admin connected:', err);
+    socket.emit('user list', []); // Enviar un arreglo vacío en caso de error
+  }
 });
 
   socket.on('chat message', async (data) => {
