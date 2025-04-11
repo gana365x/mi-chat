@@ -174,14 +174,24 @@ async function getAllChatsSorted() {
   const lastMessages = await ChatMessage.aggregate([
     { $match: { sender: { $ne: 'System' } } },
     { $sort: { timestamp: -1 } },
-    { $group: { _id: "$userId", lastMessage: { $first: "$$ROOT" } } }
-  ]);
+    {
+      $group: {
+        _id: "$userId",
+        lastMessage: { $first: "$$ROOT" }
+      }
+    }
+  ], { allowDiskUse: true }); // Habilitar el uso de disco
 
   const sortedChats = await Promise.all(lastMessages.map(async ({ _id, lastMessage }) => {
     const savedName = await UserName.findOne({ userId: _id });
     const username = savedName?.name || userSessions.get(_id)?.username || lastMessage.username || 'Usuario';
     const isClosed = await ChatMessage.findOne({ userId: _id, status: 'closed' });
-    return { userId: _id, username, lastMessageTime: lastMessage.timestamp, isClosed: !!isClosed };
+    return {
+      userId: _id,
+      username: username,
+      lastMessageTime: lastMessage.timestamp,
+      isClosed: !!isClosed
+    };
   }));
 
   return sortedChats.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
