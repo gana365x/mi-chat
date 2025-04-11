@@ -1164,11 +1164,14 @@
     
     const socket = io('https://mi-chat-9uti.onrender.com', {
   withCredentials: true,
-  transports: ['polling', 'websocket'], // Permitir ambos transportes
-  reconnection: true, // Habilitar reconexión automática
-  reconnectionAttempts: 10, // Intentar reconectar 10 veces
-  reconnectionDelay: 1000, // Esperar 1 segundo entre intentos
-  reconnectionDelayMax: 5000 // Máximo 5 segundos entre intentos
+  reconnection: true,
+  reconnectionAttempts: 10,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000
+});
+
+socket.on('connect', () => {
+  console.log('✅ Conectado a socket.io');
 });
 
 socket.on('connect_error', (err) => {
