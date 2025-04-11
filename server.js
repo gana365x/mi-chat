@@ -455,16 +455,34 @@ app.post('/superadmin-login', async (req, res) => {
 app.post('/admin-login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (!validateAuthInput(username, password)) return res.status(400).json({ success: false, message: 'Datos inválidos' });
+  if (!validateAuthInput(username, password)) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos' });
+  }
 
   try {
     const agent = await Agent.findOne({ username, $or: [{ role: 'Admin' }, { type: 'agent' }] });
-    if (!agent || !(await bcrypt.compare(password, agent.password))) {
-      return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
+    if (!agent) {
+      return res.status(401).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'lax' });
-    res.status(200).json({ success: true, username: agent.username, token: agent.token });
+    const isMatch = await bcrypt.compare(password, agent.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
+    }
+
+    if (!process.env.SECRET_KEY) {
+      return res.status(500).json({ success: false, message: 'Configuración del servidor incompleta: SECRET_KEY no definido' });
+    }
+
+    res.cookie('token', process.env.SECRET_KEY, {
+      httpOnly: true,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production', // true en producción, false en desarrollo
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' en producción para permitir cross-site, 'lax' en desarrollo
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+    });
+    console.log("Cookie seteada en /admin-login:", process.env.SECRET_KEY);
+    res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de admin:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
