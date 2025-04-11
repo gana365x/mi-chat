@@ -1161,7 +1161,10 @@
     <script src="/socket.io/socket.io.js"></script>
   <script>
     let systemTimezone = "America/Argentina/Buenos_Aires";
-    const socket = io();
+    const socket = io('https://mi-chat-9uti.onrender.com', {
+  withCredentials: true,
+  transports: ['polling'] // Forzar polling en el cliente también
+});
     let selectedUserId = null;
     let selectedUsername = null;
     const localChatHistory = {};
