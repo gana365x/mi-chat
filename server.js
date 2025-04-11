@@ -792,10 +792,10 @@ app.get("/get-panel-config", async (req, res) => {
 
     res.json({
       domain: process.env.DOMAIN,
-      cashierId: agent.cashierId || process.env.CASHIER_ID, // Restauramos cashierId
-      authToken: process.env.API_TOKEN, // Usa el API_TOKEN del .env
+      cashierId: process.env.CASHIER_ID, // Tomamos cashierId del .env (Cajatiorico)
+      authToken: process.env.API_TOKEN, // Usa el API_TOKEN del .env (Cajatiorico)
       apiToken: agent.apiKey || process.env.API_TOKEN, // Usa la API_KEY del subusuario
-      userId: agent.userId // Restauramos userId
+      userId: process.env.USER_ID // Tomamos userId del .env (Cajatiorico)
     });
   } catch (err) {
     console.error('❌ Error en /get-panel-config:', err);
