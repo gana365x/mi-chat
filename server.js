@@ -1,3 +1,4 @@
+
 const moment = require("moment-timezone");
 require('dotenv').config();
 
@@ -792,10 +793,10 @@ app.get("/get-panel-config", async (req, res) => {
 
     res.json({
       domain: process.env.DOMAIN,
-      cashierId: process.env.CASHIER_ID, // Tomamos cashierId del .env (Cajatiorico)
-      authToken: process.env.API_TOKEN, // Usa el API_TOKEN del .env (Cajatiorico)
+      cashierId: agent.cashierId || process.env.CASHIER_ID, // Restauramos cashierId
+      authToken: process.env.API_TOKEN, // Usa el API_TOKEN del .env
       apiToken: agent.apiKey || process.env.API_TOKEN, // Usa la API_KEY del subusuario
-      userId: process.env.USER_ID // Tomamos userId del .env (Cajatiorico)
+      userId: agent.userId // Restauramos userId
     });
   } catch (err) {
     console.error('❌ Error en /get-panel-config:', err);
