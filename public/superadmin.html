@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -259,14 +260,6 @@
   <input type="text" id="newApiKey" placeholder="API_KEY del agente" required>
   <label for="newApiKey">API_KEY</label>
 </div>
-<div class="input-group">
-  <input type="text" id="newUserId" placeholder="User ID del agente" required>
-  <label for="newUserId">User ID</label>
-</div>
-<div class="input-group">
-  <input type="text" id="newCashierId" placeholder="Cashier ID del agente" required>
-  <label for="newCashierId">Cashier ID</label>
-</div>
 <button onclick="createAgent()">Crear</button>
 <p id="createError" style="color: red; display: none;"></p>
       <h2>Agentes registrados</h2>
@@ -408,10 +401,8 @@
   const password = document.getElementById('newPassword').value.trim();
   const role = document.getElementById('newRole').value;
   const apiKey = document.getElementById('newApiKey').value.trim();
-  const userId = document.getElementById('newUserId').value.trim();
-  const cashierId = document.getElementById('newCashierId').value.trim();
 
-  if (!login || !password || !role || !apiKey || !userId || !cashierId) {
+  if (!login || !password || !role || !apiKey) {
     document.getElementById('createError').textContent = "Todos los campos son obligatorios.";
     document.getElementById('createError').style.display = 'block';
     return;
@@ -421,7 +412,7 @@
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ username: login, password, role, apiKey, userId, cashierId })
+    body: JSON.stringify({ username: login, password, role, apiKey })
   })
   .then(res => {
     if (!res.ok) return res.text().then(text => { throw new Error(`HTTP error! status: ${res.status}, response: ${text}`); });
@@ -432,8 +423,6 @@
     document.getElementById('newPassword').value = '';
     document.getElementById('newRole').value = 'Admin';
     document.getElementById('newApiKey').value = '';
-    document.getElementById('newUserId').value = '';
-    document.getElementById('newCashierId').value = '';
     document.getElementById('createError').style.display = 'none';
     loadAgents();
   })
