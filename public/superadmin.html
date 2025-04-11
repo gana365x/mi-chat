@@ -293,43 +293,7 @@
         <button class="popup-btn cancel" onclick="closeDeletePopup()" style="background-color: #FF3B30; padding: 10px 20px; border-radius: 8px;">✖</button>
       </div>
     </div>
-</div>
-
-<!-- POPUP PARA VER LA API_KEY -->
-<div id="viewApiKeyPopup" class="popup-overlay">
-  <div class="popup-box">
-    <h3>API_KEY del Agente</h3>
-    <p id="apiKeyDisplay" style="word-break: break-all;"></p>
-    <div class="popup-actions" style="display: flex; justify-content: center; gap: 20px;">
-      <button class="popup-btn cancel" onclick="closeApiKeyPopup()" style="background-color: #FF3B30; padding: 10px 20px; border-radius: 8px;">Cerrar</button>
-    </div>
   </div>
-</div>
-
-<!-- POPUP PARA CAMBIAR LA CONTRASEÑA -->
-<div id="changePasswordPopup" class="popup-overlay">
-  <div class="popup-box">
-    <h3>Cambiar Contraseña</h3>
-    <div class="input-group">
-      <input type="password" id="newAgentPassword" placeholder="Nueva contraseña" required>
-      <label for="newAgentPassword">Nueva contraseña</label>
-    </div>
-    <div class="popup-actions" style="display: flex; justify-content: space-around; gap: 20px;">
-      <button class="popup-btn confirm" onclick="confirmChangePassword()" style="background-color: #34C759; padding: 10px 20px; border-radius: 8px;">✔ Guardar</button>
-      <button class="popup-btn cancel" onclick="closeChangePasswordPopup()" style="background-color: #FF3B30; padding: 10px 20px; border-radius: 8px;">✖ Cancelar</button>
-    </div>
-    <p id="changePasswordError" style="color: red; display: none; text-align: center;"></p>
-  </div>
-</div>
-
-<!-- Socket.IO -->
-<script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
-<script>
-  const socket = io('https://mi-chat-9uti.onrender.com');
-
-  function getAuthToken() {
-    const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
-    return match ? match[1] : null;
 
   <!-- Socket.IO -->
   <script src="https://mi-chat-9uti.onrender.com/socket.io/socket.io.js"></script>
@@ -374,27 +338,25 @@
     }
 
     function loadAgents() {
-  fetch('https://mi-chat-9uti.onrender.com/agents', { credentials: 'include' })
-  .then(res => res.json())
-  .then(agents => {
-    const table = document.getElementById('agentsTable');
-    table.innerHTML = '';
-    agents.forEach(agent => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><strong>${agent.username}</strong></td>
-        <td>${agent.role}</td>
-        <td style="display: flex; gap: 5px;">
-          <button class="delete-btn" onclick="openViewApiKeyPopup('${agent.username}')" title="Ver API_KEY">🔑</button>
-          <button class="delete-btn" onclick="openChangePasswordPopup('${agent.username}')" title="Cambiar contraseña">🔒</button>
-          <button class="delete-btn" onclick="openDeletePopup('${agent.username}')" title="Eliminar">🗑️</button>
-        </td>
-      `;
-      table.appendChild(row);
-    });
-  })
-  .catch(err => console.error("Error cargando agentes:", err));
-}
+      fetch('https://mi-chat-9uti.onrender.com/agents', { credentials: 'include' })
+      .then(res => res.json())
+      .then(agents => {
+        const table = document.getElementById('agentsTable');
+        table.innerHTML = '';
+        agents.forEach(agent => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${agent.username}</strong></td>
+            <td>${agent.role}</td>
+            <td style="display: flex; gap: 5px;">
+              <button class="delete-btn" onclick="openDeletePopup('${agent.username}')">🗑️</button>
+            </td>
+          `;
+          table.appendChild(row);
+        });
+      })
+      .catch(err => console.error("Error cargando agentes:", err));
+    }
 
     function createAgent() {
   const login = document.getElementById('newLogin').value.trim();
@@ -457,67 +419,6 @@
       })
       .catch(err => console.error("Error eliminando agente:", err));
     }
-
-    function openViewApiKeyPopup(username) {
-  fetch(`https://mi-chat-9uti.onrender.com/get-agent-apikey?username=${username}`, { credentials: 'include' })
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById('apiKeyDisplay').textContent = data.apiKey || 'No asignada';
-    document.getElementById("viewApiKeyPopup").classList.add("active");
-  })
-  .catch(err => console.error("Error obteniendo API_KEY:", err));
-}
-
-function closeApiKeyPopup() {
-  document.getElementById("viewApiKeyPopup").classList.remove("active");
-}
-
-let selectedUsernameToChangePassword = null;
-
-function openChangePasswordPopup(username) {
-  selectedUsernameToChangePassword = username;
-  document.getElementById("newAgentPassword").value = '';
-  document.getElementById("changePasswordError").style.display = 'none';
-  document.getElementById("changePasswordPopup").classList.add("active");
-}
-
-function closeChangePasswordPopup() {
-  selectedUsernameToChangePassword = null;
-  document.getElementById("changePasswordPopup").classList.remove("active");
-}
-
-function confirmChangePassword() {
-  const newPassword = document.getElementById("newAgentPassword").value.trim();
-  const errorMsg = document.getElementById("changePasswordError");
-
-  if (!newPassword) {
-    errorMsg.textContent = "La contraseña no puede estar vacía.";
-    errorMsg.style.display = 'block';
-    return;
-  }
-
-  fetch('https://mi-chat-9uti.onrender.com/update-agent-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ username: selectedUsernameToChangePassword, newPassword })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('Error al cambiar la contraseña');
-    return res.json();
-  })
-  .then(data => {
-    if (data.success) {
-      closeChangePasswordPopup();
-    } else {
-      throw new Error('Error al cambiar la contraseña');
-    }
-  })
-  .catch(err => {
-    errorMsg.textContent = err.message || 'Error al cambiar la contraseña';
-    errorMsg.style.display = 'block';
-  });
-}
 
     document.addEventListener('DOMContentLoaded', () => {
       const userInput = document.getElementById('superUsername');
