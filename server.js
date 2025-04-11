@@ -38,7 +38,7 @@ const io = socketIo(server, {
     allowedHeaders: ['Content-Type'],
     credentials: true
   },
-  transports: ['websocket', 'polling'],
+  transports: process.env.NODE_ENV === 'production' ? ['polling'] : ['websocket', 'polling'], // Usar solo polling en producción
   allowEIO3: true
 });
 
