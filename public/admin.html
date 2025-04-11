@@ -1829,7 +1829,7 @@
     while (hasMore && !foundUser) {
       const offsets = Array.from({ length: batchSize }, (_, i) => offset + i);
       const userPromises = offsets.map(async (batchOffset) => {
-        const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
+        const url = `${config.domain}/index.php?act=admin&area=users&response=js&token=${config.authToken}&cashier=all&id=${config.cashierId}&limit=${limit}&offset=${batchOffset}&nocache=${Date.now()}`;
         try {
           const res = await fetch(url, { method: "POST" });
           if (!res.ok) {
@@ -1904,7 +1904,7 @@
   addBtn.disabled = true;
   removeBtn.disabled = true;
 
-  const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&userId=${config.userId}&response=js`;
+  const url = `${config.domain}/index.php?act=admin&area=balance&type=frame&id=${selectedUser.id}&response=js`;
   const body = `operation=${operation}&send=true&amount=${amount}&balance_currency=ARS&api_token=${config.apiToken}`;
 
   try {
