@@ -1327,9 +1327,10 @@
     });
 
     socket.on('user list', (users) => {
-      window.chatUsers = users;
-      renderUserList();
-    });
+  console.log('📜 Lista de chats recibida del servidor:', users);
+  window.chatUsers = users;
+  renderUserList();
+});
 
     function renderUserList() {
       const listContainer = document.getElementById("userList");
