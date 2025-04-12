@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -40,30 +41,14 @@
       display: none;
       z-index: 10001;
       text-align: center;
-      transform: translateY(20px);
+      transform: translateX(-20px);
       opacity: 0;
-      transition: all 0.5s ease-in-out;
+      transition: all 0.3s ease-in-out;
     }
 
     .chat-container.open {
-      transform: translateY(0);
+      transform: translateX(0);
       opacity: 1;
-      animation: chatBoxPop 0.5s ease-in-out;
-    }
-
-    @keyframes chatBoxPop {
-      0% {
-        transform: translateY(20px) scale(0.95);
-        opacity: 0;
-      }
-      70% {
-        transform: translateY(0) scale(1.05);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
     }
 
     .chat-header {
@@ -99,49 +84,52 @@
     }
 
     .chat-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #FF3B00;
+      color: white;
+      border: none;
       width: 60px;
       height: 60px;
+      border-radius: 50%;
+      font-size: 24px;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
       transition: all 0.3s ease-in-out;
     }
 
     .chat-button:hover {
-      opacity: 0.8;
-      transform: scale(1.1);
+      background-color: #d63100;
     }
 
     .login-container {
       padding: 20px;
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
     }
 
     .login-container h3 {
-      font-size: 30px;
+      font-size: 20px;
       margin-bottom: 15px;
     }
 
     .login-container input {
-      width: 80%;
-      padding: 10px;
-      margin: 8px 0;
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
       border: none;
       border-radius: 25px;
       background: #222;
       color: white;
-      font-size: 14px;
+      font-size: 16px;
       text-align: center;
       outline: none;
       -webkit-appearance: none;
     }
 
     .login-button {
-      width: 80%;
+      width: 100%;
       padding: 12px;
       background: #FF3B00;
       color: white;
@@ -161,10 +149,10 @@
     }
 
     .login-logo {
-      width: 180px;
-      max-height: 120px;
+      width: 120px;
+      max-height: 80px;
       margin-top: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
     .chat-body {
@@ -174,7 +162,6 @@
       background: #E5DDD5 url('https://www.whatsapp.com/img/background.png') repeat;
       color: #111;
       font-size: 14px;
-      overflow: hidden;
     }
 
     #messages {
@@ -184,10 +171,8 @@
       right: 0;
       bottom: 60px;
       overflow-y: auto;
-      overflow-x: hidden;
       padding: 10px;
       box-sizing: border-box;
-      width: 100%;
     }
 
     .chat-body.active {
@@ -199,19 +184,6 @@
       align-items: flex-end;
       margin-bottom: 10px;
       clear: both;
-      position: relative;
-      animation: messagePop 0.3s ease-in-out;
-    }
-
-    @keyframes messagePop {
-      0% {
-        transform: scale(0.8);
-        opacity: 0;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
     }
 
     .logo {
@@ -234,8 +206,6 @@
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
       position: relative;
       border-top-left-radius: 0;
-      font-size: 14.7px;
-      word-wrap: break-word;
     }
 
     .msg::before {
@@ -252,7 +222,7 @@
     .msg strong {
       display: block;
       margin-bottom: 6px;
-      font-size: 14.7px;
+      font-size: 14px;
     }
 
     .buttons-wrapper {
@@ -277,50 +247,28 @@
       text-align: center;
       transition: all 0.2s ease-in-out;
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-      animation: buttonBounce 0.5s ease-in-out;
-    }
-
-    @keyframes buttonBounce {
-      0% {
-        transform: scale(0.9);
-        opacity: 0;
-      }
-      50% {
-        transform: scale(1.1);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
     }
 
     .action-button:hover {
       background-color: #DCF8C6;
       color: #111;
-      transform: scale(1.05);
     }
 
     .message {
       display: block;
-      margin: 2px 0;
-      padding: 4px 6px;
-      border-radius: 4px;
-      max-width: 90%;
+      margin: 5px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 70%;
       position: relative;
-      font-size: 11.5px;
-      box-shadow: none;
+      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
       clear: both;
-      word-wrap: break-word;
-      animation: messagePop 0.3s ease-in-out;
     }
 
     .message.bot {
       background: #FFFFFF;
       float: left;
       border-top-left-radius: 0;
-      margin-left: 0;
-      padding-left: 2px;
     }
 
     .message.bot::before {
@@ -337,9 +285,6 @@
     .message.user {
       background: #DCF8C6;
       float: right;
-      margin-left: 0;
-      margin-right: 2px;
-      max-width: 90%;
       border-top-right-radius: 0;
     }
 
@@ -364,8 +309,9 @@
     .message .timestamp {
       font-size: 10px;
       color: #666;
+      margin-left: 5px;
       position: absolute;
-      bottom: -14px;
+      bottom: 2px;
       right: 5px;
     }
 
@@ -374,23 +320,12 @@
       bottom: 0;
       left: 0;
       right: 0;
-      display: none;
+      display: flex;
       align-items: center;
       padding: 10px;
       background: #F0F0F0;
       box-sizing: border-box;
       height: 60px;
-      width: 100%;
-      z-index: 2;
-      transform: translateY(60px);
-      opacity: 0;
-      transition: all 0.3s ease-in-out;
-    }
-
-    .chat-input.active {
-      display: flex;
-      transform: translateY(0);
-      opacity: 1;
     }
 
     .chat-input input[type="text"] {
@@ -409,18 +344,19 @@
       display: none;
     }
 
-    .chat-input label img {
-      width: 20px;
-      height: 20px;
-      vertical-align: middle;
+    .chat-input label {
       cursor: pointer;
+      font-size: 20px;
       margin-right: 10px;
+      color: #666;
     }
 
-    .chat-input button img {
-      width: 20px;
-      height: 20px;
-      vertical-align: middle;
+    .chat-input button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: #075E54;
     }
 
     .recommend-message {
@@ -433,7 +369,6 @@
       padding: 10px;
       box-sizing: border-box;
       overflow-y: auto;
-      overflow-x: hidden;
     }
 
     .recommend-message.active {
@@ -574,15 +509,13 @@
 
     @media (max-width: 768px) {
       .chat-container {
-        width: 81%;
-        height: 63vh;
-        bottom: 80px;
+        width: 90%;
+        height: 70vh;
+        bottom: 10px;
         right: 5%;
         transform: none;
-        padding: 0;
-        margin: 0;
       }
-      
+
       .chat-button {
         bottom: 10px;
         right: 10px;
@@ -620,12 +553,11 @@
 
     .fichas-bancarias {
       text-align: left;
-      line-height: 1.1;
-      font-size: 10.8675px;
-      margin: 3px;
+      line-height: 1.2;
+      font-size: 11px;
+      margin: 0;
       padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      word-wrap: break-word;
     }
 
     .fichas-bancarias strong {
@@ -656,174 +588,16 @@
     .copy-text:hover {
       color: #0056b3;
     }
-
-    .chat-button-wrapper {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 10000;
-    }
-
-    @media (max-width: 768px) {
-      .chat-button-wrapper {
-        bottom: 10px;
-        right: 10px;
-      }
-    }
-
-    .chat-bubble {
-      position: absolute;
-      bottom: 70px;
-      right: 0;
-      background: #075E54;
-      color: white;
-      padding: 6px 10px;
-      border-radius: 15px;
-      font-size: 12px;
-      font-weight: bold;
-      white-space: nowrap;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-      animation: showAndBounce 5s forwards;
-      display: none;
-    }
-
-    @keyframes showAndBounce {
-      0% {
-        opacity: 0;
-        transform: translateY(0);
-      }
-      10% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      30% {
-        transform: translateY(-10px);
-      }
-      50% {
-        transform: translateY(-5px);
-      }
-      90% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(0);
-      }
-    }
-
-    .install-button {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 10002;
-      cursor: pointer;
-      display: block;
-    }
-
-    .install-button img {
-      width: 150px;
-      height: auto;
-      transition: transform 0.2s ease-in-out;
-    }
-
-    .install-button img:hover {
-      transform: scale(1.1);
-    }
-
-    @media (min-width: 769px) {
-      .install-button {
-        display: none;
-      }
-    }
-
-    .install-popup {
-      display: none;
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #FFFFFF;
-      border-radius: 20px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-      z-index: 999999;
-      width: 300px;
-      max-width: 90%;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      position: relative;
-    }
-
-    .install-popup.active {
-      display: block;
-    }
-
-    .install-popup .info-icon {
-      width: 50px;
-      height: 50px;
-      background: #E6F0FA;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 15px;
-    }
-
-    .install-popup .info-icon::before {
-      content: 'i';
-      font-size: 30px;
-      color: #007AFF;
-      font-weight: bold;
-    }
-
-    .install-popup img.instructions {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .install-popup button {
-      position: absolute;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #007AFF;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: background 0.3s ease;
-      width: 100px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .install-popup button:hover {
-      background: #005BB5;
-    }
   </style>
 </head>
 <body>
   <iframe id="backgroundIframe" src="https://gana365.online"></iframe>
-  <div class="install-button" id="installButton">
-    <img src="https://i.postimg.cc/CxzrPsf3/Instalar-Aplicaci-m.png" alt="Instalar Aplicación" onclick="showInstallPopup()">
-  </div>
-  <div class="chat-button-wrapper">
-    <img src="https://i.postimg.cc/QdnKfXJN/Dise-o-sin-t-tulo-5.png" id="chatButton" onclick="toggleChat()" class="chat-button" alt="Chat">
-    <span class="chat-bubble" id="chatBubble">¡Carga fichas acá!</span>
-  </div>
+  <button class="chat-button" id="chatButton" onclick="toggleChat()">💬</button>
 
   <div class="chat-container" id="chatBox">
     <div id="chatHeader" class="chat-header" style="display: none;">
       <img src="https://gana365.online/images/logo.png" class="chat-logo" />
-      <span class="chat-phone">Soporte: +54 9 11 0000-0000</span>
+      <span class="chat-phone">Soporte: +54 9 11 5412-8983</span>
       <button onclick="toggleChat()" class="close-chat">✖</button>
     </div>
 
@@ -839,9 +613,9 @@
       <div id="messages"></div>
       <div class="chat-input">
         <input type="text" id="messageInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
-        <label for="imageInput"><img src="https://i.postimg.cc/TPHNgRJv/png-transparent-camera-logo-graphy-camera-text-camera-lens-rectangle-thumbnail-1.png" alt="Camera"></label>
+        <label for="imageInput">📎</label>
         <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif" onchange="sendFile(event)">
-        <button onclick="sendMessage()"><img src="https://i.postimg.cc/7YgRdrwS/72c0f715ca85da389e1d3d59aa3d600a-icon.png" alt="Send"></button>
+        <button onclick="sendMessage()">✈️</button>
       </div>
     </div>
 
@@ -853,6 +627,7 @@
         <div class="msg">
           <strong>Gracias por elegirnos</strong><br>
           No te olvides de recomendarnos 💎<br>
+          <span class="timestamp" id="finalMessageTimestamp"></span>
         </div>
       </div>
       <div class="buttons-wrapper">
@@ -874,12 +649,6 @@
     <div class="error-icon"></div>
     <p>Por favor, complete todos los campos</p>
     <button onclick="closeErrorPopup()">OK</button>
-  </div>
-
-  <div id="installPopup" class="install-popup">
-    <div class="info-icon"></div>
-    <img src="https://i.postimg.cc/WpdFX9Nm/Dise-o-sin-t-tulo-7.png" alt="Instructions" class="instructions">
-    <button onclick="closeInstallPopup()">Entendido</button>
   </div>
 
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -949,15 +718,16 @@
 
     function sendFile(event) {
       const file = event.target.files[0];
-      if (file && currentUser && userId) {
+      if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          socket.emit('image', { userId: userId, sender: currentUser, image: e.target.result });
+          console.log('Enviando imagen al servidor desde cliente:', { userId, sender: currentUser });
+          socket.emit('image', { userId, sender: currentUser, image: e.target.result });
         };
         reader.readAsDataURL(file);
         event.target.value = '';
       } else {
-        console.error('Falta archivo, usuario o userId');
+        console.error('No se seleccionó ningún archivo');
       }
     }
 
@@ -991,7 +761,6 @@
         button.textContent = "✖";
         chat.style.display = "block";
         setTimeout(() => chat.classList.add("open"), 10);
-        setTimeout(scrollToBottom, 310);
       }
     }
 
@@ -1039,11 +808,9 @@
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
       const chatHeader = document.getElementById("chatHeader");
-      const chatInput = document.querySelector(".chat-input");
       chatHeader.style.display = "flex";
       chatBody.classList.add("active");
       recommendMessage.classList.remove("active");
-      chatInput.classList.remove("active");
       const messagesDiv = document.getElementById("messages");
       messagesDiv.innerHTML = '';
 
@@ -1055,6 +822,7 @@
           <strong>Bienvenido a GANA365</strong>
           ¡ASISTENCIA 24HS POR ESTA CHAT!<br>
           Por favor elegí una opción 👇👇👇
+          <span class="timestamp">${getCurrentTime()}</span>
         </div>
       `;
       messagesDiv.appendChild(welcomeDiv);
@@ -1067,17 +835,15 @@
       `;
       messagesDiv.appendChild(buttonsDiv);
 
-      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToBottom, 0);
     }
 
     function showRecommendMessage() {
       console.log('Mostrando mensaje de recomendación');
       const chatBody = document.getElementById("chatBody");
       const recommendMessage = document.getElementById("recommendMessage");
-      const chatInput = document.querySelector(".chat-input");
       chatBody.classList.remove("active");
       recommendMessage.classList.add("active");
-      chatInput.classList.remove("active");
 
       recommendMessage.innerHTML = '';
 
@@ -1089,6 +855,7 @@
           RECOMENDAMOS Y GANA<br>
           BUSCANOS EN GOOGLE COMO<br>
           463 SIEMPRE GANA
+          <span class="timestamp">${getCurrentTime()}</span>
         </div>
       `;
       recommendMessage.appendChild(recommendDiv);
@@ -1105,7 +872,7 @@
           top: recommendMessage.scrollHeight,
           behavior: 'smooth'
         });
-      }, 100);
+      }, 0);
     }
 
     function handleAction(action) {
@@ -1117,9 +884,7 @@
 
       const messagesDiv = document.getElementById("messages");
       const buttonsWrapper = document.querySelector('.buttons-wrapper');
-      const chatInput = document.querySelector(".chat-input");
       if (buttonsWrapper) buttonsWrapper.style.display = 'none';
-      chatInput.classList.add("active");
 
       const userMessage = document.createElement('div');
       userMessage.classList.add('message', 'user');
@@ -1132,7 +897,7 @@
 
       socket.emit('chat message', { userId, sender: currentUser, message: action });
 
-      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToBottom, 0);
     }
 
     function sendMessage() {
@@ -1141,14 +906,8 @@
 
       if (message) {
         console.log('Enviando mensaje:', message, 'Usuario:', currentUser, 'UserId:', userId);
-        const messagesDiv = document.getElementById("messages");
-        const userMessage = document.createElement('div');
-        userMessage.classList.add('message', 'user');
-        userMessage.innerHTML = `${message}<span class="timestamp">${getCurrentTime()}</span>`;
-        messagesDiv.appendChild(userMessage);
         socket.emit('chat message', { userId, sender: currentUser, message });
         messageInput.value = '';
-        setTimeout(scrollToBottom, 100);
       }
     }
 
@@ -1197,7 +956,7 @@
       }
 
       messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToBottom, 0);
     });
 
     socket.on('image', (data) => {
@@ -1213,7 +972,7 @@
         <span class="timestamp">${getCurrentTime()}</span>
       `;
       messagesDiv.appendChild(messageDiv);
-      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToBottom, 0);
     });
 
     socket.on('show success popup', () => {
@@ -1237,6 +996,7 @@
     });
 
     function closePopup() {
+      console.log('Cerrando popup');
       const popup = document.getElementById("successPopup");
       const overlay = document.getElementById("popupOverlay");
 
@@ -1244,127 +1004,107 @@
       overlay.classList.remove('active');
 
       socket.emit('popup closed', { userId, username: currentUser });
-      showFinalThanksMessage();
     }
 
     socket.on('chat closed', (data) => {
-      if (data.userId === userId) {
-        isChatClosed = true;
-        const popup = document.getElementById("successPopup");
-        const overlay = document.getElementById("popupOverlay");
-        const popupTitle = document.getElementById("popupTitle");
-        const popupSubtext = document.getElementById("popupSubtext");
-        const lastAction = sessionStorage.getItem("ultimaAccion");
+  console.log('Evento chat closed recibido:', data);
+  if (data.userId === userId) {
+    console.log('Chat cerrado por el agente para:', currentUser);
 
-        if (popup && overlay) {
-          if (lastAction === "Retirar") {
-            popupTitle.textContent = "Premio Pagado";
-            popupSubtext.textContent = "Chequeá tu cuenta bancaria";
-          } else if (lastAction === "Cargar Fichas") {
-            popupTitle.textContent = "Fichas Cargadas";
-            popupSubtext.textContent = "Ya podes jugar. ¡Mucha suerte!";
-          }
-          popup.classList.add("active");
-          overlay.classList.add("active");
-        }
+    const popup = document.getElementById("successPopup");
+    const overlay = document.getElementById("popupOverlay");
+    const popupTitle = document.getElementById("popupTitle");
+    const popupSubtext = document.getElementById("popupSubtext");
+    const lastAction = sessionStorage.getItem("ultimaAccion");
 
-        showFinalThanksMessage();
-        socket.emit('user joined', { userId, username: currentUser });
+    if (popup && overlay) {
+      if (lastAction === "Retirar") {
+        popupTitle.textContent = "Premio Pagado";
+        popupSubtext.textContent = "Chequeá tu cuenta bancaria";
+      } else if (lastAction === "Cargar Fichas") {
+        popupTitle.textContent = "Fichas Cargadas";
+        popupSubtext.textContent = "Ya podes jugar. ¡Mucha suerte!";
       }
-    });
+      popup.classList.add("active");
+      overlay.classList.add("active");
+    }
+
+    setTimeout(() => {
+      showFinalThanksMessage();
+    }, 500);
+
+    isChatClosed = true;
+    socket.emit('user joined', { userId, username: currentUser });
+  }
+});
+
 
     function showFinalThanksMessage() {
-      console.log('Mostrando mensaje de agradecimiento final');
-      const chatBody = document.getElementById("chatBody");
-      const recommendMessage = document.getElementById("recommendMessage");
-      const chatInput = document.querySelector(".chat-input");
-      chatBody.classList.remove("active");
-      recommendMessage.classList.add("active");
-      chatInput.classList.remove("active");
+  console.log('Mostrando mensaje de agradecimiento final');
+  const chatBody = document.getElementById("chatBody");
+  const recommendMessage = document.getElementById("recommendMessage");
+  chatBody.classList.remove("active");
+  recommendMessage.classList.add("active");
 
-      const ultimaAccion = sessionStorage.getItem("ultimaAccion");
-      recommendMessage.innerHTML = '';
+  const ultimaAccion = sessionStorage.getItem("ultimaAccion");
+  recommendMessage.innerHTML = '';
 
-      const finalDiv = document.createElement('div');
-      finalDiv.classList.add('row');
-      finalDiv.innerHTML = `
-        <img src="https://gana365.online/images/logo.png" class="logo">
-        <div class="msg">
-          ${ultimaAccion === 'Retirar' ? `
-            <strong>❤ Premio Pagado ❤</strong><br>
-            (MIRA TU CUENTA BANCARIA)<br><br>
-            Gana 365 te desea éxitos<br><br>
-            Entra en nuestro canal<br>
-            👇🏻👇🏻👇🏻<br>
-            ¡UNITE A LA COMUNIDAD HACIENDO CLICK AQUÍ!
-          ` : `
-            <strong>✅ Fichas Cargadas ✅</strong><br>
-            Ya podes jugar<br>
-            ¡Mucha suerte!
-          `}
-        </div>
-      `;
-      recommendMessage.appendChild(finalDiv);
+  const finalDiv = document.createElement('div');
+  finalDiv.classList.add('row');
+  finalDiv.innerHTML = `
+    <img src="https://gana365.online/images/logo.png" class="logo">
+    <div class="msg">
+      ${ultimaAccion === 'Retirar' ? `
+        <strong>❤ Premio Pagado ❤</strong><br>
+        (MIRA TU CUENTA BANCARIA)<br><br>
+        Gana 365 te desea éxitos<br><br>
+        Entra en nuestro canal<br>
+        👇🏻👇🏻👇🏻<br>
+        ¡UNITE A LA COMUNIDAD HACIENDO CLICK AQUÍ!
+      ` : `
+        <strong>✅ Fichas Cargadas ✅</strong><br>
+        Ya podes jugar<br>
+        ¡Mucha suerte!
+      `}
+      <span class="timestamp">${getCurrentTime()}</span>
+    </div>
+  `;
+  recommendMessage.appendChild(finalDiv);
 
-      const buttonsDiv = document.createElement('div');
-      buttonsDiv.classList.add('buttons-wrapper');
-      buttonsDiv.innerHTML = `
-        <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
-      `;
-      recommendMessage.appendChild(buttonsDiv);
+  const buttonsDiv = document.createElement('div');
+  buttonsDiv.classList.add('buttons-wrapper');
+  buttonsDiv.innerHTML = `
+    <button class="action-button" onclick="showActionButtons()">Iniciar Nuevo Chat</button>
+  `;
+  recommendMessage.appendChild(buttonsDiv);
 
-      setTimeout(() => {
-        recommendMessage.scrollTo({
-          top: recommendMessage.scrollHeight,
-          behavior: 'smooth'
-        });
-      }, 100);
-    }
+  setTimeout(() => {
+    recommendMessage.scrollTo({
+      top: recommendMessage.scrollHeight,
+      behavior: 'smooth'
+    });
+  }, 0);
+}
 
-    function showInstallPopup() {
-      const popup = document.getElementById("installPopup");
-      const overlay = document.getElementById("popupOverlay");
-      popup.classList.add('active');
-      overlay.classList.add('active');
-    }
-
-    function closeInstallPopup() {
-      const popup = document.getElementById("installPopup");
-      const overlay = document.getElementById("popupOverlay");
-      const installButton = document.getElementById("installButton");
-      popup.classList.remove('active');
-      overlay.classList.remove('active');
-      installButton.style.display = 'none';
-    }
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = getCookie("chatUser");
       console.log('Verificando cookie de usuario:', username);
       if (username) {
-        console.log('Usuario encontrado, pero chatbox permanece minimizado');
+        console.log('Autologin ejecutado para usuario:', username);
         currentUser = username;
         const storedUserId = getCookie("chatUserId");
         socket.emit('user joined', { userId: storedUserId, username });
+        isChatOpen = true;
+        const chat = document.getElementById("chatBox");
+        const button = document.getElementById("chatButton");
+        button.textContent = "✖";
+        chat.style.display = "block";
+        setTimeout(() => chat.classList.add("open"), 10);
       } else {
         console.log('No hay cookie de usuario, mostrando formulario de login');
         document.getElementById("loginForm").style.display = "block";
       }
-      const chat = document.getElementById("chatBox");
-      chat.style.display = "none";
-      isChatOpen = false;
-
-      const chatBubble = document.getElementById("chatBubble");
-      chatBubble.style.display = "block";
-
-      setInterval(() => {
-        chatBubble.style.display = "block";
-      }, 120000);
-
-      // Hide the install button after 10 seconds
-      const installButton = document.getElementById("installButton");
-      setTimeout(() => {
-        installButton.style.display = "none";
-      }, 10000); // 10 seconds
     });
 
     function copyToClipboard(text) {
