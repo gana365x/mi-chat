@@ -1,3 +1,4 @@
+
 const moment = require("moment-timezone");
 require('dotenv').config();
 
@@ -62,8 +63,6 @@ function validateAuthInput(username, password) {
 }
 
 function isValidToken(token) {
-  console.log('🔑 Validando token:', token);
-  console.log('🔐 SECRET_KEY esperado:', process.env.SECRET_KEY);
   return token === process.env.SECRET_KEY;
 }
 
@@ -71,15 +70,6 @@ async function isSuperAdmin(username) {
   const agent = await Agent.findOne({ username });
   return agent && (agent.role === 'SuperAdmin' || agent.type === 'superadmin');
 }
-
-// Protección para config.html
-app.get('/config.html', (req, res) => {
-  const token = req.cookies.token;
-  if (!token || !isValidToken(token)) {
-    return res.redirect('/index.html');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'config.html'));
-});
 
 // Protección para superadmin.html
 app.get('/superadmin.html', async (req, res) => {
@@ -89,7 +79,7 @@ app.get('/superadmin.html', async (req, res) => {
   }
 
   // Verificar si el usuario es SuperAdmin
-  const username = req.query.username;
+  const username = req.query.username; // Podrías pasar el username en la cookie o en otra forma segura
   if (!username || !(await isSuperAdmin(username))) {
     return res.redirect('/index.html');
   }
@@ -113,18 +103,26 @@ app.get('/agent-performance.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'agent-performance.html'));
 });
 
+app.get('/config.html', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.redirect('/index.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'config.html'));
+});
+
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ganaadmin:ped1q2wzerA@cluster1.jpvbt6k.mongodb.net/gana365?retryWrites=true&w=majority&appName=Cluster1';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-  .then(() => {
-    console.log('✅ Conectado a MongoDB Atlas');
-  })
-  .catch((err) => {
-    console.error('❌ Error conectando a MongoDB:', err);
-  });
+.then(() => {
+  console.log('✅ Conectado a MongoDB Atlas');
+})
+.catch((err) => {
+  console.error('❌ Error conectando a MongoDB:', err);
+});
 
 const agentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -174,6 +172,7 @@ const userSessions = new Map();
 const adminSubscriptions = new Map();
 
 const quickRepliesPath = path.join(__dirname, 'quickReplies.json');
+const timezoneFile = path.join(__dirname, 'timezone.json');
 
 function getTimestamp() {
   const timezone = "America/Argentina/Buenos_Aires";
@@ -184,6 +183,7 @@ function getTimestamp() {
 }
 
 if (!fs.existsSync(quickRepliesPath)) fs.writeFileSync(quickRepliesPath, JSON.stringify([]));
+if (!fs.existsSync(timezoneFile)) fs.writeFileSync(timezoneFile, JSON.stringify({ timezone: "America/Argentina/Buenos_Aires" }, null, 2));
 
 async function incrementPerformance(agentUsername) {
   try {
@@ -577,8 +577,8 @@ app.post('/superadmin-login', async (req, res) => {
   }
 
   try {
-    const agent = await Agent.findOne({
-      username,
+    const agent = await Agent.findOne({ 
+      username, 
       $or: [{ role: 'SuperAdmin' }, { type: 'superadmin' }]
     });
     if (!agent) {
@@ -590,18 +590,12 @@ app.post('/superadmin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, {
-      httpOnly: true,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'none'
-    });
-    console.log("Cookie seteada en /superadmin-login:", process.env.SECRET_KEY);
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({
       success: true,
       name: agent.name,
       role: agent.role || (agent.type === 'superadmin' ? 'SuperAdmin' : 'Admin'),
-      username: agent.username
+      username: agent.username // Agregamos el username para usarlo después
     });
   } catch (err) {
     console.error('❌ Error en login:', err);
@@ -627,13 +621,7 @@ app.post('/admin-login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    res.cookie('token', process.env.SECRET_KEY, {
-      httpOnly: true,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'none'
-    });
-    console.log("Cookie seteada en /admin-login:", process.env.SECRET_KEY);
+    res.cookie('token', process.env.SECRET_KEY, { httpOnly: true, path: '/' });
     res.status(200).json({ success: true, name: agent.name, username: agent.username });
   } catch (err) {
     console.error('❌ Error en login de admin:', err);
@@ -690,12 +678,10 @@ app.put('/agents/:username', async (req, res) => {
   const { username } = req.params;
   const { name, password, newUsername } = req.body;
 
-  if (
-    (!name && !password && !newUsername) ||
-    (name && typeof name !== 'string') ||
-    (password && typeof password !== 'string') ||
-    (newUsername && typeof newUsername !== 'string')
-  ) {
+  if ((!name && !password && !newUsername) || 
+      (name && typeof name !== 'string') || 
+      (password && typeof password !== 'string') || 
+      (newUsername && typeof newUsername !== 'string')) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
@@ -861,14 +847,8 @@ app.post('/update-agent-password', async (req, res) => {
   }
   const { username, newPassword } = req.body;
 
-  if (
-    !username ||
-    !newPassword ||
-    typeof username !== 'string' ||
-    typeof newPassword !== 'string' ||
-    newPassword.length < 4 ||
-    newPassword.length > 16
-  ) {
+  if (!username || !newPassword || typeof username !== 'string' || typeof newPassword !== 'string' ||
+      newPassword.length < 4 || newPassword.length > 16) {
     return res.status(400).json({ success: false, message: 'Datos inválidos' });
   }
 
@@ -892,9 +872,7 @@ app.post('/update-agent-password', async (req, res) => {
 
 app.get('/quick-replies', (req, res) => {
   const token = req.cookies.token;
-  console.log("Petición a /quick-replies - Token recibido:", token);
   if (!token || !isValidToken(token)) {
-    console.log("Token inválido o ausente en /quick-replies");
     return res.status(401).json({ success: false, message: 'No autorizado' });
   }
   fs.readFile(quickRepliesPath, 'utf8', (err, data) => {
@@ -919,6 +897,47 @@ app.post('/quick-replies', express.json(), (req, res) => {
   }
 
   fs.writeFileSync(quickRepliesPath, JSON.stringify(replies, null, 2));
+  res.json({ success: true });
+});
+
+app.get('/get-timezone', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
+
+  try {
+    const timezoneData = fs.readFileSync(timezoneFile, 'utf-8');
+    const config = JSON.parse(timezoneData);
+    res.json({ timezone: config.timezone });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error leyendo la zona horaria' });
+  }
+});
+
+app.post('/update-timezone', (req, res) => {
+  const token = req.cookies.token;
+  if (!token || !isValidToken(token)) {
+    return res.status(401).json({ success: false, message: 'No autorizado' });
+  }
+  const { timezone } = req.body;
+  if (!timezone || typeof timezone !== 'string') {
+    return res.status(400).json({ success: false, message: "Zona inválida" });
+  }
+
+  const validTimezones = [
+    "America/Argentina/Buenos_Aires",
+    "America/Mexico_City",
+    "America/Bogota",
+    "Europe/Madrid",
+    "UTC"
+  ];
+
+  if (!validTimezones.includes(timezone)) {
+    return res.status(400).json({ success: false, message: "Zona horaria no válida" });
+  }
+
+  fs.writeFileSync(timezoneFile, JSON.stringify({ timezone }, null, 2));
   res.json({ success: true });
 });
 
@@ -1151,25 +1170,6 @@ app.get('/get-performance-data', async (req, res) => {
     console.error('❌ Error al obtener datos de rendimiento:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
-});
-
-// Endpoint seguro para obtener config desde el backend
-app.get("/get-panel-config", (req, res) => {
-  const token = req.cookies.token;
-  console.log("Petición a /get-panel-config - Token recibido:", token);
-  if (!token || !isValidToken(token)) {
-    console.log("Token inválido o ausente en /get-panel-config");
-    return res.status(401).json({ error: "No autorizado, token inválido o ausente" });
-  }
-  if (!process.env.DOMAIN || !process.env.CASHIER_ID || !process.env.AUTH_TOKEN || !process.env.API_TOKEN) {
-    return res.status(500).json({ error: "Configuración del servidor incompleta" });
-  }
-  res.json({
-    domain: process.env.DOMAIN,
-    cashierId: process.env.CASHIER_ID,
-    authToken: process.env.AUTH_TOKEN,
-    apiToken: process.env.API_TOKEN
-  });
 });
 
 server.listen(PORT, () => {
