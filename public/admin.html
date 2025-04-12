@@ -1199,26 +1199,12 @@
 <div id="addResult"></div>
 </div>
 <script>
-    let config = {};
-
-async function loadConfig() {
-  try {
-    const response = await fetch('/get-panel-config', {
-      method: 'GET',
-      credentials: 'include'
-    });
-    if (!response.ok) throw new Error('No autorizado');
-    config = await response.json();
-  } catch (error) {
-    console.error('Error cargando config:', error);
-    config = { domain: '', cashierId: '', authToken: '', apiToken: '' };
-  }
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadConfig();
-  // Resto del código...
-});
+    const config = {
+      authToken: "805921b5b8cba1524630804a4da457f0",
+      apiToken: "89c3d37f5b16c3da1ef5af214bfea873d9aed34268b0571a85880bffe300eb6b",
+      domain: "https://admin.gana365.online",
+      cashierId: "1601152"
+    };
 
     let selectedUser = null;
 
@@ -1378,10 +1364,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 <script src="/socket.io/socket.io.js"></script>
 <script>
     // Variable global para la zona horaria
-    let systemTimezone = "America/Argentina/Buenos_Aires";
+    let systemTimezone = "UTC";
 
     // Cargar la zona horaria desde el servidor
-    
+    function loadTimezoneFromServer() {
+      return fetch('/get-timezone')
+        .then(res => {
+          if (!res.ok) throw new Error('Respuesta del servidor no OK');
+          return res.json();
+        })
+        .then(data => {
+          systemTimezone = data.timezone || "UTC";
+          console.log("🕒 Zona horaria cargada exitosamente:", systemTimezone);
+        })
+        .catch(err => {
+          console.warn("⚠️ Error al cargar la zona horaria, usando UTC:", err);
+          systemTimezone = "UTC";
+        });
+    }
+
     const socket = io();
 
     socket.on('connect', () => {
@@ -1554,7 +1555,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-  
+  await loadTimezoneFromServer();
+
   // Adjuntar el event listener al botón de login
   const loginButton = document.getElementById("loginButton");
   if (loginButton) {
